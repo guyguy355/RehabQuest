@@ -1,0 +1,51 @@
+/** @type {import('tailwindcss').Config} */
+export default {
+  content: ['./index.html', './src/**/*.{ts,tsx}'],
+  theme: {
+    extend: {
+      colors: {
+        background: '#f8f9ff',
+        surface: '#f8f9ff',
+        'surface-container-lowest': '#ffffff',
+        'surface-container-low': '#eff4ff',
+        'surface-container': '#e6eeff',
+        'surface-container-high': '#dee9fc',
+        'surface-container-highest': '#d9e3f6',
+        'surface-variant': '#d9e3f6',
+        'on-background': '#121c2a',
+        'on-surface': '#121c2a',
+        'on-surface-variant': '#3f4850',
+        'outline-variant': '#bec7d1',
+        primary: '#006492',
+        'on-primary': '#ffffff',
+        'primary-container': '#2d9cdb',
+        'on-primary-container': '#003049',
+        secondary: '#006d41',
+        'on-secondary': '#ffffff',
+        'secondary-container': '#95f7bb',
+        'on-secondary-container': '#007346',
+        tertiary: '#904d00',
+        'tertiary-container': '#d38033',
+        'tertiary-fixed': '#ffdcc3',
+        'on-tertiary-fixed': '#2f1500',
+        brand: {
+          50: '#ecfdf7',
+          100: '#d1faec',
+          500: '#14b8a6',
+          600: '#0d9488',
+          700: '#0f766e',
+          900: '#134e4a',
+        },
+      },
+      boxShadow: {
+        ambient: '0px 4px 12px rgba(31, 41, 55, 0.05)',
+        'ambient-lg': '0px 8px 24px rgba(31, 41, 55, 0.08)',
+      },
+      fontFamily: {
+        sans: ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+        display: ['Manrope', 'Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+      },
+    },
+  },
+  plugins: [],
+};

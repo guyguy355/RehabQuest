@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Patient Progress - RehabQuest</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&amp;family=Manrope:wght@600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-tertiary-fixed": "#2f1500",
+                        "primary-fixed-dim": "#8ccdff",
+                        "on-primary": "#ffffff",
+                        "background": "#f8f9ff",
+                        "surface-container": "#e6eeff",
+                        "inverse-on-surface": "#eaf1ff",
+                        "secondary": "#006d41",
+                        "on-primary-container": "#003049",
+                        "outline-variant": "#bec7d1",
+                        "surface": "#f8f9ff",
+                        "surface-variant": "#d9e3f6",
+                        "error": "#ba1a1a",
+                        "primary": "#006492",
+                        "error-container": "#ffdad6",
+                        "surface-dim": "#d0dbed",
+                        "on-error-container": "#93000a",
+                        "surface-container-high": "#dee9fc",
+                        "secondary-container": "#95f7bb",
+                        "inverse-surface": "#27313f",
+                        "surface-bright": "#f8f9ff",
+                        "tertiary-fixed-dim": "#ffb77d",
+                        "on-tertiary": "#ffffff",
+                        "inverse-primary": "#8ccdff",
+                        "on-tertiary-container": "#482300",
+                        "on-secondary-container": "#007346",
+                        "tertiary": "#904d00",
+                        "on-surface-variant": "#3f4850",
+                        "primary-fixed": "#cae6ff",
+                        "on-primary-fixed-variant": "#004b6f",
+                        "on-secondary-fixed-variant": "#005230",
+                        "surface-tint": "#006492",
+                        "surface-container-lowest": "#ffffff",
+                        "tertiary-fixed": "#ffdcc3",
+                        "tertiary-container": "#d38033",
+                        "secondary-fixed": "#95f7bb",
+                        "on-error": "#ffffff",
+                        "on-secondary-fixed": "#002110",
+                        "primary-container": "#2d9cdb",
+                        "on-surface": "#121c2a",
+                        "on-tertiary-fixed-variant": "#6e3900",
+                        "outline": "#6f7881",
+                        "on-secondary": "#ffffff",
+                        "on-background": "#121c2a",
+                        "on-primary-fixed": "#001e2f",
+                        "secondary-fixed-dim": "#7adaa1",
+                        "surface-container-highest": "#d9e3f6",
+                        "surface-container-low": "#eff4ff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "gutter": "16px",
+                        "md": "16px",
+                        "container-margin": "20px",
+                        "xl": "32px",
+                        "base": "4px",
+                        "sm": "12px",
+                        "xs": "8px",
+                        "lg": "24px"
+                    },
+                    "fontFamily": {
+                        "headline-sm": ["Manrope"],
+                        "display-lg-mobile": ["Manrope"],
+                        "body-md": ["Inter"],
+                        "display-lg": ["Manrope"],
+                        "body-sm": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "headline-md": ["Manrope"],
+                        "label-md": ["Inter"]
+                    },
+                    "fontSize": {
+                        "headline-sm": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                        "display-lg-mobile": ["28px", {"lineHeight": "36px", "fontWeight": "700"}],
+                        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "display-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                        "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                        "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                        "label-md": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .shadow-clinical {
+            box-shadow: 0px 4px 12px rgba(31, 41, 55, 0.05);
+        }
+        .progress-node-line {
+            background-image: radial-gradient(circle, #bec7d1 1px, transparent 1px);
+            background-size: 1px 20px;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background min-h-screen font-body-md pb-32">
+<!-- TopAppBar -->
+<header class="bg-surface dark:bg-inverse-surface shadow-sm docked full-width top-0 z-40 sticky">
+<div class="flex justify-between items-center w-full px-container-margin py-xs max-w-[1140px] mx-auto">
+<div class="flex items-center gap-sm">
+<div class="w-10 h-10 rounded-full bg-surface-container-highest flex items-center justify-center overflow-hidden border-2 border-primary">
+<img alt="User Profile" class="w-full h-full object-cover" data-alt="A professional close-up portrait of a patient in a bright, modern clinical setting. The lighting is soft and high-key, emphasizing a clean and clinical yet warm atmosphere. The image uses a palette of soft teals and whites to convey health and recovery, maintaining a high-quality medical SaaS aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAfTfpYOppSKqYVEw02F1YhvvVlc1GSAl6PD8Q-6_U_ys2MviHMotsBlKjAhKIRQ5Y72chBbhKa6noGDaa-EbVT3MUMvSqZvsplWy-hX42It5yoMtz8BZT1JduAEvg93d8EjU4gAGPwSBn0qoSzgCBfugSpypMu47MC3D-J8LMi06ugniuOYvuMjjwD4aIIlbXzz1zsiLPN7xkda_54UyVw6OjYmjCZFwYMhQ9RLIulHtczco2YfV6lPhaE1h5P3L6J6WZZ8tvQujQr"/>
+</div>
+</div>
+<h1 class="font-headline-md text-headline-md font-bold text-primary dark:text-primary-fixed-dim">RehabQuest</h1>
+<button class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-variant dark:hover:bg-on-surface-variant transition-colors active:scale-95 transition-transform">
+<span class="material-symbols-outlined text-primary dark:text-primary-fixed-dim">notifications</span>
+</button>
+</div>
+</header>
+<main class="max-w-[1140px] mx-auto px-container-margin py-lg space-y-lg">
+<!-- Overall Plan Progress Section -->
+<section class="bg-surface-container-lowest rounded-xl p-md shadow-clinical">
+<div class="flex items-center justify-between mb-sm">
+<h2 class="font-headline-sm text-headline-sm text-on-surface">Overall Plan Progress</h2>
+<span class="font-label-md text-label-md bg-secondary-container text-on-secondary-container px-xs py-1 rounded-full">Phase 1</span>
+</div>
+<div class="space-y-xs">
+<div class="flex justify-between items-end">
+<p class="font-body-lg text-body-lg text-primary font-bold">42% of Knee Stability Phase 1</p>
+<p class="font-label-md text-label-md text-on-surface-variant">12 / 28 Quests</p>
+</div>
+<div class="w-full h-3 bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-primary w-[42%] rounded-full"></div>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant italic">Next Milestone: Lateral Balance (in 3 Quests)</p>
+</div>
+</section>
+<!-- Adherence and Pain Grid (Asymmetric) -->
+<div class="grid grid-cols-1 md:grid-cols-12 gap-lg">
+<!-- Weekly Adherence (Bento Style) -->
+<section class="md:col-span-5 bg-surface-container-lowest rounded-xl p-md shadow-clinical flex flex-col justify-between">
+<div>
+<h3 class="font-headline-sm text-headline-sm text-on-surface mb-xs">Weekly Adherence</h3>
+<p class="font-body-md text-body-md text-on-surface-variant mb-md">Outstanding! 6/7 days completed.</p>
+</div>
+<div class="flex justify-between items-end gap-xs h-32 mb-xs">
+<div class="flex-1 flex flex-col items-center gap-xs">
+<div class="w-full bg-secondary-container rounded-t-lg" style="height: 100%;"></div>
+<span class="font-label-md text-label-md text-on-surface-variant">M</span>
+</div>
+<div class="flex-1 flex flex-col items-center gap-xs">
+<div class="w-full bg-secondary-container rounded-t-lg" style="height: 100%;"></div>
+<span class="font-label-md text-label-md text-on-surface-variant">T</span>
+</div>
+<div class="flex-1 flex flex-col items-center gap-xs">
+<div class="w-full bg-secondary-container rounded-t-lg" style="height: 100%;"></div>
+<span class="font-label-md text-label-md text-on-surface-variant">W</span>
+</div>
+<div class="flex-1 flex flex-col items-center gap-xs">
+<div class="w-full bg-secondary-container rounded-t-lg" style="height: 100%;"></div>
+<span class="font-label-md text-label-md text-on-surface-variant">T</span>
+</div>
+<div class="flex-1 flex flex-col items-center gap-xs">
+<div class="w-full bg-secondary-container rounded-t-lg" style="height: 100%;"></div>
+<span class="font-label-md text-label-md text-on-surface-variant">F</span>
+</div>
+<div class="flex-1 flex flex-col items-center gap-xs">
+<div class="w-full bg-surface-container rounded-t-lg" style="height: 20%;"></div>
+<span class="font-label-md text-label-md text-on-surface-variant">S</span>
+</div>
+<div class="flex-1 flex flex-col items-center gap-xs">
+<div class="w-full bg-secondary-container rounded-t-lg" style="height: 100%;"></div>
+<span class="font-label-md text-label-md text-on-surface-variant">S</span>
+</div>
+</div>
+<div class="border-t border-outline-variant pt-sm flex items-center justify-between">
+<span class="font-body-sm text-body-sm text-secondary font-bold flex items-center gap-xs">
+<span class="material-symbols-outlined text-[18px]">verified</span>
+                        Consistency high
+                    </span>
+<button class="text-primary font-label-md text-label-md uppercase tracking-wider">Details</button>
+</div>
+</section>
+<!-- Pain Trend Line Graph -->
+<section class="md:col-span-7 bg-surface-container-lowest rounded-xl p-md shadow-clinical">
+<div class="flex justify-between items-start mb-md">
+<div>
+<h3 class="font-headline-sm text-headline-sm text-on-surface">Pain Trend</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">Weekly levels decreasing</p>
+</div>
+<div class="text-right">
+<p class="font-display-lg text-primary">2.4</p>
+<p class="font-label-md text-label-md text-on-surface-variant">Avg Score</p>
+</div>
+</div>
+<div class="relative h-48 w-full mt-lg">
+<!-- SVG Chart -->
+<svg class="w-full h-full overflow-visible" preserveaspectratio="none" viewbox="0 0 400 100">
+<path d="M 0 20 L 66 35 L 132 50 L 198 45 L 264 65 L 330 80 L 400 85" fill="none" stroke="#006492" stroke-linecap="round" stroke-width="3"></path>
+<!-- Data Points -->
+<circle cx="0" cy="20" fill="#006492" r="4"></circle>
+<circle cx="66" cy="35" fill="#006492" r="4"></circle>
+<circle cx="132" cy="50" fill="#006492" r="4"></circle>
+<circle cx="198" cy="45" fill="#006492" r="4"></circle>
+<circle cx="264" cy="65" fill="#006492" r="4"></circle>
+<circle cx="330" cy="80" fill="#006492" r="4"></circle>
+<circle cx="400" cy="85" fill="#006492" r="4"></circle>
+</svg>
+<!-- X-Axis Labels -->
+<div class="flex justify-between mt-xs font-label-md text-label-md text-on-surface-variant opacity-60">
+<span>MON</span>
+<span>SUN</span>
+</div>
+</div>
+<div class="mt-md bg-surface-container-low rounded-lg p-sm flex items-start gap-sm">
+<span class="material-symbols-outlined text-primary">info</span>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Your pain report shows significant reduction during evening rest periods compared to last week.</p>
+</div>
+</section>
+</div>
+<!-- Badges Section -->
+<section>
+<h3 class="font-headline-sm text-headline-sm text-on-surface mb-md">Recent Achievements</h3>
+<div class="grid grid-cols-1 sm:grid-cols-3 gap-md">
+<!-- 3 Day Streak -->
+<div class="bg-surface-container-lowest p-md rounded-xl shadow-clinical flex items-center gap-md border-l-4 border-tertiary-container hover:scale-105 transition-transform cursor-pointer">
+<div class="w-12 h-12 rounded-full bg-tertiary-fixed flex items-center justify-center text-on-tertiary-container">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">local_fire_department</span>
+</div>
+<div>
+<p class="font-headline-sm text-headline-sm leading-tight">3 Day Streak</p>
+<p class="font-label-md text-label-md text-on-surface-variant">Momentum Master</p>
+</div>
+</div>
+<!-- First Quest -->
+<div class="bg-surface-container-lowest p-md rounded-xl shadow-clinical flex items-center gap-md border-l-4 border-primary hover:scale-105 transition-transform cursor-pointer">
+<div class="w-12 h-12 rounded-full bg-primary-fixed flex items-center justify-center text-on-primary-fixed-variant">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">military_tech</span>
+</div>
+<div>
+<p class="font-headline-sm text-headline-sm leading-tight">First Quest</p>
+<p class="font-label-md text-label-md text-on-surface-variant">The Journey Begins</p>
+</div>
+</div>
+<!-- Pain Logger -->
+<div class="bg-surface-container-lowest p-md rounded-xl shadow-clinical flex items-center gap-md border-l-4 border-secondary-container hover:scale-105 transition-transform cursor-pointer">
+<div class="w-12 h-12 rounded-full bg-secondary-fixed flex items-center justify-center text-on-secondary-fixed-variant">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">history_edu</span>
+</div>
+<div>
+<p class="font-headline-sm text-headline-sm leading-tight">Pain Logger</p>
+<p class="font-label-md text-label-md text-on-surface-variant">Precise Reporter</p>
+</div>
+</div>
+</div>
+</section>
+<!-- Insights / Asymmetric Card -->
+<section class="bg-primary text-on-primary rounded-2xl p-lg flex flex-col md:flex-row items-center gap-lg">
+<div class="flex-1 space-y-sm">
+<h3 class="font-headline-md text-headline-md">Clinician Insight</h3>
+<p class="font-body-lg text-body-lg opacity-90">"Your stability is improving rapidly. Focus on the slow descent during your eccentric squats tomorrow."</p>
+<div class="flex items-center gap-xs">
+<span class="material-symbols-outlined text-[20px]">verified_user</span>
+<span class="font-label-md text-label-md">Verified by Dr. Miller</span>
+</div>
+</div>
+<div class="w-24 h-24 rounded-2xl bg-primary-container/30 flex items-center justify-center border border-on-primary/20">
+<span class="material-symbols-outlined text-[48px] text-primary-fixed">psychology</span>
+</div>
+</section>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 w-full flex justify-around items-center px-2 py-3 bg-surface dark:bg-inverse-surface border-t border-outline-variant dark:border-outline shadow-lg z-50">
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-surface-variant px-4 py-1 hover:bg-surface-container-high dark:hover:bg-surface-dim transition-all active:scale-90 transition-transform duration-200" href="#">
+<span class="material-symbols-outlined">home</span>
+<span class="font-label-md text-label-md">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-surface-variant px-4 py-1 hover:bg-surface-container-high dark:hover:bg-surface-dim transition-all active:scale-90 transition-transform duration-200" href="#">
+<span class="material-symbols-outlined">military_tech</span>
+<span class="font-label-md text-label-md">Quest</span>
+</a>
+<a class="flex flex-col items-center justify-center bg-secondary-container dark:bg-secondary text-on-secondary-container dark:text-on-secondary rounded-xl px-4 py-1 active:scale-90 transition-transform duration-200" href="#">
+<span class="material-symbols-outlined">monitoring</span>
+<span class="font-label-md text-label-md">Progress</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-surface-variant px-4 py-1 hover:bg-surface-container-high dark:hover:bg-surface-dim transition-all active:scale-90 transition-transform duration-200" href="#">
+<span class="material-symbols-outlined">person</span>
+<span class="font-label-md text-label-md">Profile</span>
+</a>
+</nav>
+</body></html>

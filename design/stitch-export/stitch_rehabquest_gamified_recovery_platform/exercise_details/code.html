@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Quad Sets - Exercise Details</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&amp;family=Inter:wght@400;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "on-tertiary-fixed": "#2f1500",
+                      "primary-fixed-dim": "#8ccdff",
+                      "on-primary": "#ffffff",
+                      "background": "#f8f9ff",
+                      "surface-container": "#e6eeff",
+                      "inverse-on-surface": "#eaf1ff",
+                      "secondary": "#006d41",
+                      "on-primary-container": "#003049",
+                      "outline-variant": "#bec7d1",
+                      "surface": "#f8f9ff",
+                      "surface-variant": "#d9e3f6",
+                      "error": "#ba1a1a",
+                      "primary": "#006492",
+                      "error-container": "#ffdad6",
+                      "surface-dim": "#d0dbed",
+                      "on-error-container": "#93000a",
+                      "surface-container-high": "#dee9fc",
+                      "secondary-container": "#95f7bb",
+                      "inverse-surface": "#27313f",
+                      "surface-bright": "#f8f9ff",
+                      "tertiary-fixed-dim": "#ffb77d",
+                      "on-tertiary": "#ffffff",
+                      "inverse-primary": "#8ccdff",
+                      "on-tertiary-container": "#482300",
+                      "on-secondary-container": "#007346",
+                      "tertiary": "#904d00",
+                      "on-surface-variant": "#3f4850",
+                      "primary-fixed": "#cae6ff",
+                      "on-primary-fixed-variant": "#004b6f",
+                      "on-secondary-fixed-variant": "#005230",
+                      "surface-tint": "#006492",
+                      "surface-container-lowest": "#ffffff",
+                      "tertiary-fixed": "#ffdcc3",
+                      "tertiary-container": "#d38033",
+                      "secondary-fixed": "#95f7bb",
+                      "on-error": "#ffffff",
+                      "on-secondary-fixed": "#002110",
+                      "primary-container": "#2d9cdb",
+                      "on-surface": "#121c2a",
+                      "on-tertiary-fixed-variant": "#6e3900",
+                      "outline": "#6f7881",
+                      "on-secondary": "#ffffff",
+                      "on-background": "#121c2a",
+                      "on-primary-fixed": "#001e2f",
+                      "secondary-fixed-dim": "#7adaa1",
+                      "surface-container-highest": "#d9e3f6",
+                      "surface-container-low": "#eff4ff"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "gutter": "16px",
+                      "md": "16px",
+                      "container-margin": "20px",
+                      "xl": "32px",
+                      "base": "4px",
+                      "sm": "12px",
+                      "xs": "8px",
+                      "lg": "24px"
+              },
+              "fontFamily": {
+                      "headline-sm": ["Manrope"],
+                      "display-lg-mobile": ["Manrope"],
+                      "body-md": ["Inter"],
+                      "display-lg": ["Manrope"],
+                      "body-sm": ["Inter"],
+                      "body-lg": ["Inter"],
+                      "headline-md": ["Manrope"],
+                      "label-md": ["Inter"]
+              },
+              "fontSize": {
+                      "headline-sm": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                      "display-lg-mobile": ["28px", {"lineHeight": "36px", "fontWeight": "700"}],
+                      "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                      "display-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                      "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                      "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                      "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                      "label-md": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}]
+              }
+            },
+          },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            display: inline-block;
+            line-height: 1;
+        }
+        .exercise-card-shadow {
+            box-shadow: 0px 4px 12px rgba(31, 41, 55, 0.05);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background font-body-md min-h-screen pb-32">
+<!-- TopAppBar -->
+<header class="bg-surface dark:bg-inverse-surface shadow-sm docked full-width top-0 z-40 fixed w-full">
+<div class="flex justify-between items-center w-full px-container-margin py-xs max-w-[1140px] mx-auto h-16">
+<div class="flex items-center gap-md">
+<button class="active:scale-95 transition-transform p-2 -ml-2 rounded-full hover:bg-surface-variant dark:hover:bg-on-surface-variant transition-colors">
+<span class="material-symbols-outlined text-primary dark:text-primary-fixed-dim">arrow_back</span>
+</button>
+<h1 class="font-headline-md text-headline-md font-bold text-primary dark:text-primary-fixed-dim">Quad Sets</h1>
+</div>
+<div class="flex items-center gap-sm">
+<span class="material-symbols-outlined text-on-surface-variant dark:text-surface-variant" data-icon="notifications">notifications</span>
+<div class="w-10 h-10 rounded-full bg-primary-container flex items-center justify-center text-on-primary-container font-bold overflow-hidden border-2 border-primary-fixed">
+<img alt="Physiotherapist Profile" class="w-full h-full object-cover" data-alt="A professional headshot of a female physiotherapist wearing a clinical white coat and a friendly smile. The background is a clean, bright medical office with soft, professional lighting that emphasizes clinical empathy. The overall aesthetic is modern, trustworthy, and high-quality healthcare focused." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCNlkQRnx2Gnq0DEGGrxcqdubZ0NUdNHYVC9XWrp_j3P-yTb38yNXOMwjQ7UdzA-gBoK9ydNFI06eQRHLZ2c4UPCBdvCRCYd6gNaxoCa_IRdyMUZeD0_J_ur0Hn0axuVOKDs4oMhHuDope24DAzKzTmHWf1-Ccn5MPUk7kTw0ZLdMmkVfIFHZ8OE3UvYtK2YL_PfYjHZSIukpr642vPVurakDLOU1C_XhEu2AG3o16qo5Vla1QDz1aGizq9h0LdHC7n8n-tF8FfiIFe"/>
+</div>
+</div>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="pt-24 px-container-margin max-w-[1140px] mx-auto">
+<!-- Hero Section: Video & Badge -->
+<section class="mb-lg">
+<div class="flex flex-wrap items-center justify-between gap-md mb-md">
+<div class="flex items-center gap-xs bg-secondary-container text-on-secondary-container px-3 py-1 rounded-full">
+<span class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' 1;">exercise</span>
+<span class="font-label-md text-label-md">Knee</span>
+</div>
+<div class="flex items-center gap-xs">
+<span class="font-label-md text-label-md text-on-surface-variant">Difficulty:</span>
+<span class="text-secondary font-bold text-label-md">Easy</span>
+</div>
+</div>
+<!-- Video Placeholder -->
+<div class="relative aspect-video w-full bg-surface-container-highest rounded-xl overflow-hidden exercise-card-shadow group cursor-pointer">
+<img alt="Quad sets exercise demonstration" class="w-full h-full object-cover opacity-80" data-alt="A detailed, clinical demonstration of a quad set exercise being performed on a therapy table. The scene is brightly lit with clinical white and soft teal accents, reflecting a modern rehabilitation environment. A physical therapist is subtly guiding the movement to emphasize proper form and muscle engagement in the knee area." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDr5lO0LBw_eWtFwyB8Cn_azR_9nIN0vyxk6BX4iyeoUxZpUdoxbpDSc8ZrmbPdBCjJun7NUvGdQKLKTc_a7mawzPsu-N-Fg1QebKV2pnzxEEBxvids3Ig0SQlEOJuFOyb7Yryg3Me27G5FZpfMWZV37uoH8n_2PRrJ2Z_slQ4ibvBYYVQRWx_oeJpK1vW0_yXYmEflQMLO5lEPy3wAPWopzHK34HzDctPS3hDu8eb4Te1PShQ2_8jFyGy2tQfxIC_c-yOf9WIAqMhp"/>
+<div class="absolute inset-0 flex items-center justify-center">
+<div class="bg-primary text-on-primary p-4 rounded-full shadow-lg active:scale-90 transition-transform">
+<span class="material-symbols-outlined text-[32px]" style="font-variation-settings: 'FILL' 1;">play_arrow</span>
+</div>
+</div>
+<div class="absolute bottom-4 left-4 right-4 flex justify-between items-center text-on-surface text-sm font-semibold bg-surface/80 backdrop-blur-md px-4 py-2 rounded-lg">
+<span>Exercise Preview</span>
+<span>0:45</span>
+</div>
+</div>
+</section>
+<!-- Bento Grid Stats -->
+<section class="grid grid-cols-2 md:grid-cols-3 gap-md mb-lg">
+<div class="bg-surface-container-lowest p-md rounded-xl exercise-card-shadow flex flex-col items-center justify-center text-center">
+<span class="material-symbols-outlined text-primary mb-xs" data-icon="reorder">reorder</span>
+<span class="font-label-md text-label-md text-on-surface-variant block">Sets</span>
+<span class="font-headline-sm text-headline-sm text-primary">3</span>
+</div>
+<div class="bg-surface-container-lowest p-md rounded-xl exercise-card-shadow flex flex-col items-center justify-center text-center">
+<span class="material-symbols-outlined text-primary mb-xs" data-icon="repeat">repeat</span>
+<span class="font-label-md text-label-md text-on-surface-variant block">Reps</span>
+<span class="font-headline-sm text-headline-sm text-primary">10</span>
+</div>
+<div class="bg-surface-container-lowest p-md rounded-xl exercise-card-shadow flex flex-col items-center justify-center text-center col-span-2 md:col-span-1">
+<span class="material-symbols-outlined text-secondary mb-xs" data-icon="timer">timer</span>
+<span class="font-label-md text-label-md text-on-surface-variant block">Hold Time</span>
+<span class="font-headline-sm text-headline-sm text-secondary">5s</span>
+</div>
+</section>
+<!-- Safety Note -->
+<section class="mb-lg">
+<div class="bg-tertiary-fixed text-on-tertiary-fixed p-md rounded-xl flex items-start gap-md border border-tertiary-container/20">
+<span class="material-symbols-outlined text-tertiary" data-icon="warning" style="font-variation-settings: 'FILL' 1;">warning</span>
+<div>
+<h3 class="font-headline-sm text-[16px] mb-1">Safety Note</h3>
+<p class="font-body-md text-body-sm opacity-90">Keep your back flat and move slowly.</p>
+</div>
+</div>
+</section>
+<!-- Instructions -->
+<section class="mb-lg">
+<h2 class="font-headline-md text-headline-md text-primary mb-md">How to Perform</h2>
+<div class="space-y-md">
+<div class="flex gap-md p-md bg-surface-container-low rounded-xl">
+<span class="flex-shrink-0 w-8 h-8 rounded-full bg-primary text-on-primary flex items-center justify-center font-bold text-sm">1</span>
+<p class="font-body-md text-on-surface">Sit or lie on your back with your legs straight out in front of you.</p>
+</div>
+<div class="flex gap-md p-md bg-surface-container-low rounded-xl">
+<span class="flex-shrink-0 w-8 h-8 rounded-full bg-primary text-on-primary flex items-center justify-center font-bold text-sm">2</span>
+<p class="font-body-md text-on-surface">Tighten the muscle on the top of your thigh by pushing the back of your knee down into the floor.</p>
+</div>
+<div class="flex gap-md p-md bg-surface-container-low rounded-xl">
+<span class="flex-shrink-0 w-8 h-8 rounded-full bg-primary text-on-primary flex items-center justify-center font-bold text-sm">3</span>
+<p class="font-body-md text-on-surface">Hold for 5 seconds, then relax for 5 seconds. Repeat for the prescribed number of reps.</p>
+</div>
+</div>
+</section>
+</main>
+<!-- Bottom Action Bar (Primary Button) -->
+<div class="fixed bottom-0 left-0 w-full bg-surface dark:bg-inverse-surface border-t border-outline-variant p-container-margin z-50 shadow-lg">
+<div class="max-w-[1140px] mx-auto flex gap-md">
+<button class="flex-1 h-12 bg-primary text-on-primary font-bold rounded-xl active:scale-[0.98] transition-transform shadow-md flex items-center justify-center gap-xs">
+<span class="material-symbols-outlined" data-icon="check_circle">check_circle</span>
+                Complete Exercise
+            </button>
+</div>
+</div>
+</body></html>

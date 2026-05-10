@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&amp;family=Manrope:wght@600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-tertiary-fixed": "#2f1500",
+                        "primary-fixed-dim": "#8ccdff",
+                        "on-primary": "#ffffff",
+                        "background": "#f8f9ff",
+                        "surface-container": "#e6eeff",
+                        "inverse-on-surface": "#eaf1ff",
+                        "secondary": "#006d41",
+                        "on-primary-container": "#003049",
+                        "outline-variant": "#bec7d1",
+                        "surface": "#f8f9ff",
+                        "surface-variant": "#d9e3f6",
+                        "error": "#ba1a1a",
+                        "primary": "#006492",
+                        "error-container": "#ffdad6",
+                        "surface-dim": "#d0dbed",
+                        "on-error-container": "#93000a",
+                        "surface-container-high": "#dee9fc",
+                        "secondary-container": "#95f7bb",
+                        "inverse-surface": "#27313f",
+                        "surface-bright": "#f8f9ff",
+                        "tertiary-fixed-dim": "#ffb77d",
+                        "on-tertiary": "#ffffff",
+                        "inverse-primary": "#8ccdff",
+                        "on-tertiary-container": "#482300",
+                        "on-secondary-container": "#007346",
+                        "tertiary": "#904d00",
+                        "on-surface-variant": "#3f4850",
+                        "primary-fixed": "#cae6ff",
+                        "on-primary-fixed-variant": "#004b6f",
+                        "on-secondary-fixed-variant": "#005230",
+                        "surface-tint": "#006492",
+                        "surface-container-lowest": "#ffffff",
+                        "tertiary-fixed": "#ffdcc3",
+                        "tertiary-container": "#d38033",
+                        "secondary-fixed": "#95f7bb",
+                        "on-error": "#ffffff",
+                        "on-secondary-fixed": "#002110",
+                        "primary-container": "#2d9cdb",
+                        "on-surface": "#121c2a",
+                        "on-tertiary-fixed-variant": "#6e3900",
+                        "outline": "#6f7881",
+                        "on-secondary": "#ffffff",
+                        "on-background": "#121c2a",
+                        "on-primary-fixed": "#001e2f",
+                        "secondary-fixed-dim": "#7adaa1",
+                        "surface-container-highest": "#d9e3f6",
+                        "surface-container-low": "#eff4ff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "gutter": "16px",
+                        "md": "16px",
+                        "container-margin": "20px",
+                        "xl": "32px",
+                        "base": "4px",
+                        "sm": "12px",
+                        "xs": "8px",
+                        "lg": "24px"
+                    },
+                    "fontFamily": {
+                        "headline-sm": ["Manrope"],
+                        "display-lg-mobile": ["Manrope"],
+                        "body-md": ["Inter"],
+                        "display-lg": ["Manrope"],
+                        "body-sm": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "headline-md": ["Manrope"],
+                        "label-md": ["Inter"]
+                    },
+                    "fontSize": {
+                        "headline-sm": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                        "display-lg-mobile": ["28px", {"lineHeight": "36px", "fontWeight": "700"}],
+                        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "display-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                        "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                        "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                        "label-md": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body {
+            background-color: #f8f9ff;
+            color: #121c2a;
+        }
+        .bento-grid {
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            gap: 24px;
+        }
+        .custom-card {
+            background: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0px 4px 12px rgba(31, 41, 55, 0.05);
+        }
+    </style>
+</head>
+<body class="font-body-md text-body-md bg-background">
+<!-- Navigation Drawer (Sidebar) -->
+<aside class="h-full w-72 fixed left-0 top-0 z-50 flex flex-col py-lg px-md space-y-xs bg-surface-container-low border-r border-outline-variant shadow-md">
+<!-- Header Profile -->
+<div class="flex flex-col mb-lg">
+<div class="flex items-center gap-md mb-xs">
+<div class="w-12 h-12 rounded-full overflow-hidden border-2 border-primary">
+<img alt="Physiotherapist Portrait" data-alt="A professional portrait of a senior physiotherapist in a clean clinical environment. The lighting is bright and professional, conveying clinical expertise and empathetic care. He is wearing a minimalist navy blue scrub and a stethoscope, set against a blurred high-end clinic background with soft teal accents." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDPWe7ERgWbhe4_t0OMywUihbwxGRa4z3dtE1QRbqTu0eU5IszWJOXOBxi8XJpLHuGFKzL2-LWoj_aP5b--kPIo-K8Knc9gT4rCelSFDw0IocPn9zDbttJ2earWxL1njfT-DXWtznjDrj-HYdtJ_xsg-do1xx_Z4Bu_nT4GDLz3FPW7d-EHc9MD-XBWV48hDqIE3X_DqmnocZQRoGL-cBHFk2nIN2kJOFMvaVE6XwYq-CnHQv4oOxbJNLE5ao_Rt31KolVU6Ta-jCUY"/>
+</div>
+<div>
+<h2 class="font-headline-sm text-headline-sm text-primary">Dr. Miller</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Lead Physiotherapist</p>
+</div>
+</div>
+<p class="font-label-md text-label-md text-outline">Clinic ID: #4492</p>
+</div>
+<!-- Nav Items -->
+<nav class="space-y-xs">
+<a class="flex items-center gap-md text-on-surface-variant px-md py-sm hover:bg-surface-variant transition-colors rounded-lg cursor-pointer active:translate-x-1 transition-transform" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span class="font-body-md text-body-md">Dashboard</span>
+</a>
+<a class="flex items-center gap-md text-on-surface-variant px-md py-sm hover:bg-surface-variant transition-colors rounded-lg cursor-pointer active:translate-x-1 transition-transform" href="#">
+<span class="material-symbols-outlined" data-icon="group">group</span>
+<span class="font-body-md text-body-md">Patients</span>
+</a>
+<a class="flex items-center gap-md bg-secondary-container text-on-secondary-container rounded-lg px-md py-sm font-bold cursor-pointer active:translate-x-1 transition-transform" href="#">
+<span class="material-symbols-outlined" data-icon="assignment">assignment</span>
+<span class="font-body-md text-body-md">Plans</span>
+</a>
+<a class="flex items-center gap-md text-on-surface-variant px-md py-sm hover:bg-surface-variant transition-colors rounded-lg cursor-pointer active:translate-x-1 transition-transform" href="#">
+<span class="material-symbols-outlined" data-icon="fitness_center">fitness_center</span>
+<span class="font-body-md text-body-md">Exercises</span>
+</a>
+</nav>
+</aside>
+<!-- Main Content Canvas -->
+<main class="ml-72 min-h-screen pb-xl">
+<!-- TopAppBar -->
+<header class="sticky top-0 z-40 bg-surface shadow-sm mb-lg">
+<div class="flex justify-between items-center w-full px-container-margin py-xs max-w-[1140px] mx-auto">
+<h1 class="font-headline-md text-headline-md font-bold text-primary">RehabQuest</h1>
+<div class="flex items-center gap-md">
+<button class="material-symbols-outlined text-primary hover:bg-surface-variant p-2 rounded-full transition-colors active:scale-95" data-icon="notifications">notifications</button>
+<div class="w-10 h-10 rounded-full bg-primary-container flex items-center justify-center text-on-primary-container font-bold">
+                        PM
+                    </div>
+</div>
+</div>
+</header>
+<div class="max-w-[1140px] mx-auto px-container-margin">
+<!-- Header Section -->
+<div class="mb-lg">
+<h2 class="font-display-lg text-display-lg text-on-surface mb-xs">Create New Rehab Plan</h2>
+<p class="font-body-lg text-body-lg text-on-surface-variant">Configure a structured recovery journey for your patient with clinical precision.</p>
+</div>
+<!-- Bento Grid Form Layout -->
+<div class="bento-grid">
+<!-- Section 1: Basic Information -->
+<div class="col-span-12 lg:col-span-8 custom-card p-lg">
+<div class="flex items-center gap-xs mb-md text-primary">
+<span class="material-symbols-outlined" data-icon="description">description</span>
+<h3 class="font-headline-sm text-headline-sm">Plan Details</h3>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-lg">
+<div class="flex flex-col gap-xs">
+<label class="font-label-md text-label-md text-on-surface-variant">PATIENT SELECTION</label>
+<select class="h-[48px] border border-outline-variant rounded-lg px-md focus:ring-2 focus:ring-primary focus:border-primary bg-surface-container-lowest outline-none">
+<option>Select a patient...</option>
+<option>John Anderson (ACL Recovery)</option>
+<option>Sarah Jenkins (Shoulder Impingement)</option>
+<option>Robert Dow (Chronic Back Pain)</option>
+</select>
+</div>
+<div class="flex flex-col gap-xs">
+<label class="font-label-md text-label-md text-on-surface-variant">PLAN TITLE</label>
+<input class="h-[48px] border border-outline-variant rounded-lg px-md focus:ring-2 focus:ring-primary focus:border-primary bg-surface-container-lowest outline-none" placeholder="e.g., Knee Stability Phase 1" type="text"/>
+</div>
+<div class="flex flex-col gap-xs">
+<label class="font-label-md text-label-md text-on-surface-variant">INJURY TYPE</label>
+<input class="h-[48px] border border-outline-variant rounded-lg px-md focus:ring-2 focus:ring-primary focus:border-primary bg-surface-container-lowest outline-none" placeholder="e.g., ACL Tear Grade II" type="text"/>
+</div>
+<div class="flex flex-col gap-xs">
+<label class="font-label-md text-label-md text-on-surface-variant">DATE RANGE</label>
+<div class="flex items-center gap-xs">
+<input class="flex-1 h-[48px] border border-outline-variant rounded-lg px-md focus:ring-2 focus:ring-primary focus:border-primary bg-surface-container-lowest outline-none" type="date"/>
+<span class="text-outline">to</span>
+<input class="flex-1 h-[48px] border border-outline-variant rounded-lg px-md focus:ring-2 focus:ring-primary focus:border-primary bg-surface-container-lowest outline-none" type="date"/>
+</div>
+</div>
+</div>
+</div>
+<!-- Section 2: Summary/Action -->
+<div class="col-span-12 lg:col-span-4 custom-card p-lg bg-surface-container flex flex-col justify-between border-l-4 border-primary">
+<div>
+<h3 class="font-headline-sm text-headline-sm text-on-surface mb-sm">Quick Summary</h3>
+<ul class="space-y-sm">
+<li class="flex items-center gap-xs text-on-surface-variant">
+<span class="material-symbols-outlined text-secondary" data-icon="check_circle">check_circle</span>
+<span class="font-body-sm text-body-sm">4 Exercises Assigned</span>
+</li>
+<li class="flex items-center gap-xs text-on-surface-variant">
+<span class="material-symbols-outlined text-secondary" data-icon="check_circle">check_circle</span>
+<span class="font-body-sm text-body-sm">Daily Frequency Set</span>
+</li>
+<li class="flex items-center gap-xs text-on-surface-variant">
+<span class="material-symbols-outlined text-outline" data-icon="radio_button_unchecked">radio_button_unchecked</span>
+<span class="font-body-sm text-body-sm">Add Milestone Goals</span>
+</li>
+</ul>
+</div>
+<button class="w-full h-[48px] bg-primary text-on-primary rounded-xl font-bold hover:shadow-lg transition-all active:scale-95 flex items-center justify-center gap-sm mt-lg">
+<span class="material-symbols-outlined" data-icon="save">save</span>
+                        Save Rehab Plan
+                    </button>
+</div>
+<!-- Section 3: Exercise Assignment -->
+<div class="col-span-12 custom-card p-lg">
+<div class="flex justify-between items-center mb-lg">
+<div class="flex items-center gap-xs text-primary">
+<span class="material-symbols-outlined" data-icon="fitness_center">fitness_center</span>
+<h3 class="font-headline-sm text-headline-sm">Exercise Assignment</h3>
+</div>
+<button class="h-[40px] px-md border border-primary text-primary rounded-full font-bold flex items-center gap-xs hover:bg-primary-container transition-colors">
+<span class="material-symbols-outlined" data-icon="add">add</span>
+                            Add Exercise
+                        </button>
+</div>
+<div class="space-y-md">
+<!-- Exercise Row 1 -->
+<div class="flex flex-wrap items-center gap-md p-md bg-surface-container-low rounded-xl border border-outline-variant">
+<div class="w-16 h-16 rounded-lg bg-surface-variant overflow-hidden flex-shrink-0">
+<img alt="Exercise Thumbnail" data-alt="A clinical 3D illustration of a physical therapy exercise focusing on leg extension and quad strengthening. The image features a minimalist human figure in a clean, soft white environment with teal highlighting on the active muscle groups. The style is modern, clinical, and high-end medical software aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCAk14js6NbmyITuTcf3tyCtlbHhg5B6PqbNsDP3qrYnHLTHVh29maeqMU9jU130uUO_wx0o57FibfNFouRfcB8HgTSZdp9sgijg2bwaSC-lh2PB8F_KsVAofxhGytfnfwWcLkE0-nibe5DXVv7fBQ82Mi6TbxqRDVsXA6aAabzJfKXP9Zm9w8TwQ1ehRFDsxQ8zJPV7RNN3Wkx4_fU-vMTdKTmZWynSjMrJ9mW2PFpVJyKUc2oAO2HxmkOLN4k5KHtDVJb5STf3GV5"/>
+</div>
+<div class="flex-1 min-w-[200px]">
+<h4 class="font-headline-sm text-headline-sm text-on-surface">Isometric Quad Sets</h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Strength &amp; Activation</p>
+</div>
+<div class="flex gap-md flex-wrap">
+<div class="flex flex-col gap-xs">
+<label class="font-label-md text-label-md text-outline">SETS</label>
+<input class="w-20 h-[40px] border border-outline-variant rounded-lg px-sm text-center" type="number" value="3"/>
+</div>
+<div class="flex flex-col gap-xs">
+<label class="font-label-md text-label-md text-outline">REPS</label>
+<input class="w-20 h-[40px] border border-outline-variant rounded-lg px-sm text-center" type="number" value="10"/>
+</div>
+<div class="flex flex-col gap-xs">
+<label class="font-label-md text-label-md text-outline">HOLD (SEC)</label>
+<input class="w-20 h-[40px] border border-outline-variant rounded-lg px-sm text-center" type="number" value="5"/>
+</div>
+</div>
+<div class="flex items-center gap-sm">
+<button class="p-2 text-error hover:bg-error-container rounded-full transition-colors">
+<span class="material-symbols-outlined" data-icon="delete">delete</span>
+</button>
+<button class="p-2 text-outline hover:bg-surface-variant rounded-full transition-colors">
+<span class="material-symbols-outlined" data-icon="drag_indicator">drag_indicator</span>
+</button>
+</div>
+</div>
+<!-- Exercise Row 2 -->
+<div class="flex flex-wrap items-center gap-md p-md bg-surface-container-low rounded-xl border border-outline-variant">
+<div class="w-16 h-16 rounded-lg bg-surface-variant overflow-hidden flex-shrink-0">
+<img alt="Exercise Thumbnail" data-alt="A high-quality clinical visualization of a heel slide rehabilitation exercise. The image shows a minimalist anatomical figure performing the movement on a flat medical surface. The lighting is soft and high-key, using a corporate healthcare color palette of white, light gray, and deep clinical blue accents." src="https://lh3.googleusercontent.com/aida-public/AB6AXuD3CigDnxW3gQqNs88gwDtLoj0Hrtfu3KTMqJzDGVbtA-smJvj0TmGgOpwwP5J0auujJ8CcEiVCkavNN-Sm2x4Qbo__SyJXjmMfH6ynkpQcwPqn30FjLvwDI6KkY1DeUAF5VOXR5UeIOFW19rl3k2BJ-rk7Lt9A0lKai5-ulJtFsVgnhFU451sGL-qPE0ErGjSe0_tOglWcATu5DArJllYlyhIkWl3cTD78p1Xt1Wc6v-vVn1LPj-XhXsMgM-IHYqryVVA60tYiMD7J"/>
+</div>
+<div class="flex-1 min-w-[200px]">
+<h4 class="font-headline-sm text-headline-sm text-on-surface">Heel Slides</h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Range of Motion</p>
+</div>
+<div class="flex gap-md flex-wrap">
+<div class="flex flex-col gap-xs">
+<label class="font-label-md text-label-md text-outline">SETS</label>
+<input class="w-20 h-[40px] border border-outline-variant rounded-lg px-sm text-center" type="number" value="2"/>
+</div>
+<div class="flex flex-col gap-xs">
+<label class="font-label-md text-label-md text-outline">REPS</label>
+<input class="w-20 h-[40px] border border-outline-variant rounded-lg px-sm text-center" type="number" value="15"/>
+</div>
+<div class="flex flex-col gap-xs">
+<label class="font-label-md text-label-md text-outline">HOLD (SEC)</label>
+<input class="w-20 h-[40px] border border-outline-variant rounded-lg px-sm text-center" type="number" value="0"/>
+</div>
+</div>
+<div class="flex items-center gap-sm">
+<button class="p-2 text-error hover:bg-error-container rounded-full transition-colors">
+<span class="material-symbols-outlined" data-icon="delete">delete</span>
+</button>
+<button class="p-2 text-outline hover:bg-surface-variant rounded-full transition-colors">
+<span class="material-symbols-outlined" data-icon="drag_indicator">drag_indicator</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Section 4: Schedule -->
+<div class="col-span-12 custom-card p-lg">
+<div class="flex items-center gap-xs mb-lg text-primary">
+<span class="material-symbols-outlined" data-icon="calendar_month">calendar_month</span>
+<h3 class="font-headline-sm text-headline-sm">Weekly Schedule</h3>
+</div>
+<div class="grid grid-cols-7 gap-sm">
+<div class="flex flex-col items-center p-sm rounded-xl border border-primary bg-secondary-container">
+<span class="font-label-md text-label-md text-on-secondary-container">MON</span>
+<div class="mt-xs bg-on-secondary-container w-2 h-2 rounded-full"></div>
+</div>
+<div class="flex flex-col items-center p-sm rounded-xl border border-outline-variant hover:border-primary cursor-pointer transition-colors">
+<span class="font-label-md text-label-md text-outline">TUE</span>
+<div class="mt-xs bg-outline-variant w-2 h-2 rounded-full"></div>
+</div>
+<div class="flex flex-col items-center p-sm rounded-xl border border-primary bg-secondary-container">
+<span class="font-label-md text-label-md text-on-secondary-container">WED</span>
+<div class="mt-xs bg-on-secondary-container w-2 h-2 rounded-full"></div>
+</div>
+<div class="flex flex-col items-center p-sm rounded-xl border border-outline-variant hover:border-primary cursor-pointer transition-colors">
+<span class="font-label-md text-label-md text-outline">THU</span>
+<div class="mt-xs bg-outline-variant w-2 h-2 rounded-full"></div>
+</div>
+<div class="flex flex-col items-center p-sm rounded-xl border border-primary bg-secondary-container">
+<span class="font-label-md text-label-md text-on-secondary-container">FRI</span>
+<div class="mt-xs bg-on-secondary-container w-2 h-2 rounded-full"></div>
+</div>
+<div class="flex flex-col items-center p-sm rounded-xl border border-outline-variant hover:border-primary cursor-pointer transition-colors">
+<span class="font-label-md text-label-md text-outline">SAT</span>
+<div class="mt-xs bg-outline-variant w-2 h-2 rounded-full"></div>
+</div>
+<div class="flex flex-col items-center p-sm rounded-xl border border-outline-variant hover:border-primary cursor-pointer transition-colors">
+<span class="font-label-md text-label-md text-outline">SUN</span>
+<div class="mt-xs bg-outline-variant w-2 h-2 rounded-full"></div>
+</div>
+</div>
+<div class="mt-lg p-md bg-surface-container rounded-lg border-l-4 border-secondary">
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+<strong>Note:</strong> Selected days will prompt the patient to complete the assigned exercises via their mobile app.
+                        </p>
+</div>
+</div>
+</div>
+</div>
+</main>
+</body></html>

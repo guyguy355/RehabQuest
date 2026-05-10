@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>RehabQuest - Dr. Miller Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700&amp;family=Inter:wght@400;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .clinical-shadow {
+            box-shadow: 0px 4px 12px rgba(31, 41, 55, 0.05);
+        }
+        .clinical-shadow-hover:hover {
+            box-shadow: 0px 8px 24px rgba(31, 41, 55, 0.08);
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "on-tertiary-fixed": "#2f1500",
+                      "primary-fixed-dim": "#8ccdff",
+                      "on-primary": "#ffffff",
+                      "background": "#f8f9ff",
+                      "surface-container": "#e6eeff",
+                      "inverse-on-surface": "#eaf1ff",
+                      "secondary": "#006d41",
+                      "on-primary-container": "#003049",
+                      "outline-variant": "#bec7d1",
+                      "surface": "#f8f9ff",
+                      "surface-variant": "#d9e3f6",
+                      "error": "#ba1a1a",
+                      "primary": "#006492",
+                      "error-container": "#ffdad6",
+                      "surface-dim": "#d0dbed",
+                      "on-error-container": "#93000a",
+                      "surface-container-high": "#dee9fc",
+                      "secondary-container": "#95f7bb",
+                      "inverse-surface": "#27313f",
+                      "surface-bright": "#f8f9ff",
+                      "tertiary-fixed-dim": "#ffb77d",
+                      "on-tertiary": "#ffffff",
+                      "inverse-primary": "#8ccdff",
+                      "on-tertiary-container": "#482300",
+                      "on-secondary-container": "#007346",
+                      "tertiary": "#904d00",
+                      "on-surface-variant": "#3f4850",
+                      "primary-fixed": "#cae6ff",
+                      "on-primary-fixed-variant": "#004b6f",
+                      "on-secondary-fixed-variant": "#005230",
+                      "surface-tint": "#006492",
+                      "surface-container-lowest": "#ffffff",
+                      "tertiary-fixed": "#ffdcc3",
+                      "tertiary-container": "#d38033",
+                      "secondary-fixed": "#95f7bb",
+                      "on-error": "#ffffff",
+                      "on-secondary-fixed": "#002110",
+                      "primary-container": "#2d9cdb",
+                      "on-surface": "#121c2a",
+                      "on-tertiary-fixed-variant": "#6e3900",
+                      "outline": "#6f7881",
+                      "on-secondary": "#ffffff",
+                      "on-background": "#121c2a",
+                      "on-primary-fixed": "#001e2f",
+                      "secondary-fixed-dim": "#7adaa1",
+                      "surface-container-highest": "#d9e3f6",
+                      "surface-container-low": "#eff4ff"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "gutter": "16px",
+                      "md": "16px",
+                      "container-margin": "20px",
+                      "xl": "32px",
+                      "base": "4px",
+                      "sm": "12px",
+                      "xs": "8px",
+                      "lg": "24px"
+              },
+              "fontFamily": {
+                      "headline-sm": ["Manrope"],
+                      "display-lg-mobile": ["Manrope"],
+                      "body-md": ["Inter"],
+                      "display-lg": ["Manrope"],
+                      "body-sm": ["Inter"],
+                      "body-lg": ["Inter"],
+                      "headline-md": ["Manrope"],
+                      "label-md": ["Inter"]
+              },
+              "fontSize": {
+                      "headline-sm": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                      "display-lg-mobile": ["28px", {"lineHeight": "36px", "fontWeight": "700"}],
+                      "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                      "display-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                      "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                      "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                      "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                      "label-md": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}]
+              }
+            },
+          },
+        }
+    </script>
+</head>
+<body class="bg-background text-on-background font-body-md min-h-screen">
+<!-- NavigationDrawer (Shared Component Implementation) -->
+<aside class="h-full w-72 fixed left-0 top-0 z-50 bg-surface-container-low border-r border-outline-variant shadow-md hidden md:flex flex-col py-lg px-md space-y-xs">
+<div class="mb-lg px-sm">
+<h1 class="font-headline-md text-headline-md font-bold text-primary">RehabQuest</h1>
+</div>
+<!-- Profile Header Section from JSON -->
+<div class="flex flex-col items-start px-md py-md mb-md bg-surface-container-high rounded-xl">
+<img alt="Dr. Miller" class="w-16 h-16 rounded-full object-cover mb-xs border-2 border-primary" data-alt="A professional portrait of a male physiotherapist in a clean, modern medical setting. He is wearing a minimalist navy blue scrub top and has a friendly, empathetic expression. The background is a soft-focus clinical office with high-key natural lighting and a palette of clean whites and soft teals, reflecting a modern healthcare environment." src="https://lh3.googleusercontent.com/aida-public/AB6AXuC2DA7JL88gZUt4sDAGvyFzeSMJeYkBoWPMGKyWaagGp8Tq-GGNoMvWGdmgO4v5m-KLCNsem3HNG4LKPZl8sw31TKDXPMKBKc9VyrSIX7caEJy3eNFI0TWyiwVP0iF-fUHmBuJaNMYhLFhAcL1_sAJL44E8Xf463B4VioBBXqPmah4ufsKwqev4Hk6KAsdVMjH7p6ogPd-7IyW-qx3n-yD0a__HtdKYZtZjttl6R_tvq4GrTBuXd738wtKNVhlj7YY2qhAoicjaoAwh"/>
+<span class="font-headline-sm text-headline-sm text-on-surface">Dr. Miller</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Lead Physiotherapist</span>
+<span class="font-label-md text-label-md text-primary mt-base">Clinic ID: #4492</span>
+</div>
+<nav class="flex-1 space-y-xs">
+<a class="flex items-center gap-md bg-secondary-container text-on-secondary-container rounded-lg px-md py-sm font-bold active:translate-x-1 transition-transform cursor-pointer" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+                Dashboard
+            </a>
+<a class="flex items-center gap-md text-on-surface-variant px-md py-sm hover:bg-surface-variant transition-colors rounded-lg cursor-pointer active:translate-x-1 transition-transform" href="#">
+<span class="material-symbols-outlined" data-icon="group">group</span>
+                Patients
+            </a>
+<a class="flex items-center gap-md text-on-surface-variant px-md py-sm hover:bg-surface-variant transition-colors rounded-lg cursor-pointer active:translate-x-1 transition-transform" href="#">
+<span class="material-symbols-outlined" data-icon="assignment">assignment</span>
+                Plans
+            </a>
+<a class="flex items-center gap-md text-on-surface-variant px-md py-sm hover:bg-surface-variant transition-colors rounded-lg cursor-pointer active:translate-x-1 transition-transform" href="#">
+<span class="material-symbols-outlined" data-icon="fitness_center">fitness_center</span>
+                Exercises
+            </a>
+</nav>
+<div class="pt-md border-t border-outline-variant mt-auto">
+<button class="w-full flex items-center gap-md text-on-surface-variant px-md py-sm hover:bg-error-container hover:text-on-error-container transition-colors rounded-lg cursor-pointer">
+<span class="material-symbols-outlined" data-icon="logout">logout</span>
+                Sign Out
+            </button>
+</div>
+</aside>
+<!-- Main Content Canvas -->
+<main class="md:ml-72 min-h-screen">
+<!-- TopAppBar (Shared Component Implementation) -->
+<header class="sticky top-0 z-40 w-full bg-surface shadow-sm px-container-margin py-xs flex justify-between items-center max-w-[1140px] mx-auto md:max-w-none md:px-xl">
+<div class="flex items-center gap-md">
+<span class="md:hidden material-symbols-outlined text-primary cursor-pointer" data-icon="menu">menu</span>
+<h2 class="font-headline-sm text-headline-sm text-primary md:hidden">RehabQuest</h2>
+<h2 class="hidden md:block font-headline-md text-headline-md font-bold text-on-surface">Physiotherapist Dashboard</h2>
+</div>
+<div class="flex items-center gap-md">
+<div class="hidden sm:flex flex-col items-end">
+<span class="font-label-md text-label-md text-on-surface-variant">Monday, May 22</span>
+<span class="font-body-sm text-body-sm font-semibold text-secondary">8 Active Sessions Today</span>
+</div>
+<button class="p-xs rounded-full hover:bg-surface-variant transition-colors relative active:scale-95">
+<span class="material-symbols-outlined text-primary" data-icon="notifications">notifications</span>
+<span class="absolute top-1 right-1 w-2.5 h-2.5 bg-error rounded-full border-2 border-surface"></span>
+</button>
+<div class="w-10 h-10 rounded-full bg-primary-fixed flex items-center justify-center text-on-primary-fixed font-bold border border-outline-variant">
+                    DM
+                </div>
+</div>
+</header>
+<div class="max-w-[1140px] mx-auto px-container-margin md:px-xl py-xl space-y-xl">
+<!-- Hero Actions Section -->
+<section class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-md">
+<div>
+<h3 class="font-display-lg text-display-lg text-on-surface">Welcome back, Dr. Miller</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">Your patients' recovery progress is currently at 88% adherence.</p>
+</div>
+<button class="bg-primary text-on-primary flex items-center gap-xs px-lg py-sm rounded-xl font-bold clinical-shadow hover:scale-105 transition-transform active:scale-95 h-[48px]">
+<span class="material-symbols-outlined" data-icon="add">add</span>
+                    Create New Rehab Plan
+                </button>
+</section>
+<!-- Bento Grid - Overview Cards -->
+<section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-md">
+<div class="bg-surface-container-lowest p-md rounded-xl clinical-shadow border border-surface-variant clinical-shadow-hover transition-shadow">
+<div class="flex justify-between items-start mb-sm">
+<div class="p-xs bg-primary-fixed text-on-primary-fixed rounded-lg">
+<span class="material-symbols-outlined" data-icon="person">person</span>
+</div>
+<span class="text-secondary font-label-md text-label-md">+2 this week</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Total Patients</p>
+<p class="font-display-lg text-display-lg text-on-surface">24</p>
+</div>
+<div class="bg-surface-container-lowest p-md rounded-xl clinical-shadow border border-surface-variant clinical-shadow-hover transition-shadow">
+<div class="flex justify-between items-start mb-sm">
+<div class="p-xs bg-secondary-container text-on-secondary-container rounded-lg">
+<span class="material-symbols-outlined" data-icon="check_circle">check_circle</span>
+</div>
+<span class="text-secondary font-label-md text-label-md">75% Stable</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">On Track</p>
+<p class="font-display-lg text-display-lg text-on-surface">18</p>
+</div>
+<div class="bg-surface-container-lowest p-md rounded-xl clinical-shadow border border-surface-variant border-l-4 border-l-error clinical-shadow-hover transition-shadow">
+<div class="flex justify-between items-start mb-sm">
+<div class="p-xs bg-error-container text-on-error-container rounded-lg">
+<span class="material-symbols-outlined" data-icon="warning">warning</span>
+</div>
+<span class="text-error font-label-md text-label-md">Immediate</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Needs Attention</p>
+<p class="font-display-lg text-display-lg text-on-surface">4</p>
+</div>
+<div class="bg-surface-container-lowest p-md rounded-xl clinical-shadow border border-surface-variant clinical-shadow-hover transition-shadow relative overflow-hidden">
+<div class="flex justify-between items-start mb-sm">
+<div class="p-xs bg-tertiary-fixed text-on-tertiary-fixed rounded-lg">
+<span class="material-symbols-outlined" data-icon="trending_up">trending_up</span>
+</div>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Avg Adherence</p>
+<p class="font-display-lg text-display-lg text-on-surface">88%</p>
+<div class="absolute bottom-0 left-0 w-full h-1 bg-surface-variant">
+<div class="h-full bg-secondary" style="width: 88%;"></div>
+</div>
+</div>
+</section>
+<!-- Asymmetric Layout: Patient Activity & Weekly Goal -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-lg">
+<!-- Activity List (2/3 width) -->
+<section class="lg:col-span-2 bg-surface-container-lowest rounded-xl clinical-shadow border border-surface-variant overflow-hidden">
+<div class="px-lg py-md border-b border-outline-variant flex justify-between items-center bg-surface-container-low">
+<h4 class="font-headline-sm text-headline-sm text-on-surface">Recent Patient Activity</h4>
+<button class="text-primary font-label-md text-label-md hover:underline">View All</button>
+</div>
+<div class="divide-y divide-outline-variant">
+<!-- Activity Item 1 -->
+<div class="p-lg flex items-center gap-md hover:bg-surface-variant transition-colors cursor-pointer group">
+<div class="w-12 h-12 rounded-full overflow-hidden shrink-0">
+<img alt="Guy Abramovich" class="w-full h-full object-cover" data-alt="Close up portrait of a young man with a determined expression, wearing athletic gear. High-quality photography with soft lighting from the side, emphasizing texture and a clinical, professional aesthetic within the RehabQuest brand guidelines." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDx0eRaQFMyQ-qqbZgS9LmQCkoL0_ZDBuTKyo-MiD8oPMhTqCzNDswFmHvnquENuyMU9Pgqa_f-cSsQGBtAQrXK-032RtGjnmNr8j_Gk_tD0teOmXW33-AZkPEmqIYizm8nXBYlz4aPz9uVds22q7rWH4589D1OP3rS1zCfab68qrW1v5HEuvaIdjLrWYJORfcHOsi0ng3WZVmp5M5_6DPGY4247Jo3bx54bPkc4hItekHMwc4F4P_ciD8FcrN4hJfahQNP6uIJxWGN"/>
+</div>
+<div class="flex-1">
+<div class="flex justify-between items-start">
+<p class="font-body-md font-bold text-on-surface">Guy Abramovich</p>
+<span class="text-on-surface-variant text-label-md">14m ago</span>
+</div>
+<p class="text-on-surface-variant text-body-sm">Completed Day 5 - <span class="text-secondary font-semibold">Lower Back Mobility</span></p>
+</div>
+<span class="material-symbols-outlined text-secondary opacity-0 group-hover:opacity-100 transition-opacity" data-icon="chevron_right">chevron_right</span>
+</div>
+<!-- Activity Item 2 (High Pain Alert) -->
+<div class="p-lg flex items-center gap-md hover:bg-error-container/20 transition-colors cursor-pointer group">
+<div class="w-12 h-12 rounded-full overflow-hidden shrink-0 border-2 border-error">
+<img alt="Sarah J." class="w-full h-full object-cover" data-alt="Portrait of a woman in her late 30s looking concerned but hopeful. Studio lighting, soft professional color palette of muted teals and whites. High resolution photography focusing on a clean, empathetic medical patient persona." src="https://lh3.googleusercontent.com/aida-public/AB6AXuASaXVPdSL_yvRsRfZLZN4lJr2SbAca0ezVV8tZbWzfQOqPt_d5LYCQFpvPQN3Y8jZzQmxoJ9SZNaOPzo1R1kCHNgWnMpph7hTkfhPprvGOV4jYl2e4sgbAnKTJ-pOAZWAr8UXrxj1nmDe7xY6S_Vk0ySTGGLTP2qI8OXDJYSTUxnFWIXYu50yxs6tuj8vIb308Ammy0rhjJg3TphyHStXDahSIJq6ZD_GXrpjsAaD1ZejOxdEPlEsxtE7kShmm_TE5uIj0ZjJHvzSn"/>
+</div>
+<div class="flex-1">
+<div class="flex justify-between items-start">
+<p class="font-body-md font-bold text-on-surface">Sarah J.</p>
+<span class="text-error font-bold text-label-md flex items-center gap-1">
+<span class="material-symbols-outlined text-sm" data-icon="priority_high">priority_high</span>
+                                        Alert
+                                    </span>
+</div>
+<p class="text-on-surface-variant text-body-sm">Reported <span class="text-error font-bold italic">High Pain (8/10)</span> during Post-Op Knee Extension.</p>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant opacity-0 group-hover:opacity-100 transition-opacity" data-icon="chevron_right">chevron_right</span>
+</div>
+<!-- Activity Item 3 -->
+<div class="p-lg flex items-center gap-md hover:bg-surface-variant transition-colors cursor-pointer group">
+<div class="w-12 h-12 rounded-full overflow-hidden shrink-0">
+<img alt="Marcus Lee" class="w-full h-full object-cover" data-alt="A portrait of a middle-aged man with graying hair, smiling warmly. Bright, airy clinic setting with professional soft lighting. Muted secondary tones of emerald and soft blue in the background, maintaining a corporate healthcare feel." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDk5_QRiFqiJ_3-Rcn0t6LM-3Z6ih06jT7A0JyOGhecSLORH5BnaWmTz8hwiRDsME6CpxwuQfpFEhIGuGn_uPY3Xfirytcmem8mRlryo7ajUg4HuE1nzkenYUERjHQLOAU-pnFDMhuW4jJtA1u_jx1oUC8D_9N00F-_sHnS8rzLw1XxqCTktupl8rehys0KPrAyaCv5Pf39RsKa14gyTYWeu4OvitQmxvA45PNA8iRsigGKWGftbR4e3Qf49DJ8aOzY63K4hsxrH4Gr"/>
+</div>
+<div class="flex-1">
+<div class="flex justify-between items-start">
+<p class="font-body-md font-bold text-on-surface">Marcus Lee</p>
+<span class="text-on-surface-variant text-label-md">2h ago</span>
+</div>
+<p class="text-on-surface-variant text-body-sm">Uploaded new range-of-motion video for shoulder impingement.</p>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant opacity-0 group-hover:opacity-100 transition-opacity" data-icon="chevron_right">chevron_right</span>
+</div>
+</div>
+</section>
+<!-- Sidebar Analytics/Status (1/3 width) -->
+<aside class="space-y-lg">
+<div class="bg-primary-container text-on-primary-container p-lg rounded-xl clinical-shadow border border-primary/20">
+<h4 class="font-headline-sm text-headline-sm mb-md">Clinic Goal Status</h4>
+<div class="flex items-end gap-xs mb-xs">
+<span class="text-display-lg font-bold">142/160</span>
+<span class="font-label-md pb-xs">Exercises Completed</span>
+</div>
+<div class="w-full h-3 bg-on-primary/20 rounded-full mb-md overflow-hidden">
+<div class="h-full bg-on-primary" style="width: 88%;"></div>
+</div>
+<p class="font-body-sm text-body-sm opacity-90">On track to meet monthly rehab milestone for the clinic by Friday.</p>
+</div>
+<div class="bg-surface-container-lowest p-lg rounded-xl clinical-shadow border border-surface-variant">
+<h4 class="font-headline-sm text-headline-sm text-on-surface mb-lg">Upcoming Appointments</h4>
+<div class="space-y-md">
+<div class="flex items-center gap-sm">
+<div class="bg-surface-container p-xs rounded-lg flex flex-col items-center justify-center min-w-[48px]">
+<span class="text-label-md font-bold">14:00</span>
+<span class="text-[10px] uppercase font-bold text-primary">PM</span>
+</div>
+<div>
+<p class="font-body-md font-bold text-on-surface">Elena Rodriguez</p>
+<p class="text-body-sm text-on-surface-variant">Post-Op Checkup</p>
+</div>
+</div>
+<div class="flex items-center gap-sm opacity-60">
+<div class="bg-surface-container p-xs rounded-lg flex flex-col items-center justify-center min-w-[48px]">
+<span class="text-label-md font-bold">15:30</span>
+<span class="text-[10px] uppercase font-bold text-primary">PM</span>
+</div>
+<div>
+<p class="font-body-md font-bold text-on-surface">Tom Chen</p>
+<p class="text-body-sm text-on-surface-variant">Initial Consultation</p>
+</div>
+</div>
+</div>
+<button class="w-full mt-lg border border-primary text-primary font-bold py-sm rounded-lg hover:bg-primary/5 transition-colors">
+                            Manage Schedule
+                        </button>
+</div>
+</aside>
+</div>
+</div>
+<!-- Spacer for mobile navigation -->
+<div class="h-24 md:hidden"></div>
+</main>
+<!-- BottomNavBar (Shared Component Implementation for Mobile) -->
+<nav class="fixed bottom-0 left-0 w-full flex justify-around items-center px-2 py-3 bg-surface border-t border-outline-variant shadow-lg z-50 md:hidden">
+<a class="flex flex-col items-center justify-center bg-secondary-container text-on-secondary-container rounded-xl px-4 py-1 active:scale-90 transition-transform duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="home">home</span>
+<span class="font-label-md text-label-md">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-1 hover:bg-surface-container-high transition-all active:scale-90 transition-transform duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="military_tech">military_tech</span>
+<span class="font-label-md text-label-md">Quest</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-1 hover:bg-surface-container-high transition-all active:scale-90 transition-transform duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="monitoring">monitoring</span>
+<span class="font-label-md text-label-md">Progress</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-1 hover:bg-surface-container-high transition-all active:scale-90 transition-transform duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="person">person</span>
+<span class="font-label-md text-label-md">Profile</span>
+</a>
+</nav>
+</body></html>

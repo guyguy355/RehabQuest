@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Quest Completed - RehabQuest</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;700;800&amp;family=Nunito+Sans:wght@400;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-surface-variant": "#3f4a36",
+                    "on-primary-fixed": "#082100",
+                    "background": "#fbf9f9",
+                    "tertiary-fixed-dim": "#ffba26",
+                    "surface-container-high": "#e9e8e7",
+                    "secondary-fixed": "#c8e6ff",
+                    "on-tertiary-fixed": "#271900",
+                    "on-error": "#ffffff",
+                    "surface-container-low": "#f5f3f3",
+                    "surface-container-lowest": "#ffffff",
+                    "surface-container": "#efeded",
+                    "on-surface": "#1b1c1c",
+                    "surface-tint": "#2b6c00",
+                    "secondary-fixed-dim": "#88ceff",
+                    "tertiary": "#7d5800",
+                    "surface-bright": "#fbf9f9",
+                    "on-primary-container": "#1e5000",
+                    "on-secondary-fixed-variant": "#004c6e",
+                    "inverse-on-surface": "#f2f0f0",
+                    "secondary-container": "#2fb8ff",
+                    "on-error-container": "#93000a",
+                    "inverse-primary": "#6be026",
+                    "outline": "#6f7b64",
+                    "secondary": "#006590",
+                    "tertiary-container": "#e9a700",
+                    "on-primary": "#ffffff",
+                    "on-tertiary-fixed-variant": "#5e4100",
+                    "tertiary-fixed": "#ffdea9",
+                    "outline-variant": "#becbb1",
+                    "on-secondary-fixed": "#001e2e",
+                    "inverse-surface": "#303031",
+                    "primary-fixed-dim": "#6be026",
+                    "on-background": "#1b1c1c",
+                    "on-secondary": "#ffffff",
+                    "surface": "#fbf9f9",
+                    "primary-container": "#58cc02",
+                    "error": "#ba1a1a",
+                    "surface-variant": "#e3e2e2",
+                    "on-secondary-container": "#004666",
+                    "primary-fixed": "#87fe45",
+                    "surface-dim": "#dbdad9",
+                    "surface-container-highest": "#e3e2e2",
+                    "primary": "#2b6c00",
+                    "on-primary-fixed-variant": "#1f5100",
+                    "on-tertiary": "#ffffff",
+                    "error-container": "#ffdad6",
+                    "on-tertiary-container": "#5c4000"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "sm": "16px",
+                    "base": "4px",
+                    "lg": "32px",
+                    "margin-mobile": "20px",
+                    "margin-desktop": "40px",
+                    "md": "24px",
+                    "xs": "8px",
+                    "xl": "48px",
+                    "gutter": "16px"
+            },
+            "fontFamily": {
+                    "body-lg": ["Nunito Sans"],
+                    "body-md": ["Nunito Sans"],
+                    "headline-lg": ["Lexend"],
+                    "headline-xl": ["Lexend"],
+                    "headline-md": ["Lexend"],
+                    "label-lg": ["Lexend"],
+                    "label-sm": ["Lexend"]
+            },
+            "fontSize": {
+                    "body-lg": ["18px", {"lineHeight": "26px", "fontWeight": "600"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "headline-lg": ["28px", {"lineHeight": "34px", "letterSpacing": "-0.01em", "fontWeight": "700"}],
+                    "headline-xl": ["36px", {"lineHeight": "44px", "letterSpacing": "-0.02em", "fontWeight": "800"}],
+                    "headline-md": ["22px", {"lineHeight": "28px", "fontWeight": "700"}],
+                    "label-lg": ["16px", {"lineHeight": "20px", "fontWeight": "700"}],
+                    "label-sm": ["13px", {"lineHeight": "16px", "fontWeight": "700"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .confetti-piece {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background: #58cc02;
+            opacity: 0.7;
+        }
+        .press-effect:active {
+            transform: translateY(4px);
+            box-shadow: none !important;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background font-body-md min-h-screen overflow-x-hidden">
+<!-- Celebration Background with Confetti Simulation (Static Representation) -->
+<div class="fixed inset-0 pointer-events-none z-0 overflow-hidden">
+<div class="confetti-piece rounded-full top-10 left-[10%] rotate-12 bg-primary-container"></div>
+<div class="confetti-piece rounded-sm top-24 left-[80%] -rotate-45 bg-secondary-container"></div>
+<div class="confetti-piece rounded-full top-60 left-[15%] rotate-90 bg-tertiary-container"></div>
+<div class="confetti-piece rounded-sm top-80 left-[85%] rotate-12 bg-primary"></div>
+<div class="confetti-piece rounded-full top-1/4 left-1/2 rotate-45 bg-secondary"></div>
+<div class="confetti-piece rounded-sm bottom-1/4 left-[5%] -rotate-12 bg-error"></div>
+<div class="confetti-piece rounded-full bottom-20 left-[90%] rotate-[120deg] bg-primary-container"></div>
+</div>
+<!-- Main Content Canvas -->
+<main class="relative z-10 flex flex-col items-center justify-center min-h-screen px-margin-mobile md:px-margin-desktop py-lg max-w-[1200px] mx-auto">
+<!-- Reward Badge Section -->
+<div class="relative mb-lg">
+<!-- Glow Effect -->
+<div class="absolute inset-0 bg-primary-container opacity-20 blur-3xl rounded-full scale-150"></div>
+<div class="relative bg-white border-[3px] border-outline-variant rounded-[40px] p-md shadow-[0_8px_0_0_#becbb1] flex items-center justify-center w-48 h-48 md:w-64 md:h-64">
+<img alt="Knee Hero Trophy" class="w-full h-full object-contain" data-alt="A high-quality 3D rendered cartoon-style trophy shaped like a stylized, athletic human knee with a golden crown. The trophy is made of polished gold and silver materials with vibrant green accents. It sits on a thick, weighted pedestal against a bright, airy background. The lighting is cinematic and energetic, emphasizing the triumphant achievement of physical rehabilitation." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAROYOBaS4W1tEOi9GcaI6ed4inFaih8yL3zLjEBkWsEREOJMLFaHI4E4GiVF5jcS_rzes3x3BFWm9TVjQg6Fr0LQMOlgBB400DSsMnfWxRvg_n_UbUm9KwJ2yxpBloj0ygwtYRKWEayuQzp6V-z7aPOdSoQlYKNXpinTUdofv7OteBwvlFRM6CcuWwBToUTEQm_2O8N54cEjsvoQR6X8h2YnGnlp_7CdZEuydkfSEJKMkBkcSqprlPimWDLwMMNI0Vqstx8DTQAuDw"/>
+<!-- Floating Level Badge -->
+<div class="absolute -bottom-4 right-0 bg-tertiary-container border-[3px] border-tertiary text-on-tertiary-container font-headline-md px-sm py-xs rounded-xl shadow-[0_4px_0_0_#5e4100]">
+                    LVL 5
+                </div>
+</div>
+</div>
+<!-- Headline Text -->
+<div class="text-center mb-lg">
+<h1 class="font-headline-xl text-headline-xl text-primary mb-xs">Quest Complete!</h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant">Your knee mobility is looking stronger today.</p>
+</div>
+<!-- Stats Bento Grid -->
+<div class="grid grid-cols-2 gap-gutter w-full max-w-md mb-xl">
+<!-- XP Card -->
+<div class="bg-white border-2 border-outline-variant rounded-xl p-sm flex flex-col items-center justify-center shadow-[0_4px_0_0_#e5e5e5]">
+<span class="material-symbols-outlined text-[40px] text-primary mb-2" data-icon="bolt" style="font-variation-settings: 'FILL' 1;">bolt</span>
+<span class="font-headline-md text-headline-md text-primary">+50 XP</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">DAILY GOAL</span>
+</div>
+<!-- Streak Card -->
+<div class="bg-white border-2 border-outline-variant rounded-xl p-sm flex flex-col items-center justify-center shadow-[0_4px_0_0_#e5e5e5]">
+<span class="material-symbols-outlined text-[40px] text-error mb-2" data-icon="local_fire_department" style="font-variation-settings: 'FILL' 1;">local_fire_department</span>
+<span class="font-headline-md text-headline-md text-error">6 DAY</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">STREAK!</span>
+</div>
+<!-- Progress Card (Full Width) -->
+<div class="col-span-2 bg-white border-2 border-outline-variant rounded-xl p-md shadow-[0_4px_0_0_#e5e5e5]">
+<div class="flex justify-between items-center mb-xs">
+<span class="font-label-lg text-label-lg text-on-surface">Weekly Progress</span>
+<span class="font-label-lg text-label-lg text-primary">85%</span>
+</div>
+<div class="w-full h-4 bg-surface-variant rounded-full overflow-hidden">
+<div class="h-full bg-primary-container rounded-full" style="width: 85%;"></div>
+</div>
+</div>
+</div>
+<!-- Mascot & CTA Section -->
+<div class="w-full flex flex-col items-center gap-lg">
+<!-- Mascot Character -->
+<div class="flex items-center justify-center">
+<img alt="RehabQuest Mascot" class="w-32 md:w-40 h-auto" data-alt="A friendly, expressive cartoon owl mascot dressed in sporty athletic gear, jumping in joy with its wings spread wide in celebration. The character has large, encouraging eyes and is surrounded by small floating sparkles. The art style is clean, vibrant, and vector-based with bold outlines and smooth gradients, matching a modern gamified fitness app aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBxLyNCICAcDUcv2Egn82GgwkzAFX0ijQOMZlrWAABXukn1Fwkt1C143kGsg7EauodK76eBpJV6zzle6lKc_6oi37ZhwFDs7Uvg0Rmk7rRK-A4EjwS48YhQWrV8EVHjT88iBQnDzvPFcCnOtYj1cRcwe1RUplvF8oRqHOJrDMukzfxdrfcrlxrAd4kbLhm1DZjHDFqRS8Ur9JWKcHcBtP0Udzr8WiyU5r7eFS-exO8hUe4C4no_E1VHdQmuAFRQ1AbCSlC8V4_ZlKby"/>
+</div>
+<!-- 3D Action Button -->
+<div class="w-full max-w-sm">
+<button class="press-effect w-full bg-primary-container hover:bg-primary transition-all text-on-primary-container font-headline-md py-md rounded-2xl border-b-[6px] border-primary shadow-lg flex items-center justify-center gap-xs">
+                    Back to Dashboard
+                    <span class="material-symbols-outlined" data-icon="arrow_forward">arrow_forward</span>
+</button>
+</div>
+<button class="font-label-lg text-label-lg text-on-surface-variant hover:text-primary transition-colors py-2">
+                View Detailed Report
+            </button>
+</div>
+</main>
+<!-- App Bar Suppression: This is a success splash screen, so main nav is hidden to prioritize content focus per 'The Filter' rule -->
+</body></html>

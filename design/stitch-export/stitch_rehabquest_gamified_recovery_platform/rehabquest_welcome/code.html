@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>RehabQuest - Welcome</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&amp;family=Manrope:wght@600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind Configuration -->
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                "on-tertiary-fixed": "#2f1500",
+                "primary-fixed-dim": "#8ccdff",
+                "on-primary": "#ffffff",
+                "background": "#f8f9ff",
+                "surface-container": "#e6eeff",
+                "inverse-on-surface": "#eaf1ff",
+                "secondary": "#006d41",
+                "on-primary-container": "#003049",
+                "outline-variant": "#bec7d1",
+                "surface": "#f8f9ff",
+                "surface-variant": "#d9e3f6",
+                "error": "#ba1a1a",
+                "primary": "#006492",
+                "error-container": "#ffdad6",
+                "surface-dim": "#d0dbed",
+                "on-error-container": "#93000a",
+                "surface-container-high": "#dee9fc",
+                "secondary-container": "#95f7bb",
+                "inverse-surface": "#27313f",
+                "surface-bright": "#f8f9ff",
+                "tertiary-fixed-dim": "#ffb77d",
+                "on-tertiary": "#ffffff",
+                "inverse-primary": "#8ccdff",
+                "on-tertiary-container": "#482300",
+                "on-secondary-container": "#007346",
+                "tertiary": "#904d00",
+                "on-surface-variant": "#3f4850",
+                "primary-fixed": "#cae6ff",
+                "on-primary-fixed-variant": "#004b6f",
+                "on-secondary-fixed-variant": "#005230",
+                "surface-tint": "#006492",
+                "surface-container-lowest": "#ffffff",
+                "tertiary-fixed": "#ffdcc3",
+                "tertiary-container": "#d38033",
+                "secondary-fixed": "#95f7bb",
+                "on-error": "#ffffff",
+                "on-secondary-fixed": "#002110",
+                "primary-container": "#2d9cdb",
+                "on-surface": "#121c2a",
+                "on-tertiary-fixed-variant": "#6e3900",
+                "outline": "#6f7881",
+                "on-secondary": "#ffffff",
+                "on-background": "#121c2a",
+                "on-primary-fixed": "#001e2f",
+                "secondary-fixed-dim": "#7adaa1",
+                "surface-container-highest": "#d9e3f6",
+                "surface-container-low": "#eff4ff"
+            },
+            "borderRadius": {
+                "DEFAULT": "0.25rem",
+                "lg": "0.5rem",
+                "xl": "0.75rem",
+                "full": "9999px"
+            },
+            "spacing": {
+                "gutter": "16px",
+                "md": "16px",
+                "container-margin": "20px",
+                "xl": "32px",
+                "base": "4px",
+                "sm": "12px",
+                "xs": "8px",
+                "lg": "24px"
+            },
+            "fontFamily": {
+                "headline-sm": ["Manrope"],
+                "display-lg-mobile": ["Manrope"],
+                "body-md": ["Inter"],
+                "display-lg": ["Manrope"],
+                "body-sm": ["Inter"],
+                "body-lg": ["Inter"],
+                "headline-md": ["Manrope"],
+                "label-md": ["Inter"]
+            },
+            "fontSize": {
+                "headline-sm": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                "display-lg-mobile": ["28px", {"lineHeight": "36px", "fontWeight": "700"}],
+                "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                "display-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                "label-md": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body {
+            background-color: #f8f9ff;
+            color: #121c2a;
+            -webkit-font-smoothing: antialiased;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .login-card {
+            box-shadow: 0px 4px 12px rgba(31, 41, 55, 0.05);
+        }
+        .login-card:hover {
+            box-shadow: 0px 8px 24px rgba(31, 41, 55, 0.08);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="min-h-screen flex items-center justify-center p-container-margin font-body-md bg-background">
+<!-- Main Container -->
+<main class="w-full max-w-[1140px] grid grid-cols-1 md:grid-cols-12 items-center gap-xl">
+<!-- Left Side: Branding & Hero -->
+<section class="hidden md:flex md:col-span-6 flex-col justify-center items-start space-y-lg pr-xl">
+<div class="flex items-center gap-xs">
+<span class="material-symbols-outlined text-primary text-[40px]" data-icon="medical_services">medical_services</span>
+<h1 class="font-headline-md text-headline-md font-bold text-primary tracking-tight">RehabQuest</h1>
+</div>
+<div class="space-y-md">
+<h2 class="font-display-lg text-display-lg text-on-surface leading-tight">Your daily path to recovery</h2>
+<p class="font-body-lg text-body-lg text-on-surface-variant max-w-md">
+                    Professional, guided rehabilitation journeys designed to help you regain mobility and track your progress with clinical precision.
+                </p>
+</div>
+<!-- Hero Image Wrapper -->
+<div class="relative w-full aspect-video rounded-xl overflow-hidden shadow-lg mt-xl">
+<img alt="RehabQuest Hero" class="w-full h-full object-cover" data-alt="A clean, professional medical office setting with a focused patient and physical therapist engaging in a light mobility exercise. The lighting is soft and clinical, evoking a sense of empathy and progress. The color palette features calm teals, pristine whites, and deep blues, reflecting a modern healthcare SaaS aesthetic. High-key lighting creates a bright, optimistic mood while maintaining a clinical atmosphere." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCjofl2GEvBFDOpsaD-JwgGuRDuxKv2pv9n0ntTtiSJ7b3IBQMtDssEa-2vEmGGh36zpbbSeeFPe2u_vZtCcsKf8s5PF-SaWDS5xSZH-haoFjyQLvKOiPrn7yeqW1EViFceUcvXzPfuJ5rR3GC6Zz6CxI9JKJcE8oJPl6yPhWC83YQDkXxKXlP1XW0FULc6dj4k2FcUUXkRw77wBBrfWtzH3Hv3umELKV18cg66xH7rf6LgGd5Oo18nVmao-2X9Gsu1JKdXASfGF4I0"/>
+<div class="absolute inset-0 bg-gradient-to-t from-primary/20 to-transparent"></div>
+</div>
+</section>
+<!-- Right Side: Login Form -->
+<section class="md:col-span-6 lg:col-span-5 lg:col-start-8 flex flex-col items-center">
+<!-- Mobile Brand View -->
+<div class="md:hidden flex flex-col items-center mb-xl space-y-xs">
+<span class="material-symbols-outlined text-primary text-[48px]" data-icon="medical_services">medical_services</span>
+<h1 class="font-headline-md text-headline-md font-bold text-primary">RehabQuest</h1>
+<p class="font-body-md text-on-surface-variant">Your daily path to recovery</p>
+</div>
+<!-- Login Card -->
+<div class="login-card w-full bg-surface-container-lowest p-lg rounded-xl border border-outline-variant/30">
+<header class="mb-xl">
+<h3 class="font-headline-sm text-headline-sm text-on-surface mb-xs">Welcome Back</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Please enter your details to access your plan.</p>
+</header>
+<form class="space-y-lg">
+<!-- Email Field -->
+<div class="space-y-xs">
+<label class="font-label-md text-label-md text-on-surface-variant" for="email">Email Address</label>
+<div class="relative">
+<input class="w-full h-[48px] px-md rounded-lg border-outline-variant bg-surface-container-lowest text-on-surface placeholder:text-outline focus:ring-2 focus:ring-primary focus:border-primary transition-all" id="email" name="email" placeholder="dr.miller@clinic.com" type="email"/>
+</div>
+</div>
+<!-- Password Field -->
+<div class="space-y-xs">
+<div class="flex justify-between items-center">
+<label class="font-label-md text-label-md text-on-surface-variant" for="password">Password</label>
+<a class="font-label-md text-label-md text-primary hover:underline" href="#">Forgot password?</a>
+</div>
+<div class="relative">
+<input class="w-full h-[48px] px-md rounded-lg border-outline-variant bg-surface-container-lowest text-on-surface placeholder:text-outline focus:ring-2 focus:ring-primary focus:border-primary transition-all" id="password" name="password" placeholder="••••••••" type="password"/>
+</div>
+</div>
+<!-- Remember Me -->
+<div class="flex items-center gap-xs">
+<input class="w-xs h-xs rounded border-outline-variant text-primary focus:ring-primary" id="remember" type="checkbox"/>
+<label class="font-body-sm text-body-sm text-on-surface-variant" for="remember">Keep me logged in</label>
+</div>
+<!-- Primary Action -->
+<button class="w-full h-[48px] bg-primary text-on-primary font-headline-sm text-[16px] rounded-xl hover:bg-on-primary-fixed-variant active:scale-[0.98] transition-all shadow-md" type="submit">
+                        Log In
+                    </button>
+</form>
+<div class="mt-xl pt-lg border-t border-outline-variant/30 flex flex-col items-center gap-md">
+<p class="font-body-sm text-body-sm text-on-surface-variant">Don't have an account yet?</p>
+<button class="w-full h-[48px] border-2 border-primary text-primary font-headline-sm text-[16px] rounded-xl hover:bg-primary-fixed active:scale-[0.98] transition-all">
+                        Create Account
+                    </button>
+</div>
+</div>
+<!-- Footer Meta -->
+<footer class="mt-xl flex items-center gap-md text-outline font-label-md text-label-md">
+<a class="hover:text-primary transition-colors" href="#">Privacy Policy</a>
+<span class="w-1 h-1 bg-outline-variant rounded-full"></span>
+<a class="hover:text-primary transition-colors" href="#">Terms of Service</a>
+<span class="w-1 h-1 bg-outline-variant rounded-full"></span>
+<a class="hover:text-primary transition-colors" href="#">Clinic Support</a>
+</footer>
+</section>
+</main>
+<!-- Support FAB (Contextual for Login) -->
+<div class="fixed bottom-lg right-lg hidden md:block">
+<button class="flex items-center gap-xs bg-secondary-container text-on-secondary-container px-md py-sm rounded-full shadow-lg hover:shadow-xl transition-all active:scale-95">
+<span class="material-symbols-outlined" data-icon="help_outline">help_outline</span>
+<span class="font-label-md text-label-md">Need Help?</span>
+</button>
+</div>
+</body></html>
