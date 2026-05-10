@@ -1,23 +1,26 @@
-import { createBrowserRouter, Navigate } from 'react-router-dom';
+import { createBrowserRouter } from 'react-router-dom';
 import { AIProgressSummaryPage } from '../pages/AIProgressSummaryPage';
 import { BadgesPage } from '../pages/BadgesPage';
 import { CreateRehabPlanPage } from '../pages/CreateRehabPlanPage';
 import { DailyQuestPage } from '../pages/DailyQuestPage';
 import { ExerciseDetailsPage } from '../pages/ExerciseDetailsPage';
 import { ExerciseLibraryPage } from '../pages/ExerciseLibraryPage';
+import { LandingPage } from '../pages/LandingPage';
 import { LoginPage } from '../pages/LoginPage';
+import { NotFoundPage } from '../pages/NotFoundPage';
 import { PainReportPage } from '../pages/PainReportPage';
 import { PatientDashboardPage } from '../pages/PatientDashboardPage';
 import { PatientProfilePage } from '../pages/PatientProfilePage';
 import { PatientsListPage } from '../pages/PatientsListPage';
 import { PhysioDashboardPage } from '../pages/PhysioDashboardPage';
 import { ProgressPage } from '../pages/ProgressPage';
+import { QuestCompletedPage } from '../pages/QuestCompletedPage';
 import { RegisterPage } from '../pages/RegisterPage';
 
 export const router = createBrowserRouter([
   {
     path: '/',
-    element: <Navigate to="/patient/dashboard" replace />,
+    element: <LandingPage />,
   },
   {
     path: '/login',
@@ -36,12 +39,28 @@ export const router = createBrowserRouter([
     element: <DailyQuestPage />,
   },
   {
+    path: '/patient/quest',
+    element: <DailyQuestPage />,
+  },
+  {
     path: '/patient/exercises/:exerciseId',
+    element: <ExerciseDetailsPage />,
+  },
+  {
+    path: '/patient/exercise/:exerciseId',
     element: <ExerciseDetailsPage />,
   },
   {
     path: '/patient/pain-report',
     element: <PainReportPage />,
+  },
+  {
+    path: '/patient/pain-report/:exerciseId',
+    element: <PainReportPage />,
+  },
+  {
+    path: '/patient/quest-completed',
+    element: <QuestCompletedPage />,
   },
   {
     path: '/patient/progress',
@@ -64,6 +83,10 @@ export const router = createBrowserRouter([
     element: <PatientProfilePage />,
   },
   {
+    path: '/physio/patients/:patientId/ai-summary',
+    element: <AIProgressSummaryPage />,
+  },
+  {
     path: '/physio/plans/new',
     element: <CreateRehabPlanPage />,
   },
@@ -77,6 +100,6 @@ export const router = createBrowserRouter([
   },
   {
     path: '*',
-    element: <Navigate to="/patient/dashboard" replace />,
+    element: <NotFoundPage />,
   },
 ]);

@@ -6,7 +6,7 @@ import type { BottomNavItem } from '../types/patientDashboard';
 
 const patientNavItems: BottomNavItem[] = [
   { label: 'Home', to: '/patient/dashboard', icon: Home },
-  { label: 'Quest', to: '/patient/daily-quest', icon: Medal },
+  { label: 'Quest', to: '/patient/quest', icon: Medal },
   { label: 'Progress', to: '/patient/progress', icon: TrendingUp },
   { label: 'Profile', to: '/patient/badges', icon: UserRound },
 ];
@@ -26,18 +26,34 @@ export function AppShell({ children }: AppShellProps) {
             </div>
             <span className="font-display text-2xl font-bold text-primary">RehabQuest</span>
           </Link>
-          <button
-            type="button"
-            aria-label="Notifications"
-            className="grid h-11 w-11 place-items-center rounded-full text-on-surface-variant transition hover:bg-surface-container-high"
-          >
-            <Bell className="h-6 w-6" strokeWidth={2.2} />
-          </button>
+          <div className="flex items-center gap-2">
+            <Link
+              to="/physio/dashboard"
+              className="hidden h-10 items-center rounded-xl border border-primary px-3 text-sm font-bold text-primary transition hover:bg-primary/5 sm:flex"
+            >
+              Switch to Physio Demo
+            </Link>
+            <button
+              type="button"
+              aria-label="Notifications"
+              className="grid h-11 w-11 place-items-center rounded-full text-on-surface-variant transition hover:bg-surface-container-high"
+            >
+              <Bell className="h-6 w-6" strokeWidth={2.2} />
+            </button>
+          </div>
         </div>
       </header>
 
       {children}
 
+      <div className="fixed bottom-[88px] left-0 z-40 w-full px-4 sm:hidden">
+        <Link
+          to="/physio/dashboard"
+          className="mx-auto flex h-11 max-w-md items-center justify-center rounded-xl border border-primary bg-surface text-sm font-bold text-primary shadow-ambient"
+        >
+          Switch to Physio Demo
+        </Link>
+      </div>
       <BottomNav items={patientNavItems} />
     </div>
   );

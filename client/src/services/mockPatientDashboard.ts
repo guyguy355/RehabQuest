@@ -14,25 +14,31 @@ export const patientDashboardData: PatientDashboardData = {
   nextAssessment: 'Friday, 10:00 AM',
   exercises: [
     {
+      id: '1',
       name: 'Heel Slides',
       targetArea: 'Knee',
       sets: 3,
       reps: 12,
       difficulty: 'Easy',
+      status: 'not-completed',
     },
     {
+      id: '2',
       name: 'Quad Sets',
       targetArea: 'Knee',
       sets: 3,
       reps: 10,
       difficulty: 'Easy',
+      status: 'not-completed',
     },
     {
+      id: '3',
       name: 'Glute Bridges',
       targetArea: 'Hip / Knee Support',
       sets: 3,
       reps: 12,
       difficulty: 'Medium',
+      status: 'not-completed',
     },
   ],
   badges: [

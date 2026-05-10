@@ -18,12 +18,21 @@ export type PatientDashboardData = {
 };
 
 export type ExercisePreview = {
+  id?: string;
   name: string;
   targetArea: string;
   sets: number;
   reps: number;
   difficulty: 'Easy' | 'Medium' | 'Hard';
+  status?: 'completed' | 'not-completed';
 };
+
+export type ExerciseDetail = Required<Pick<ExercisePreview, 'id'>> &
+  ExercisePreview & {
+    durationSeconds: number;
+    instructions: string;
+    safetyNote: string;
+  };
 
 export type BadgePreview = {
   title: string;

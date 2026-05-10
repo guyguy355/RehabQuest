@@ -49,10 +49,10 @@ export function QuestCard({ plan, quest, progressPercent, completedExercises, to
 
       <div className="mt-10 grid gap-4 sm:grid-cols-2">
         <Link
-          to="/patient/daily-quest"
+          to="/patient/quest"
           className="flex h-14 items-center justify-center gap-3 rounded-xl bg-primary px-6 font-display text-lg font-semibold text-on-primary shadow-md transition hover:shadow-ambient-lg active:scale-[0.98]"
         >
-          Start Today's Rehab
+          Start Today’s Rehab
           <Play className="h-5 w-5" fill="currentColor" />
         </Link>
         <Link
