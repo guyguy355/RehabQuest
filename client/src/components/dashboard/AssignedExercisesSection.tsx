@@ -1,5 +1,5 @@
 import { CalendarDays, CheckCircle2, Clock3, Dumbbell, Loader2, PlayCircle, Repeat2, Target } from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
+import { FormEvent, useEffect, useMemo, useState } from 'react';
 
 const apiBaseUrl = 'http://localhost:3000';
 
@@ -17,6 +17,10 @@ type AssignedExercise = {
   dueDate?: string | null;
   notes?: string | null;
   completedAt?: string | null;
+  painLevel?: number | null;
+  difficultyFeedback?: string | null;
+  patientNote?: string | null;
+  feedbackAt?: string | null;
   status: 'ASSIGNED' | 'COMPLETED' | 'SKIPPED';
 };
 
@@ -25,6 +29,7 @@ export function AssignedExercisesSection() {
   const [message, setMessage] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [completingAssignmentId, setCompletingAssignmentId] = useState<string | null>(null);
+  const [feedbackAssignmentId, setFeedbackAssignmentId] = useState<string | null>(null);
   const [actionError, setActionError] = useState('');
 
   useEffect(() => {
@@ -76,6 +81,41 @@ export function AssignedExercisesSection() {
       setActionError('Could not reach the RehabQuest API');
     } finally {
       setCompletingAssignmentId(null);
+    }
+  }
+
+  async function handleFeedback(
+    assignmentId: string,
+    feedback: { painLevel: number; difficultyFeedback: string; patientNote: string },
+  ) {
+    setActionError('');
+    setFeedbackAssignmentId(assignmentId);
+
+    try {
+      const response = await fetch(`${apiBaseUrl}/patient/exercises/${assignmentId}/feedback`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          ...getAuthHeaders(),
+        },
+        body: JSON.stringify(feedback),
+      });
+      const data = await response.json();
+
+      if (!response.ok) {
+        setActionError(data.message ?? 'Could not save feedback');
+        return;
+      }
+
+      setExercises((current) =>
+        current.map((exercise) =>
+          exercise.assignmentId === assignmentId ? { ...exercise, ...data.exercise } : exercise,
+        ),
+      );
+    } catch {
+      setActionError('Could not reach the RehabQuest API');
+    } finally {
+      setFeedbackAssignmentId(null);
     }
   }
 
@@ -142,21 +182,27 @@ export function AssignedExercisesSection() {
           exercises={groupedExercises.today}
           emptyText="No exercises due today."
           completingAssignmentId={completingAssignmentId}
+          feedbackAssignmentId={feedbackAssignmentId}
           onComplete={handleComplete}
+          onFeedback={handleFeedback}
         />
         <ExerciseGroup
           title="Upcoming"
           exercises={[...groupedExercises.upcoming, ...groupedExercises.unscheduled]}
           emptyText="No upcoming exercises."
           completingAssignmentId={completingAssignmentId}
+          feedbackAssignmentId={feedbackAssignmentId}
           onComplete={handleComplete}
+          onFeedback={handleFeedback}
         />
         <ExerciseGroup
           title="Completed"
           exercises={groupedExercises.completed}
           emptyText="No completed exercises yet."
           completingAssignmentId={completingAssignmentId}
+          feedbackAssignmentId={feedbackAssignmentId}
           onComplete={handleComplete}
+          onFeedback={handleFeedback}
         />
       </div>
     </section>
@@ -168,13 +214,20 @@ function ExerciseGroup({
   exercises,
   emptyText,
   completingAssignmentId,
+  feedbackAssignmentId,
   onComplete,
+  onFeedback,
 }: {
   title: string;
   exercises: AssignedExercise[];
   emptyText: string;
   completingAssignmentId: string | null;
+  feedbackAssignmentId: string | null;
   onComplete: (assignmentId: string) => void;
+  onFeedback: (
+    assignmentId: string,
+    feedback: { painLevel: number; difficultyFeedback: string; patientNote: string },
+  ) => void;
 }) {
   return (
     <div>
@@ -192,7 +245,9 @@ function ExerciseGroup({
               key={exercise.assignmentId}
               exercise={exercise}
               isCompleting={completingAssignmentId === exercise.assignmentId}
+              isSavingFeedback={feedbackAssignmentId === exercise.assignmentId}
               onComplete={onComplete}
+              onFeedback={onFeedback}
             />
           ))}
         </div>
@@ -208,11 +263,18 @@ function ExerciseGroup({
 function ExerciseCard({
   exercise,
   isCompleting,
+  isSavingFeedback,
   onComplete,
+  onFeedback,
 }: {
   exercise: AssignedExercise;
   isCompleting: boolean;
+  isSavingFeedback: boolean;
   onComplete: (assignmentId: string) => void;
+  onFeedback: (
+    assignmentId: string,
+    feedback: { painLevel: number; difficultyFeedback: string; patientNote: string },
+  ) => void;
 }) {
   const isCompleted = exercise.status === 'COMPLETED';
 
@@ -272,7 +334,100 @@ function ExerciseCard({
         {isCompleting ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />}
         {isCompleted ? 'Completed' : 'Mark as completed'}
       </button>
+
+      {isCompleted ? (
+        exercise.feedbackAt ? (
+          <FeedbackSummary exercise={exercise} />
+        ) : (
+          <FeedbackForm exercise={exercise} isSaving={isSavingFeedback} onFeedback={onFeedback} />
+        )
+      ) : null}
     </article>
+  );
+}
+
+function FeedbackForm({
+  exercise,
+  isSaving,
+  onFeedback,
+}: {
+  exercise: AssignedExercise;
+  isSaving: boolean;
+  onFeedback: (
+    assignmentId: string,
+    feedback: { painLevel: number; difficultyFeedback: string; patientNote: string },
+  ) => void;
+}) {
+  const [painLevel, setPainLevel] = useState('1');
+  const [difficultyFeedback, setDifficultyFeedback] = useState('');
+  const [patientNote, setPatientNote] = useState('');
+
+  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    onFeedback(exercise.assignmentId, {
+      painLevel: Number(painLevel),
+      difficultyFeedback,
+      patientNote,
+    });
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="mt-4 grid gap-3 rounded-xl bg-surface-container-low p-4">
+      <p className="text-sm font-bold text-on-surface">How did it feel?</p>
+      <label className="grid gap-2">
+        <span className="text-xs font-bold uppercase tracking-[0.12em] text-on-surface-variant">Pain level</span>
+        <input
+          type="number"
+          min={1}
+          max={10}
+          value={painLevel}
+          onChange={(event) => setPainLevel(event.target.value)}
+          className="h-11 rounded-xl border border-outline-variant/50 bg-surface-container-lowest px-3 text-on-surface outline-none transition focus:border-primary focus:ring-4 focus:ring-primary/10"
+        />
+      </label>
+      <label className="grid gap-2">
+        <span className="text-xs font-bold uppercase tracking-[0.12em] text-on-surface-variant">Difficulty</span>
+        <input
+          value={difficultyFeedback}
+          onChange={(event) => setDifficultyFeedback(event.target.value)}
+          placeholder="Easy, just right, too hard..."
+          className="h-11 rounded-xl border border-outline-variant/50 bg-surface-container-lowest px-3 text-on-surface outline-none transition placeholder:text-on-surface-variant/70 focus:border-primary focus:ring-4 focus:ring-primary/10"
+        />
+      </label>
+      <label className="grid gap-2">
+        <span className="text-xs font-bold uppercase tracking-[0.12em] text-on-surface-variant">Note</span>
+        <textarea
+          value={patientNote}
+          onChange={(event) => setPatientNote(event.target.value)}
+          rows={3}
+          className="resize-none rounded-xl border border-outline-variant/50 bg-surface-container-lowest px-3 py-2 text-on-surface outline-none transition focus:border-primary focus:ring-4 focus:ring-primary/10"
+        />
+      </label>
+      <button
+        type="submit"
+        disabled={isSaving}
+        className="flex h-11 items-center justify-center gap-2 rounded-xl bg-primary px-4 text-sm font-bold text-on-primary transition hover:shadow-ambient-lg active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
+      >
+        {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />}
+        Save Feedback
+      </button>
+    </form>
+  );
+}
+
+function FeedbackSummary({ exercise }: { exercise: AssignedExercise }) {
+  return (
+    <div className="mt-4 rounded-xl bg-secondary-container px-4 py-3 text-sm text-on-secondary-container">
+      <p className="font-bold">Feedback submitted</p>
+      <p className="mt-1 font-semibold">Pain level: {exercise.painLevel}/10</p>
+      {exercise.difficultyFeedback ? <p className="mt-1">{exercise.difficultyFeedback}</p> : null}
+      {exercise.patientNote ? <p className="mt-1">{exercise.patientNote}</p> : null}
+      {exercise.feedbackAt ? (
+        <p className="mt-2 text-xs font-bold uppercase tracking-[0.12em]">
+          {new Date(exercise.feedbackAt).toLocaleString()}
+        </p>
+      ) : null}
+    </div>
   );
 }
 
