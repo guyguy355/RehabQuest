@@ -3,7 +3,7 @@ import { getAuthenticatedUser } from '../auth.js';
 const prisma = new PrismaClient();
 export async function requireAuth(request, response, next) {
     try {
-        const user = await getAuthenticatedUser(prisma, request.headers.authorization);
+        const user = await loadAuthenticatedUser(request);
         if (!user) {
             response.status(401).json({ message: 'Authentication required' });
             return;
@@ -16,18 +16,31 @@ export async function requireAuth(request, response, next) {
     }
 }
 export function requireRole(role) {
-    return (request, response, next) => {
-        if (!request.user) {
-            response.status(401).json({ message: 'Authentication required' });
-            return;
+    return async (request, response, next) => {
+        try {
+            const user = await loadAuthenticatedUser(request);
+            if (!user) {
+                response.status(401).json({ message: 'Authentication required' });
+                return;
+            }
+            if (user.role !== role) {
+                response.status(403).json({ message: `Requires ${role} role` });
+                return;
+            }
+            request.user = user;
+            next();
         }
-        if (request.user.role !== role) {
-            response.status(403).json({ message: `Requires ${role} role` });
-            return;
+        catch (error) {
+            next(error);
         }
-        next();
     };
 }
 export const requireTherapist = requireRole(Role.THERAPIST);
 export const requirePatient = requireRole(Role.PATIENT);
 export const requireAdmin = requireRole(Role.ADMIN);
+function loadAuthenticatedUser(request) {
+    if (request.user) {
+        return request.user;
+    }
+    return getAuthenticatedUser(prisma, request.headers.authorization);
+}
