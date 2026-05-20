@@ -1,4 +1,4 @@
-import { Clock3, Dumbbell, Loader2, PlayCircle, Repeat2, Save, Target } from 'lucide-react';
+import { Clock3, Dumbbell, Loader2, Pencil, PlayCircle, Repeat2, Save, Target, Trash2, X } from 'lucide-react';
 import { FormEvent, useEffect, useState } from 'react';
 import { PhysioShell } from '../components/PhysioShell';
 
@@ -48,6 +48,8 @@ export function TherapistExercisesPage() {
   const [isError, setIsError] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [editingExerciseId, setEditingExerciseId] = useState<string | null>(null);
+  const [deletingExerciseId, setDeletingExerciseId] = useState<string | null>(null);
 
   async function loadExercises() {
     setIsLoading(true);
@@ -86,33 +88,40 @@ export function TherapistExercisesPage() {
     setIsSubmitting(true);
 
     try {
-      const response = await fetch(`${apiBaseUrl}/therapist/exercises`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...getAuthHeaders(),
+      const isEditing = Boolean(editingExerciseId);
+      const response = await fetch(
+        isEditing
+          ? `${apiBaseUrl}/therapist/exercises/${editingExerciseId}`
+          : `${apiBaseUrl}/therapist/exercises`,
+        {
+          method: isEditing ? 'PUT' : 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            ...getAuthHeaders(),
+          },
+          body: JSON.stringify({
+            title: form.title,
+            description: form.description,
+            bodyPart: form.bodyPart,
+            difficulty: form.difficulty,
+            sets: Number(form.sets),
+            reps: Number(form.reps),
+            durationSeconds: Number(form.durationSeconds),
+            videoUrl: form.videoUrl,
+          }),
         },
-        body: JSON.stringify({
-          title: form.title,
-          description: form.description,
-          bodyPart: form.bodyPart,
-          difficulty: form.difficulty,
-          sets: Number(form.sets),
-          reps: Number(form.reps),
-          durationSeconds: Number(form.durationSeconds),
-          videoUrl: form.videoUrl,
-        }),
-      });
+      );
       const data = await response.json();
 
       if (!response.ok) {
-        setMessage(data.message ?? 'Could not create exercise');
+        setMessage(data.message ?? `Could not ${isEditing ? 'update' : 'create'} exercise`);
         setIsError(true);
         return;
       }
 
       setForm(initialForm);
-      setMessage('Exercise created successfully');
+      setEditingExerciseId(null);
+      setMessage(isEditing ? 'Exercise updated successfully' : 'Exercise created successfully');
       await loadExercises();
     } catch {
       setMessage('Could not reach the RehabQuest API');
@@ -120,6 +129,61 @@ export function TherapistExercisesPage() {
     } finally {
       setIsSubmitting(false);
     }
+  }
+
+  async function handleDelete(exerciseId: string) {
+    setMessage('');
+    setIsError(false);
+    setDeletingExerciseId(exerciseId);
+
+    try {
+      const response = await fetch(`${apiBaseUrl}/therapist/exercises/${exerciseId}`, {
+        method: 'DELETE',
+        headers: {
+          ...getAuthHeaders(),
+        },
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        setMessage(data.message ?? 'Could not delete exercise');
+        setIsError(true);
+        return;
+      }
+
+      if (editingExerciseId === exerciseId) {
+        cancelEdit();
+      }
+
+      setMessage('Exercise deleted successfully');
+      await loadExercises();
+    } catch {
+      setMessage('Could not reach the RehabQuest API');
+      setIsError(true);
+    } finally {
+      setDeletingExerciseId(null);
+    }
+  }
+
+  function startEdit(exercise: TherapistExercise) {
+    setEditingExerciseId(exercise.id);
+    setMessage('');
+    setIsError(false);
+    setForm({
+      title: exercise.title,
+      description: exercise.description,
+      bodyPart: exercise.bodyPart,
+      difficulty: exercise.difficulty,
+      sets: String(exercise.sets),
+      reps: String(exercise.reps),
+      durationSeconds: String(exercise.durationSeconds),
+      videoUrl: exercise.videoUrl ?? '',
+    });
+  }
+
+  function cancelEdit() {
+    setEditingExerciseId(null);
+    setForm(initialForm);
   }
 
   function updateForm(field: keyof ExerciseForm, value: string) {
@@ -141,8 +205,12 @@ export function TherapistExercisesPage() {
 
         <section className="mt-6 rounded-2xl border border-outline-variant/40 bg-surface-container-lowest p-6 shadow-ambient">
           <div className="mb-5">
-            <p className="text-xs font-bold uppercase tracking-[0.18em] text-primary">Create</p>
-            <h2 className="mt-1 font-display text-2xl font-semibold text-on-surface">New exercise</h2>
+            <p className="text-xs font-bold uppercase tracking-[0.18em] text-primary">
+              {editingExerciseId ? 'Edit' : 'Create'}
+            </p>
+            <h2 className="mt-1 font-display text-2xl font-semibold text-on-surface">
+              {editingExerciseId ? 'Edit exercise' : 'New exercise'}
+            </h2>
           </div>
 
           <form onSubmit={handleSubmit} className="grid gap-4">
@@ -199,14 +267,26 @@ export function TherapistExercisesPage() {
               </p>
             ) : null}
 
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="flex h-12 items-center justify-center gap-2 rounded-xl bg-primary px-5 font-display text-sm font-semibold text-on-primary shadow-md transition hover:shadow-ambient-lg active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60 md:w-fit"
-            >
-              {isSubmitting ? <Loader2 className="h-5 w-5 animate-spin" /> : <Save className="h-5 w-5" />}
-              Create Exercise
-            </button>
+            <div className="flex flex-col gap-3 sm:flex-row">
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className="flex h-12 items-center justify-center gap-2 rounded-xl bg-primary px-5 font-display text-sm font-semibold text-on-primary shadow-md transition hover:shadow-ambient-lg active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {isSubmitting ? <Loader2 className="h-5 w-5 animate-spin" /> : <Save className="h-5 w-5" />}
+                {editingExerciseId ? 'Save Changes' : 'Create Exercise'}
+              </button>
+              {editingExerciseId ? (
+                <button
+                  type="button"
+                  onClick={cancelEdit}
+                  className="flex h-12 items-center justify-center gap-2 rounded-xl border border-outline-variant/60 px-5 font-display text-sm font-semibold text-on-surface-variant transition hover:bg-surface-container-high"
+                >
+                  <X className="h-5 w-5" />
+                  Cancel
+                </button>
+              ) : null}
+            </div>
           </form>
         </section>
 
@@ -226,7 +306,13 @@ export function TherapistExercisesPage() {
           ) : exercises.length > 0 ? (
             <div className="grid gap-4 lg:grid-cols-2">
               {exercises.map((exercise) => (
-                <ExerciseCard key={exercise.id} exercise={exercise} />
+                <ExerciseCard
+                  key={exercise.id}
+                  exercise={exercise}
+                  isDeleting={deletingExerciseId === exercise.id}
+                  onEdit={startEdit}
+                  onDelete={handleDelete}
+                />
               ))}
             </div>
           ) : (
@@ -267,7 +353,17 @@ function TextField({
   );
 }
 
-function ExerciseCard({ exercise }: { exercise: TherapistExercise }) {
+function ExerciseCard({
+  exercise,
+  isDeleting,
+  onEdit,
+  onDelete,
+}: {
+  exercise: TherapistExercise;
+  isDeleting: boolean;
+  onEdit: (exercise: TherapistExercise) => void;
+  onDelete: (exerciseId: string) => void;
+}) {
   return (
     <article className="rounded-2xl border border-outline-variant/40 bg-surface-container-lowest p-5 shadow-ambient">
       <div className="flex items-start gap-4">
@@ -297,6 +393,26 @@ function ExerciseCard({ exercise }: { exercise: TherapistExercise }) {
             Video
           </a>
         ) : null}
+      </div>
+
+      <div className="mt-5 flex flex-col gap-3 sm:flex-row">
+        <button
+          type="button"
+          onClick={() => onEdit(exercise)}
+          className="flex h-11 items-center justify-center gap-2 rounded-xl border border-outline-variant/60 px-4 text-sm font-bold text-on-surface-variant transition hover:bg-surface-container-high"
+        >
+          <Pencil className="h-4 w-4" />
+          Edit
+        </button>
+        <button
+          type="button"
+          disabled={isDeleting}
+          onClick={() => onDelete(exercise.id)}
+          className="flex h-11 items-center justify-center gap-2 rounded-xl border border-red-200 px-4 text-sm font-bold text-red-700 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          {isDeleting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
+          Delete
+        </button>
       </div>
     </article>
   );

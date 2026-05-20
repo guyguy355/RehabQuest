@@ -158,6 +158,85 @@ router.get('/exercises', requireAuth, requireTherapist, async (request, response
         next(error);
     }
 });
+router.put('/exercises/:id', requireAuth, requireTherapist, async (request, response, next) => {
+    try {
+        const therapist = request.user;
+        const exerciseId = getRouteParam(request.params.id);
+        if (!therapist) {
+            response.status(401).json({ message: 'Authentication required' });
+            return;
+        }
+        if (!exerciseId) {
+            response.status(400).json({ message: 'Exercise id is required' });
+            return;
+        }
+        const exercise = await prisma.exercise.findFirst({
+            where: {
+                id: exerciseId,
+                createdById: therapist.id,
+            },
+            select: {
+                id: true,
+            },
+        });
+        if (!exercise) {
+            response.status(404).json({ message: 'Exercise not found' });
+            return;
+        }
+        const exerciseData = parseExerciseInput(request.body);
+        if ('error' in exerciseData) {
+            response.status(400).json({ message: exerciseData.error });
+            return;
+        }
+        const updatedExercise = await prisma.exercise.update({
+            where: {
+                id: exercise.id,
+            },
+            data: exerciseData.data,
+            select: exerciseSelect,
+        });
+        response.json({ exercise: updatedExercise });
+    }
+    catch (error) {
+        next(error);
+    }
+});
+router.delete('/exercises/:id', requireAuth, requireTherapist, async (request, response, next) => {
+    try {
+        const therapist = request.user;
+        const exerciseId = getRouteParam(request.params.id);
+        if (!therapist) {
+            response.status(401).json({ message: 'Authentication required' });
+            return;
+        }
+        if (!exerciseId) {
+            response.status(400).json({ message: 'Exercise id is required' });
+            return;
+        }
+        const exercise = await prisma.exercise.findFirst({
+            where: {
+                id: exerciseId,
+                createdById: therapist.id,
+            },
+            select: {
+                id: true,
+            },
+        });
+        if (!exercise) {
+            response.status(404).json({ message: 'Exercise not found' });
+            return;
+        }
+        await prisma.exercise.delete({
+            where: {
+                id: exercise.id,
+            },
+        });
+        response.status(204).send();
+    }
+    catch (error) {
+        next(error);
+    }
+});
 router.get('/patients', requireAuth, requireTherapist, async (request, response, next) => {
     try {
         const therapist = request.user;
@@ -190,7 +269,38 @@ router.get('/patients', requireAuth, requireTherapist, async (request, response,
         next(error);
     }
 });
+function parseExerciseInput(body) {
+    const { title, description, bodyPart, difficulty, sets, reps, durationSeconds, videoUrl } = body;
+    const normalizedTitle = title?.trim();
+    const normalizedDescription = description?.trim();
+    const normalizedBodyPart = bodyPart?.trim();
+    const normalizedVideoUrl = videoUrl?.trim();
+    if (!normalizedTitle || !normalizedDescription || !normalizedBodyPart || !difficulty) {
+        return { error: 'title, description, bodyPart, and difficulty are required' };
+    }
+    if (!Object.values(Difficulty).includes(difficulty)) {
+        return { error: 'difficulty must be EASY, MEDIUM, or HARD' };
+    }
+    if (!isPositiveInteger(sets) || !isPositiveInteger(reps) || !isPositiveInteger(durationSeconds)) {
+        return { error: 'sets, reps, and durationSeconds must be positive numbers' };
+    }
+    return {
+        data: {
+            title: normalizedTitle,
+            description: normalizedDescription,
+            bodyPart: normalizedBodyPart,
+            difficulty,
+            sets,
+            reps,
+            durationSeconds,
+            videoUrl: normalizedVideoUrl || null,
+        },
+    };
+}
 function isPositiveInteger(value) {
     return typeof value === 'number' && Number.isInteger(value) && value > 0;
+}
+function getRouteParam(value) {
+    return Array.isArray(value) ? value[0] : value;
 }
 export default router;
