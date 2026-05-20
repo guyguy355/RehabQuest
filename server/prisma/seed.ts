@@ -87,6 +87,7 @@ const badgeData = [
 ];
 
 async function clearDemoData() {
+  await prisma.patientExercise.deleteMany();
   await prisma.therapistPatient.deleteMany();
   await prisma.userBadge.deleteMany();
   await prisma.badge.deleteMany();

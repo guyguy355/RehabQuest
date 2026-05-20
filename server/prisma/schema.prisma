@@ -25,6 +25,12 @@ enum Difficulty {
   HARD
 }
 
+enum PatientExerciseStatus {
+  ASSIGNED
+  COMPLETED
+  SKIPPED
+}
+
 model User {
   id           String   @id @default(cuid())
   name         String
@@ -34,13 +40,15 @@ model User {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
-  patientProfile   PatientProfile?
-  physioPatients   PatientProfile[]   @relation("PhysioPatients")
-  rehabPlans       RehabPlan[]        @relation("PhysioRehabPlans")
-  badges           UserBadge[]
-  therapistLinks   TherapistPatient[] @relation("TherapistLinks")
-  patientLinks     TherapistPatient[] @relation("PatientLinks")
-  createdExercises Exercise[]         @relation("CreatedExercises")
+  patientProfile      PatientProfile?
+  physioPatients      PatientProfile[]   @relation("PhysioPatients")
+  rehabPlans          RehabPlan[]        @relation("PhysioRehabPlans")
+  badges              UserBadge[]
+  therapistLinks      TherapistPatient[] @relation("TherapistLinks")
+  patientLinks        TherapistPatient[] @relation("PatientLinks")
+  createdExercises    Exercise[]         @relation("CreatedExercises")
+  assignedExercises   PatientExercise[]  @relation("PatientExercisePatient")
+  exerciseAssignments PatientExercise[]  @relation("PatientExerciseAssignedBy")
 }
 
 model TherapistPatient {
@@ -89,10 +97,31 @@ model Exercise {
   createdAt       DateTime   @default(now())
   updatedAt       DateTime   @updatedAt
 
-  createdBy User        @relation("CreatedExercises", fields: [createdById], references: [id], onDelete: Restrict)
-  tasks     RehabTask[]
+  createdBy        User              @relation("CreatedExercises", fields: [createdById], references: [id], onDelete: Restrict)
+  tasks            RehabTask[]
+  patientExercises PatientExercise[]
 
   @@index([createdById])
+}
+
+model PatientExercise {
+  id           String                @id @default(cuid())
+  patientId    String
+  exerciseId   String
+  assignedById String
+  status       PatientExerciseStatus @default(ASSIGNED)
+  dueDate      DateTime?
+  notes        String?
+  createdAt    DateTime              @default(now())
+  updatedAt    DateTime              @updatedAt
+
+  patient    User     @relation("PatientExercisePatient", fields: [patientId], references: [id], onDelete: Cascade)
+  exercise   Exercise @relation(fields: [exerciseId], references: [id], onDelete: Cascade)
+  assignedBy User     @relation("PatientExerciseAssignedBy", fields: [assignedById], references: [id], onDelete: Cascade)
+
+  @@index([patientId])
+  @@index([exerciseId])
+  @@index([assignedById])
 }
 
 model RehabPlan {

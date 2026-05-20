@@ -1,4 +1,4 @@
-import { Difficulty, Prisma, PrismaClient, Role } from '@prisma/client';
+import { Difficulty, PatientExerciseStatus, Prisma, PrismaClient, Role } from '@prisma/client';
 import { Router } from 'express';
 import { requireAuth, requireTherapist } from '../middleware/auth.middleware.js';
 const prisma = new PrismaClient();
@@ -24,6 +24,20 @@ const exerciseSelect = {
     createdById: true,
     createdAt: true,
     updatedAt: true,
+};
+const assignedExerciseSelect = {
+    id: true,
+    patientId: true,
+    exerciseId: true,
+    assignedById: true,
+    status: true,
+    dueDate: true,
+    notes: true,
+    createdAt: true,
+    updatedAt: true,
+    exercise: {
+        select: exerciseSelect,
+    },
 };
 router.post('/patients/link', requireAuth, requireTherapist, async (request, response, next) => {
     try {
@@ -237,6 +251,96 @@ router.delete('/exercises/:id', requireAuth, requireTherapist, async (request, r
         next(error);
     }
 });
+router.post('/patients/:patientId/exercises', requireAuth, requireTherapist, async (request, response, next) => {
+    try {
+        const therapist = request.user;
+        const patientId = getRouteParam(request.params.patientId);
+        if (!therapist) {
+            response.status(401).json({ message: 'Authentication required' });
+            return;
+        }
+        if (!patientId) {
+            response.status(400).json({ message: 'Patient id is required' });
+            return;
+        }
+        const linkedPatient = await findLinkedPatient(therapist.id, patientId);
+        if (!linkedPatient) {
+            response.status(404).json({ message: 'Linked patient not found' });
+            return;
+        }
+        const { exerciseId, dueDate, notes } = request.body;
+        if (!exerciseId) {
+            response.status(400).json({ message: 'exerciseId is required' });
+            return;
+        }
+        const exercise = await prisma.exercise.findFirst({
+            where: {
+                id: exerciseId,
+                createdById: therapist.id,
+            },
+            select: {
+                id: true,
+            },
+        });
+        if (!exercise) {
+            response.status(404).json({ message: 'Exercise not found' });
+            return;
+        }
+        const parsedDueDate = parseOptionalDate(dueDate);
+        if (parsedDueDate === 'invalid') {
+            response.status(400).json({ message: 'dueDate must be a valid date' });
+            return;
+        }
+        const assignment = await prisma.patientExercise.create({
+            data: {
+                patientId: linkedPatient.patientId,
+                exerciseId: exercise.id,
+                assignedById: therapist.id,
+                status: PatientExerciseStatus.ASSIGNED,
+                dueDate: parsedDueDate,
+                notes: notes?.trim() || null,
+            },
+            select: assignedExerciseSelect,
+        });
+        response.status(201).json({ assignment });
+    }
+    catch (error) {
+        next(error);
+    }
+});
+router.get('/patients/:patientId/exercises', requireAuth, requireTherapist, async (request, response, next) => {
+    try {
+        const therapist = request.user;
+        const patientId = getRouteParam(request.params.patientId);
+        if (!therapist) {
+            response.status(401).json({ message: 'Authentication required' });
+            return;
+        }
+        if (!patientId) {
+            response.status(400).json({ message: 'Patient id is required' });
+            return;
+        }
+        const linkedPatient = await findLinkedPatient(therapist.id, patientId);
+        if (!linkedPatient) {
+            response.status(404).json({ message: 'Linked patient not found' });
+            return;
+        }
+        const assignments = await prisma.patientExercise.findMany({
+            where: {
+                patientId: linkedPatient.patientId,
+                assignedById: therapist.id,
+            },
+            orderBy: {
+                createdAt: 'desc',
+            },
+            select: assignedExerciseSelect,
+        });
+        response.json({ assignments });
+    }
+    catch (error) {
+        next(error);
+    }
+});
 router.get('/patients', requireAuth, requireTherapist, async (request, response, next) => {
     try {
         const therapist = request.user;
@@ -302,5 +406,25 @@ function isPositiveInteger(value) {
 }
 function getRouteParam(value) {
     return Array.isArray(value) ? value[0] : value;
+}
+function parseOptionalDate(value) {
+    if (!value) {
+        return null;
+    }
+    const parsed = new Date(value);
+    return Number.isNaN(parsed.getTime()) ? 'invalid' : parsed;
+}
+function findLinkedPatient(therapistId, patientId) {
+    return prisma.therapistPatient.findUnique({
+        where: {
+            therapistId_patientId: {
+                therapistId,
+                patientId,
+            },
+        },
+        select: {
+            patientId: true,
+        },
+    });
 }
 export default router;
