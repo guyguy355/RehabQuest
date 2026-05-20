@@ -17,6 +17,7 @@ import { ProgressPage } from '../pages/ProgressPage';
 import { QuestCompletedPage } from '../pages/QuestCompletedPage';
 import { RegisterPage } from '../pages/RegisterPage';
 import { TherapistPatientsPage } from '../pages/TherapistPatientsPage';
+import { TherapistExercisesPage } from '../pages/TherapistExercisesPage';
 
 export const router = createBrowserRouter([
   {
@@ -102,6 +103,14 @@ export const router = createBrowserRouter([
   {
     path: '/physio/exercises',
     element: <ExerciseLibraryPage />,
+  },
+  {
+    path: '/physio/custom-exercises',
+    element: <TherapistExercisesPage />,
+  },
+  {
+    path: '/therapist/exercises',
+    element: <TherapistExercisesPage />,
   },
   {
     path: '/physio/ai-summary',

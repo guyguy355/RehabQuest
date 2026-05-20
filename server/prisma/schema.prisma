@@ -34,12 +34,13 @@ model User {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
-  patientProfile PatientProfile?
-  physioPatients PatientProfile[]   @relation("PhysioPatients")
-  rehabPlans     RehabPlan[]        @relation("PhysioRehabPlans")
-  badges         UserBadge[]
-  therapistLinks TherapistPatient[] @relation("TherapistLinks")
-  patientLinks   TherapistPatient[] @relation("PatientLinks")
+  patientProfile   PatientProfile?
+  physioPatients   PatientProfile[]   @relation("PhysioPatients")
+  rehabPlans       RehabPlan[]        @relation("PhysioRehabPlans")
+  badges           UserBadge[]
+  therapistLinks   TherapistPatient[] @relation("TherapistLinks")
+  patientLinks     TherapistPatient[] @relation("PatientLinks")
+  createdExercises Exercise[]         @relation("CreatedExercises")
 }
 
 model TherapistPatient {
@@ -75,21 +76,23 @@ model PatientProfile {
 }
 
 model Exercise {
-  id                     String     @id @default(cuid())
-  name                   String
-  description            String
-  instructions           String
-  videoUrl               String?
-  targetArea             String
-  difficulty             Difficulty
-  defaultSets            Int
-  defaultReps            Int
-  defaultDurationSeconds Int
-  safetyNotes            String?
-  createdAt              DateTime   @default(now())
-  updatedAt              DateTime   @updatedAt
+  id              String     @id @default(cuid())
+  title           String
+  description     String
+  bodyPart        String
+  difficulty      Difficulty
+  sets            Int
+  reps            Int
+  durationSeconds Int
+  videoUrl        String?
+  createdById     String
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
 
-  tasks RehabTask[]
+  createdBy User        @relation("CreatedExercises", fields: [createdById], references: [id], onDelete: Restrict)
+  tasks     RehabTask[]
+
+  @@index([createdById])
 }
 
 model RehabPlan {

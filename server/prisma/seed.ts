@@ -155,15 +155,14 @@ async function main() {
   for (const exercise of exerciseData) {
     const createdExercise = await prisma.exercise.create({
       data: {
-        name: exercise.name,
-        targetArea: exercise.targetArea,
+        title: exercise.name,
+        bodyPart: exercise.targetArea,
         difficulty: exercise.difficulty,
-        defaultSets: exercise.defaultSets,
-        defaultReps: exercise.defaultReps,
-        defaultDurationSeconds: exercise.defaultDurationSeconds,
+        sets: exercise.defaultSets,
+        reps: exercise.defaultReps,
+        durationSeconds: exercise.defaultDurationSeconds,
         description: exercise.description,
-        instructions: exercise.instructions,
-        safetyNotes: exercise.safetyNotes,
+        createdById: therapistUser.id,
       },
       select: {
         id: true,
