@@ -2,6 +2,7 @@ import { CalendarCheck, HeartPulse, TrendingUp } from 'lucide-react';
 import { AppShell } from '../components/AppShell';
 import { AssignedExercisesSection } from '../components/dashboard/AssignedExercisesSection';
 import { BadgePreviewCard } from '../components/dashboard/BadgePreviewCard';
+import { DailyGoalCard } from '../components/dashboard/DailyGoalCard';
 import { ExercisePreviewCard } from '../components/dashboard/ExercisePreviewCard';
 import { JourneyProgressCard } from '../components/dashboard/JourneyProgressCard';
 import { ProgressCard } from '../components/dashboard/ProgressCard';
@@ -27,6 +28,8 @@ export function PatientDashboardPage() {
           </div>
           <StreakCard days={patientDashboardData.streakDays} />
         </section>
+
+        <DailyGoalCard />
 
         <QuestCard
           plan={patientDashboardData.currentPlan}

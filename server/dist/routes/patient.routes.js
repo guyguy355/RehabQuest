@@ -29,6 +29,42 @@ const patientExerciseSelect = {
         },
     },
 };
+router.get('/daily-summary', requireAuth, requirePatient, async (request, response, next) => {
+    try {
+        const patient = request.user;
+        if (!patient) {
+            response.status(401).json({ message: 'Authentication required' });
+            return;
+        }
+        const today = new Date();
+        const todayRange = getDayRange(today);
+        const dueToday = await prisma.patientExercise.findMany({
+            where: {
+                patientId: patient.id,
+                dueDate: {
+                    gte: todayRange.start,
+                    lt: todayRange.end,
+                },
+            },
+            select: {
+                status: true,
+            },
+        });
+        const totalDueToday = dueToday.length;
+        const completedDueToday = dueToday.filter((assignment) => assignment.status === PatientExerciseStatus.COMPLETED).length;
+        const completionPercentage = totalDueToday === 0 ? 0 : Math.round((completedDueToday / totalDueToday) * 100);
+        const streakDays = await calculateStreak(patient.id, today);
+        response.json({
+            totalDueToday,
+            completedDueToday,
+            completionPercentage,
+            streakDays,
+        });
+    }
+    catch (error) {
+        next(error);
+    }
+});
 router.get('/exercises', requireAuth, requirePatient, async (request, response, next) => {
     try {
         const patient = request.user;
@@ -195,5 +231,41 @@ function getRouteParam(value) {
 }
 function isValidPainLevel(value) {
     return typeof value === 'number' && Number.isInteger(value) && value >= 1 && value <= 10;
+}
+function getDayRange(date) {
+    const start = new Date(date);
+    start.setHours(0, 0, 0, 0);
+    const end = new Date(start);
+    end.setDate(end.getDate() + 1);
+    return { start, end };
+}
+async function calculateStreak(patientId, fromDate) {
+    let streak = 0;
+    const cursor = new Date(fromDate);
+    for (let dayOffset = 0; dayOffset < 365; dayOffset += 1) {
+        const { start, end } = getDayRange(cursor);
+        const assignments = await prisma.patientExercise.findMany({
+            where: {
+                patientId,
+                dueDate: {
+                    gte: start,
+                    lt: end,
+                },
+            },
+            select: {
+                status: true,
+            },
+        });
+        if (assignments.length === 0) {
+            break;
+        }
+        const allCompleted = assignments.every((assignment) => assignment.status === PatientExerciseStatus.COMPLETED);
+        if (!allCompleted) {
+            break;
+        }
+        streak += 1;
+        cursor.setDate(cursor.getDate() - 1);
+    }
+    return streak;
 }
 export default router;
