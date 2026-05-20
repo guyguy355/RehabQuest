@@ -5,6 +5,7 @@ import { CreateRehabPlanPage } from '../pages/CreateRehabPlanPage';
 import { DailyQuestPage } from '../pages/DailyQuestPage';
 import { ExerciseDetailsPage } from '../pages/ExerciseDetailsPage';
 import { ExerciseLibraryPage } from '../pages/ExerciseLibraryPage';
+import { ForgotPasswordPage } from '../pages/ForgotPasswordPage';
 import { LandingPage } from '../pages/LandingPage';
 import { LoginPage } from '../pages/LoginPage';
 import { NotFoundPage } from '../pages/NotFoundPage';
@@ -16,6 +17,7 @@ import { PhysioDashboardPage } from '../pages/PhysioDashboardPage';
 import { ProgressPage } from '../pages/ProgressPage';
 import { QuestCompletedPage } from '../pages/QuestCompletedPage';
 import { RegisterPage } from '../pages/RegisterPage';
+import { ResetPasswordPage } from '../pages/ResetPasswordPage';
 import { TherapistPatientsPage } from '../pages/TherapistPatientsPage';
 import { TherapistExercisesPage } from '../pages/TherapistExercisesPage';
 
@@ -31,6 +33,14 @@ export const router = createBrowserRouter([
   {
     path: '/register',
     element: <RegisterPage />,
+  },
+  {
+    path: '/forgot-password',
+    element: <ForgotPasswordPage />,
+  },
+  {
+    path: '/reset-password',
+    element: <ResetPasswordPage />,
   },
   {
     path: '/patient/dashboard',

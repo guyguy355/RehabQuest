@@ -1,11 +1,13 @@
 import { PrismaClient, Role } from '@prisma/client';
 import bcrypt from 'bcrypt';
+import crypto from 'node:crypto';
 import { Router } from 'express';
 import { createAuthToken, publicUserSelect } from '../auth.js';
 import { requireAuth } from '../middleware/auth.middleware.js';
 const prisma = new PrismaClient();
 const router = Router();
 const selfRegisterRoles = [Role.PATIENT, Role.THERAPIST];
+const passwordResetTokenHours = 1;
 router.post('/register', async (request, response, next) => {
     try {
         const { name, email, password, role } = request.body;
@@ -74,6 +76,91 @@ router.post('/login', async (request, response, next) => {
             user: toPublicUser(user),
             token: createAuthToken(user.id),
         });
+    }
+    catch (error) {
+        next(error);
+    }
+});
+router.post('/forgot-password', async (request, response, next) => {
+    try {
+        const { email } = request.body;
+        if (!email) {
+            response.status(400).json({ message: 'email is required' });
+            return;
+        }
+        const user = await prisma.user.findUnique({
+            where: {
+                email: email.trim().toLowerCase(),
+            },
+            select: {
+                id: true,
+            },
+        });
+        const result = {
+            message: 'If an account exists for that email, a password reset token has been created.',
+        };
+        if (user) {
+            const token = crypto.randomBytes(32).toString('hex');
+            const expiresAt = new Date(Date.now() + passwordResetTokenHours * 60 * 60 * 1000);
+            await prisma.passwordResetToken.create({
+                data: {
+                    userId: user.id,
+                    token,
+                    expiresAt,
+                },
+            });
+            if (process.env.NODE_ENV !== 'production') {
+                result.resetToken = token;
+            }
+        }
+        response.json(result);
+    }
+    catch (error) {
+        next(error);
+    }
+});
+router.post('/reset-password', async (request, response, next) => {
+    try {
+        const { token, password } = request.body;
+        if (!token || !password) {
+            response.status(400).json({ message: 'token and password are required' });
+            return;
+        }
+        const resetToken = await prisma.passwordResetToken.findUnique({
+            where: {
+                token,
+            },
+            select: {
+                id: true,
+                userId: true,
+                expiresAt: true,
+                usedAt: true,
+            },
+        });
+        if (!resetToken || resetToken.usedAt || resetToken.expiresAt < new Date()) {
+            response.status(400).json({ message: 'Reset token is invalid or expired' });
+            return;
+        }
+        const passwordHash = await bcrypt.hash(password, 10);
+        await prisma.$transaction([
+            prisma.user.update({
+                where: {
+                    id: resetToken.userId,
+                },
+                data: {
+                    passwordHash,
+                },
+            }),
+            prisma.passwordResetToken.update({
+                where: {
+                    id: resetToken.id,
+                },
+                data: {
+                    usedAt: new Date(),
+                },
+            }),
+        ]);
+        response.json({ message: 'Password has been reset' });
     }
     catch (error) {
         next(error);
