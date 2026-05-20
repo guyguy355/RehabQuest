@@ -263,8 +263,8 @@ router.patch('/exercises/:assignmentId/feedback', requireAuth, requirePatient, a
       },
       data: {
         painLevel,
-        difficultyFeedback: difficultyFeedback?.trim() || null,
-        patientNote: patientNote?.trim() || null,
+        difficultyFeedback: normalizeText(difficultyFeedback) || null,
+        patientNote: normalizeText(patientNote) || null,
         feedbackAt: new Date(),
       },
       select: patientExerciseSelect,
@@ -297,6 +297,10 @@ function getRouteParam(value: string | string[] | undefined) {
 
 function isValidPainLevel(value: unknown): value is number {
   return typeof value === 'number' && Number.isInteger(value) && value >= 1 && value <= 10;
+}
+
+function normalizeText(value: unknown) {
+  return typeof value === 'string' ? value.trim() : undefined;
 }
 
 function getDayRange(date: Date) {

@@ -72,10 +72,15 @@ router.post('/patients/link', requireAuth, requireTherapist, async (request, res
     }
 
     const { patientEmail } = request.body as { patientEmail?: string };
-    const normalizedEmail = patientEmail?.trim().toLowerCase();
+    const normalizedEmail = normalizeText(patientEmail)?.toLowerCase();
 
     if (!normalizedEmail) {
       response.status(400).json({ message: 'patientEmail is required' });
+      return;
+    }
+
+    if (!isValidEmail(normalizedEmail)) {
+      response.status(400).json({ message: 'patientEmail must be a valid email address' });
       return;
     }
 
@@ -162,14 +167,24 @@ router.post('/exercises', requireAuth, requireTherapist, async (request, respons
       imageUrl?: string;
     };
 
-    const normalizedTitle = title?.trim();
-    const normalizedDescription = description?.trim();
-    const normalizedBodyPart = bodyPart?.trim();
-    const normalizedVideoUrl = videoUrl?.trim();
-    const normalizedImageUrl = imageUrl?.trim();
+    const normalizedTitle = normalizeText(title);
+    const normalizedDescription = normalizeText(description);
+    const normalizedBodyPart = normalizeText(bodyPart);
+    const normalizedVideoUrl = normalizeText(videoUrl);
+    const normalizedImageUrl = normalizeText(imageUrl);
 
-    if (!normalizedTitle || !normalizedDescription || !normalizedBodyPart || !difficulty) {
-      response.status(400).json({ message: 'title, description, bodyPart, and difficulty are required' });
+    if (!normalizedTitle) {
+      response.status(400).json({ message: 'title is required' });
+      return;
+    }
+
+    if (!normalizedDescription) {
+      response.status(400).json({ message: 'description is required' });
+      return;
+    }
+
+    if (!normalizedBodyPart || !difficulty) {
+      response.status(400).json({ message: 'bodyPart and difficulty are required' });
       return;
     }
 
@@ -178,8 +193,10 @@ router.post('/exercises', requireAuth, requireTherapist, async (request, respons
       return;
     }
 
-    if (!isPositiveInteger(sets) || !isPositiveInteger(reps) || !isPositiveInteger(durationSeconds)) {
-      response.status(400).json({ message: 'sets, reps, and durationSeconds must be positive numbers' });
+    const exerciseNumbers = parseExerciseNumbers(sets, reps, durationSeconds);
+
+    if ('error' in exerciseNumbers) {
+      response.status(400).json({ message: exerciseNumbers.error });
       return;
     }
 
@@ -189,9 +206,9 @@ router.post('/exercises', requireAuth, requireTherapist, async (request, respons
         description: normalizedDescription,
         bodyPart: normalizedBodyPart,
         difficulty,
-        sets,
-        reps,
-        durationSeconds,
+        sets: exerciseNumbers.data.sets,
+        reps: exerciseNumbers.data.reps,
+        durationSeconds: exerciseNumbers.data.durationSeconds,
         videoUrl: normalizedVideoUrl || null,
         imageUrl: normalizedImageUrl || null,
         createdById: therapist.id,
@@ -537,22 +554,32 @@ type ExerciseInput = {
 
 function parseExerciseInput(body: unknown) {
   const { title, description, bodyPart, difficulty, sets, reps, durationSeconds, videoUrl, imageUrl } = body as ExerciseInput;
-  const normalizedTitle = title?.trim();
-  const normalizedDescription = description?.trim();
-  const normalizedBodyPart = bodyPart?.trim();
-  const normalizedVideoUrl = videoUrl?.trim();
-  const normalizedImageUrl = imageUrl?.trim();
+  const normalizedTitle = normalizeText(title);
+  const normalizedDescription = normalizeText(description);
+  const normalizedBodyPart = normalizeText(bodyPart);
+  const normalizedVideoUrl = normalizeText(videoUrl);
+  const normalizedImageUrl = normalizeText(imageUrl);
 
-  if (!normalizedTitle || !normalizedDescription || !normalizedBodyPart || !difficulty) {
-    return { error: 'title, description, bodyPart, and difficulty are required' };
+  if (!normalizedTitle) {
+    return { error: 'title is required' };
+  }
+
+  if (!normalizedDescription) {
+    return { error: 'description is required' };
+  }
+
+  if (!normalizedBodyPart || !difficulty) {
+    return { error: 'bodyPart and difficulty are required' };
   }
 
   if (!Object.values(Difficulty).includes(difficulty)) {
     return { error: 'difficulty must be EASY, MEDIUM, or HARD' };
   }
 
-  if (!isPositiveInteger(sets) || !isPositiveInteger(reps) || !isPositiveInteger(durationSeconds)) {
-    return { error: 'sets, reps, and durationSeconds must be positive numbers' };
+  const exerciseNumbers = parseExerciseNumbers(sets, reps, durationSeconds);
+
+  if ('error' in exerciseNumbers) {
+    return { error: exerciseNumbers.error };
   }
 
   return {
@@ -561,9 +588,9 @@ function parseExerciseInput(body: unknown) {
       description: normalizedDescription,
       bodyPart: normalizedBodyPart,
       difficulty,
-      sets,
-      reps,
-      durationSeconds,
+      sets: exerciseNumbers.data.sets,
+      reps: exerciseNumbers.data.reps,
+      durationSeconds: exerciseNumbers.data.durationSeconds,
       videoUrl: normalizedVideoUrl || null,
       imageUrl: normalizedImageUrl || null,
     },
@@ -572,6 +599,36 @@ function parseExerciseInput(body: unknown) {
 
 function isPositiveInteger(value: unknown): value is number {
   return typeof value === 'number' && Number.isInteger(value) && value > 0;
+}
+
+function parseExerciseNumbers(sets: unknown, reps: unknown, durationSeconds: unknown) {
+  if (!isPositiveInteger(sets)) {
+    return { error: 'sets must be a positive number' };
+  }
+
+  if (!isPositiveInteger(reps)) {
+    return { error: 'reps must be a positive number' };
+  }
+
+  if (!isPositiveInteger(durationSeconds)) {
+    return { error: 'durationSeconds must be a positive number' };
+  }
+
+  return {
+    data: {
+      sets,
+      reps,
+      durationSeconds,
+    },
+  };
+}
+
+function isValidEmail(value: string) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+}
+
+function normalizeText(value: unknown) {
+  return typeof value === 'string' ? value.trim() : undefined;
 }
 
 function getRouteParam(value: string | string[] | undefined) {

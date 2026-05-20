@@ -18,9 +18,21 @@ router.post('/register', async (request, response, next) => {
       password?: string;
       role?: Role;
     };
+    const normalizedName = normalizeText(name);
+    const normalizedEmail = normalizeText(email)?.toLowerCase();
 
-    if (!name || !email || !password || !role) {
+    if (!normalizedName || !normalizedEmail || !password || !role) {
       response.status(400).json({ message: 'name, email, password, and role are required' });
+      return;
+    }
+
+    if (!isValidEmail(normalizedEmail)) {
+      response.status(400).json({ message: 'email must be a valid email address' });
+      return;
+    }
+
+    if (!hasText(password)) {
+      response.status(400).json({ message: 'password cannot be empty' });
       return;
     }
 
@@ -29,7 +41,6 @@ router.post('/register', async (request, response, next) => {
       return;
     }
 
-    const normalizedEmail = email.trim().toLowerCase();
     const existingUser = await prisma.user.findUnique({
       where: {
         email: normalizedEmail,
@@ -47,7 +58,7 @@ router.post('/register', async (request, response, next) => {
     const passwordHash = await bcrypt.hash(password, 10);
     const user = await prisma.user.create({
       data: {
-        name: name.trim(),
+        name: normalizedName,
         email: normalizedEmail,
         passwordHash,
         role,
@@ -70,15 +81,26 @@ router.post('/login', async (request, response, next) => {
       email?: string;
       password?: string;
     };
+    const normalizedEmail = normalizeText(email)?.toLowerCase();
 
-    if (!email || !password) {
+    if (!normalizedEmail || !password) {
       response.status(400).json({ message: 'email and password are required' });
+      return;
+    }
+
+    if (!isValidEmail(normalizedEmail)) {
+      response.status(400).json({ message: 'email must be a valid email address' });
+      return;
+    }
+
+    if (!hasText(password)) {
+      response.status(400).json({ message: 'password cannot be empty' });
       return;
     }
 
     const user = await prisma.user.findUnique({
       where: {
-        email: email.toLowerCase(),
+        email: normalizedEmail,
       },
     });
 
@@ -108,15 +130,21 @@ router.post('/forgot-password', async (request, response, next) => {
     const { email } = request.body as {
       email?: string;
     };
+    const normalizedEmail = normalizeText(email)?.toLowerCase();
 
-    if (!email) {
+    if (!normalizedEmail) {
       response.status(400).json({ message: 'email is required' });
+      return;
+    }
+
+    if (!isValidEmail(normalizedEmail)) {
+      response.status(400).json({ message: 'email must be a valid email address' });
       return;
     }
 
     const user = await prisma.user.findUnique({
       where: {
-        email: email.trim().toLowerCase(),
+        email: normalizedEmail,
       },
       select: {
         id: true,
@@ -156,15 +184,21 @@ router.post('/reset-password', async (request, response, next) => {
       token?: string;
       password?: string;
     };
+    const normalizedToken = normalizeText(token);
 
-    if (!token || !password) {
+    if (!normalizedToken || !password) {
       response.status(400).json({ message: 'token and password are required' });
+      return;
+    }
+
+    if (!hasText(password)) {
+      response.status(400).json({ message: 'password cannot be empty' });
       return;
     }
 
     const resetToken = await prisma.passwordResetToken.findUnique({
       where: {
-        token,
+        token: normalizedToken,
       },
       select: {
         id: true,
@@ -226,6 +260,18 @@ function toPublicUser(user: {
     createdAt: user.createdAt,
     updatedAt: user.updatedAt,
   };
+}
+
+function isValidEmail(value: string) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+}
+
+function hasText(value: string) {
+  return value.trim().length > 0;
+}
+
+function normalizeText(value: unknown) {
+  return typeof value === 'string' ? value.trim() : undefined;
 }
 
 export default router;
