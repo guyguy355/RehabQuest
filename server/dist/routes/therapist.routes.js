@@ -39,6 +39,22 @@ const assignedExerciseSelect = {
         select: exerciseSelect,
     },
 };
+const patientProgressSelect = {
+    id: true,
+    status: true,
+    dueDate: true,
+    completedAt: true,
+    painLevel: true,
+    difficultyFeedback: true,
+    patientNote: true,
+    createdAt: true,
+    exercise: {
+        select: {
+            title: true,
+            bodyPart: true,
+        },
+    },
+};
 router.post('/patients/link', requireAuth, requireTherapist, async (request, response, next) => {
     try {
         const therapist = request.user;
@@ -336,6 +352,51 @@ router.get('/patients/:patientId/exercises', requireAuth, requireTherapist, asyn
             select: assignedExerciseSelect,
         });
         response.json({ assignments });
+    }
+    catch (error) {
+        next(error);
+    }
+});
+router.get('/patients/:patientId/progress', requireAuth, requireTherapist, async (request, response, next) => {
+    try {
+        const therapist = request.user;
+        const patientId = getRouteParam(request.params.patientId);
+        if (!therapist) {
+            response.status(401).json({ message: 'Authentication required' });
+            return;
+        }
+        if (!patientId) {
+            response.status(400).json({ message: 'Patient id is required' });
+            return;
+        }
+        const linkedPatient = await findLinkedPatient(therapist.id, patientId);
+        if (!linkedPatient) {
+            response.status(404).json({ message: 'Linked patient not found' });
+            return;
+        }
+        const progress = await prisma.patientExercise.findMany({
+            where: {
+                patientId: linkedPatient.patientId,
+                assignedById: therapist.id,
+            },
+            orderBy: {
+                createdAt: 'desc',
+            },
+            select: patientProgressSelect,
+        });
+        response.json({
+            progress: progress.map((assignment) => ({
+                id: assignment.id,
+                status: assignment.status,
+                dueDate: assignment.dueDate,
+                completedAt: assignment.completedAt,
+                painLevel: assignment.painLevel,
+                difficultyFeedback: assignment.difficultyFeedback,
+                patientNote: assignment.patientNote,
+                exerciseTitle: assignment.exercise.title,
+                exerciseBodyPart: assignment.exercise.bodyPart,
+            })),
+        });
     }
     catch (error) {
         next(error);

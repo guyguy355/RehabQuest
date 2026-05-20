@@ -1,4 +1,4 @@
-import { CalendarDays, ClipboardList, Dumbbell, Loader2, Plus, UserRound } from 'lucide-react';
+import { CalendarDays, CheckCircle2, ClipboardList, Dumbbell, HeartPulse, Loader2, Plus, UserRound } from 'lucide-react';
 import { FormEvent, useEffect, useMemo, useState } from 'react';
 
 const apiBaseUrl = 'http://localhost:3000';
@@ -28,10 +28,23 @@ type AssignedExercise = {
   exercise: TherapistExercise;
 };
 
+type PatientProgress = {
+  id: string;
+  status: 'ASSIGNED' | 'COMPLETED' | 'SKIPPED';
+  dueDate?: string | null;
+  completedAt?: string | null;
+  painLevel?: number | null;
+  difficultyFeedback?: string | null;
+  patientNote?: string | null;
+  exerciseTitle: string;
+  exerciseBodyPart: string;
+};
+
 export function ExerciseAssignmentPanel() {
   const [patients, setPatients] = useState<LinkedPatient[]>([]);
   const [exercises, setExercises] = useState<TherapistExercise[]>([]);
   const [assignments, setAssignments] = useState<AssignedExercise[]>([]);
+  const [progress, setProgress] = useState<PatientProgress[]>([]);
   const [selectedPatientId, setSelectedPatientId] = useState('');
   const [selectedExerciseId, setSelectedExerciseId] = useState('');
   const [dueDate, setDueDate] = useState('');
@@ -40,6 +53,7 @@ export function ExerciseAssignmentPanel() {
   const [isError, setIsError] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isAssignmentsLoading, setIsAssignmentsLoading] = useState(false);
+  const [isProgressLoading, setIsProgressLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const selectedPatient = useMemo(
@@ -90,6 +104,7 @@ export function ExerciseAssignmentPanel() {
   async function loadAssignments(patientId: string) {
     if (!patientId) {
       setAssignments([]);
+      setProgress([]);
       return;
     }
 
@@ -118,12 +133,44 @@ export function ExerciseAssignmentPanel() {
     }
   }
 
+  async function loadProgress(patientId: string) {
+    if (!patientId) {
+      setProgress([]);
+      return;
+    }
+
+    setIsProgressLoading(true);
+    setMessage('');
+    setIsError(false);
+
+    try {
+      const response = await fetch(`${apiBaseUrl}/therapist/patients/${patientId}/progress`, {
+        headers: getAuthHeaders(),
+      });
+      const data = await response.json();
+
+      if (!response.ok) {
+        setMessage(data.message ?? 'Could not load patient progress');
+        setIsError(true);
+        return;
+      }
+
+      setProgress(data.progress ?? []);
+    } catch {
+      setMessage('Could not reach the RehabQuest API');
+      setIsError(true);
+    } finally {
+      setIsProgressLoading(false);
+    }
+  }
+
   useEffect(() => {
     void loadDashboardData();
   }, []);
 
   useEffect(() => {
     void loadAssignments(selectedPatientId);
+    void loadProgress(selectedPatientId);
   }, [selectedPatientId]);
 
   async function handleAssign(event: FormEvent<HTMLFormElement>) {
@@ -157,6 +204,7 @@ export function ExerciseAssignmentPanel() {
       setNotes('');
       setMessage('Exercise assigned successfully');
       await loadAssignments(selectedPatientId);
+      await loadProgress(selectedPatientId);
     } catch {
       setMessage('Could not reach the RehabQuest API');
       setIsError(true);
@@ -280,6 +328,8 @@ export function ExerciseAssignmentPanel() {
             ) : (
               <EmptyState title="No assigned exercises yet" text="Assign an exercise with the form." icon={ClipboardList} />
             )}
+
+            <PatientProgressSection progress={progress} isLoading={isProgressLoading} />
           </div>
         </div>
       )}
@@ -294,7 +344,7 @@ function AssignedExerciseCard({ assignment }: { assignment: AssignedExercise }) 
         <div>
           <h4 className="font-display text-xl font-semibold text-on-surface">{assignment.exercise.title}</h4>
           <p className="mt-1 text-sm font-semibold text-on-surface-variant">
-            {assignment.exercise.bodyPart} • {assignment.exercise.sets} sets • {assignment.exercise.reps} reps
+            {assignment.exercise.bodyPart} - {assignment.exercise.sets} sets - {assignment.exercise.reps} reps
           </p>
         </div>
         <span className="w-fit rounded-full bg-surface-container-low px-3 py-1 text-xs font-bold text-on-surface-variant">
@@ -314,6 +364,124 @@ function AssignedExerciseCard({ assignment }: { assignment: AssignedExercise }) 
 
       {assignment.notes ? <p className="mt-3 text-sm leading-6 text-on-surface-variant">{assignment.notes}</p> : null}
     </article>
+  );
+}
+
+function PatientProgressSection({ progress, isLoading }: { progress: PatientProgress[]; isLoading: boolean }) {
+  const completed = progress.filter((item) => item.status === 'COMPLETED');
+  const assigned = progress.filter((item) => item.status !== 'COMPLETED');
+  const painReports = progress.filter((item) => item.painLevel);
+  const patientNotes = progress.filter((item) => item.patientNote);
+
+  return (
+    <section className="mt-6">
+      <div className="mb-3">
+        <p className="text-xs font-bold uppercase tracking-[0.18em] text-primary">Progress</p>
+        <h3 className="mt-1 font-display text-xl font-semibold text-on-surface">Patient progress</h3>
+      </div>
+
+      {isLoading ? (
+        <div className="rounded-2xl border border-outline-variant/40 bg-surface-container-low p-8 text-center">
+          <Loader2 className="mx-auto h-7 w-7 animate-spin text-primary" />
+          <p className="mt-3 font-semibold text-on-surface-variant">Loading patient progress</p>
+        </div>
+      ) : progress.length > 0 ? (
+        <div className="grid gap-4">
+          <div className="grid gap-3 sm:grid-cols-2">
+            <ProgressMetric icon={CheckCircle2} label="Completed" value={String(completed.length)} />
+            <ProgressMetric icon={ClipboardList} label="Assigned" value={String(assigned.length)} />
+          </div>
+          <ProgressList title="Completed exercises" items={completed} emptyText="No completed exercises yet." />
+          <ProgressList title="Assigned exercises" items={assigned} emptyText="No active assignments." />
+          <FeedbackList title="Pain reports" items={painReports} type="pain" />
+          <FeedbackList title="Patient notes" items={patientNotes} type="notes" />
+        </div>
+      ) : (
+        <EmptyState title="No progress yet" text="Assigned exercises and feedback will appear here." icon={ClipboardList} />
+      )}
+    </section>
+  );
+}
+
+function ProgressMetric({ icon: Icon, label, value }: { icon: typeof CheckCircle2; label: string; value: string }) {
+  return (
+    <div className="rounded-2xl bg-surface-container-low p-4">
+      <Icon className="h-5 w-5 text-primary" strokeWidth={2.1} />
+      <p className="mt-2 text-xs font-bold uppercase tracking-[0.14em] text-on-surface-variant">{label}</p>
+      <p className="mt-1 font-display text-2xl font-semibold text-on-surface">{value}</p>
+    </div>
+  );
+}
+
+function ProgressList({ title, items, emptyText }: { title: string; items: PatientProgress[]; emptyText: string }) {
+  return (
+    <div className="rounded-2xl border border-outline-variant/40 bg-surface-container-lowest p-4 shadow-ambient">
+      <h4 className="font-display text-lg font-semibold text-on-surface">{title}</h4>
+      {items.length > 0 ? (
+        <div className="mt-3 grid gap-3">
+          {items.map((item) => (
+            <ProgressRow key={item.id} item={item} />
+          ))}
+        </div>
+      ) : (
+        <p className="mt-3 text-sm font-semibold text-on-surface-variant">{emptyText}</p>
+      )}
+    </div>
+  );
+}
+
+function ProgressRow({ item }: { item: PatientProgress }) {
+  return (
+    <div className="rounded-xl bg-surface-container-low px-4 py-3">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+          <p className="font-semibold text-on-surface">{item.exerciseTitle}</p>
+          <p className="mt-1 text-sm font-semibold text-on-surface-variant">{item.exerciseBodyPart}</p>
+        </div>
+        <span className="w-fit rounded-full bg-surface-container-lowest px-3 py-1 text-xs font-bold text-on-surface-variant">
+          {item.status}
+        </span>
+      </div>
+      <div className="mt-2 flex flex-wrap gap-3 text-sm font-semibold text-on-surface-variant">
+        {item.dueDate ? <span>Due {new Date(item.dueDate).toLocaleDateString()}</span> : null}
+        {item.completedAt ? <span>Completed {new Date(item.completedAt).toLocaleDateString()}</span> : null}
+      </div>
+    </div>
+  );
+}
+
+function FeedbackList({ title, items, type }: { title: string; items: PatientProgress[]; type: 'pain' | 'notes' }) {
+  return (
+    <div className="rounded-2xl border border-outline-variant/40 bg-surface-container-lowest p-4 shadow-ambient">
+      <h4 className="font-display text-lg font-semibold text-on-surface">{title}</h4>
+      {items.length > 0 ? (
+        <div className="mt-3 grid gap-3">
+          {items.map((item) => (
+            <div key={`${type}-${item.id}`} className="rounded-xl bg-surface-container-low px-4 py-3">
+              <div className="flex items-start gap-2">
+                {type === 'pain' ? (
+                  <HeartPulse className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+                ) : (
+                  <ClipboardList className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+                )}
+                <div>
+                  <p className="font-semibold text-on-surface">{item.exerciseTitle}</p>
+                  {type === 'pain' ? (
+                    <p className="mt-1 text-sm font-semibold text-on-surface-variant">
+                      Pain {item.painLevel}/10{item.difficultyFeedback ? ` - ${item.difficultyFeedback}` : ''}
+                    </p>
+                  ) : (
+                    <p className="mt-1 text-sm leading-6 text-on-surface-variant">{item.patientNote}</p>
+                  )}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <p className="mt-3 text-sm font-semibold text-on-surface-variant">No {title.toLowerCase()} yet.</p>
+      )}
+    </div>
   );
 }
 
