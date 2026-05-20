@@ -5,6 +5,7 @@ import { createAuthToken, publicUserSelect } from '../auth.js';
 import { requireAuth } from '../middleware/auth.middleware.js';
 const prisma = new PrismaClient();
 const router = Router();
+const selfRegisterRoles = [Role.PATIENT, Role.THERAPIST];
 router.post('/register', async (request, response, next) => {
     try {
         const { name, email, password, role } = request.body;
@@ -12,15 +13,28 @@ router.post('/register', async (request, response, next) => {
             response.status(400).json({ message: 'name, email, password, and role are required' });
             return;
         }
-        if (!Object.values(Role).includes(role)) {
-            response.status(400).json({ message: 'role must be PATIENT, THERAPIST, or ADMIN' });
+        if (!selfRegisterRoles.includes(role)) {
+            response.status(400).json({ message: 'role must be PATIENT or THERAPIST' });
+            return;
+        }
+        const normalizedEmail = email.trim().toLowerCase();
+        const existingUser = await prisma.user.findUnique({
+            where: {
+                email: normalizedEmail,
+            },
+            select: {
+                id: true,
+            },
+        });
+        if (existingUser) {
+            response.status(409).json({ message: 'Email is already registered' });
             return;
         }
         const passwordHash = await bcrypt.hash(password, 10);
         const user = await prisma.user.create({
             data: {
-                name,
-                email: email.toLowerCase(),
+                name: name.trim(),
+                email: normalizedEmail,
                 passwordHash,
                 role,
             },
