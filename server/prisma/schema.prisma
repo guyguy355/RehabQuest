@@ -112,6 +112,7 @@ model PatientExercise {
   status       PatientExerciseStatus @default(ASSIGNED)
   dueDate      DateTime?
   notes        String?
+  completedAt  DateTime?
   createdAt    DateTime              @default(now())
   updatedAt    DateTime              @updatedAt
 

@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 const apiBaseUrl = 'http://localhost:3000';
 
 type AssignedExercise = {
+  assignmentId: string;
   id: string;
   title: string;
   description: string;
@@ -15,6 +16,7 @@ type AssignedExercise = {
   videoUrl?: string | null;
   dueDate?: string | null;
   notes?: string | null;
+  completedAt?: string | null;
   status: 'ASSIGNED' | 'COMPLETED' | 'SKIPPED';
 };
 
@@ -22,6 +24,8 @@ export function AssignedExercisesSection() {
   const [exercises, setExercises] = useState<AssignedExercise[]>([]);
   const [message, setMessage] = useState('');
   const [isLoading, setIsLoading] = useState(true);
+  const [completingAssignmentId, setCompletingAssignmentId] = useState<string | null>(null);
+  const [actionError, setActionError] = useState('');
 
   useEffect(() => {
     async function loadExercises() {
@@ -46,6 +50,34 @@ export function AssignedExercisesSection() {
 
     void loadExercises();
   }, []);
+
+  async function handleComplete(assignmentId: string) {
+    setActionError('');
+    setCompletingAssignmentId(assignmentId);
+
+    try {
+      const response = await fetch(`${apiBaseUrl}/patient/exercises/${assignmentId}/complete`, {
+        method: 'PATCH',
+        headers: getAuthHeaders(),
+      });
+      const data = await response.json();
+
+      if (!response.ok) {
+        setActionError(data.message ?? 'Could not mark exercise as completed');
+        return;
+      }
+
+      setExercises((current) =>
+        current.map((exercise) =>
+          exercise.assignmentId === assignmentId ? { ...exercise, ...data.exercise } : exercise,
+        ),
+      );
+    } catch {
+      setActionError('Could not reach the RehabQuest API');
+    } finally {
+      setCompletingAssignmentId(null);
+    }
+  }
 
   const groupedExercises = useMemo(() => {
     const today = new Date();
@@ -98,14 +130,34 @@ export function AssignedExercisesSection() {
         <h2 className="mt-1 font-display text-2xl font-semibold text-on-surface">Your Exercises</h2>
       </div>
 
+      {actionError ? (
+        <div className="mb-4 rounded-2xl border border-red-200 bg-red-50 p-5 text-sm font-semibold text-red-700 shadow-ambient">
+          {actionError}
+        </div>
+      ) : null}
+
       <div className="grid gap-6 lg:grid-cols-3">
-        <ExerciseGroup title="Today" exercises={groupedExercises.today} emptyText="No exercises due today." />
+        <ExerciseGroup
+          title="Today"
+          exercises={groupedExercises.today}
+          emptyText="No exercises due today."
+          completingAssignmentId={completingAssignmentId}
+          onComplete={handleComplete}
+        />
         <ExerciseGroup
           title="Upcoming"
           exercises={[...groupedExercises.upcoming, ...groupedExercises.unscheduled]}
           emptyText="No upcoming exercises."
+          completingAssignmentId={completingAssignmentId}
+          onComplete={handleComplete}
         />
-        <ExerciseGroup title="Completed" exercises={groupedExercises.completed} emptyText="No completed exercises yet." />
+        <ExerciseGroup
+          title="Completed"
+          exercises={groupedExercises.completed}
+          emptyText="No completed exercises yet."
+          completingAssignmentId={completingAssignmentId}
+          onComplete={handleComplete}
+        />
       </div>
     </section>
   );
@@ -115,10 +167,14 @@ function ExerciseGroup({
   title,
   exercises,
   emptyText,
+  completingAssignmentId,
+  onComplete,
 }: {
   title: string;
   exercises: AssignedExercise[];
   emptyText: string;
+  completingAssignmentId: string | null;
+  onComplete: (assignmentId: string) => void;
 }) {
   return (
     <div>
@@ -132,7 +188,12 @@ function ExerciseGroup({
       {exercises.length > 0 ? (
         <div className="grid gap-4">
           {exercises.map((exercise) => (
-            <ExerciseCard key={exercise.id} exercise={exercise} />
+            <ExerciseCard
+              key={exercise.assignmentId}
+              exercise={exercise}
+              isCompleting={completingAssignmentId === exercise.assignmentId}
+              onComplete={onComplete}
+            />
           ))}
         </div>
       ) : (
@@ -144,12 +205,22 @@ function ExerciseGroup({
   );
 }
 
-function ExerciseCard({ exercise }: { exercise: AssignedExercise }) {
+function ExerciseCard({
+  exercise,
+  isCompleting,
+  onComplete,
+}: {
+  exercise: AssignedExercise;
+  isCompleting: boolean;
+  onComplete: (assignmentId: string) => void;
+}) {
+  const isCompleted = exercise.status === 'COMPLETED';
+
   return (
     <article className="rounded-2xl border border-outline-variant/40 bg-surface-container-lowest p-5 shadow-ambient">
       <div className="flex items-start gap-4">
         <div className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-primary-container/20 text-primary">
-          {exercise.status === 'COMPLETED' ? (
+          {isCompleted ? (
             <CheckCircle2 className="h-5 w-5" strokeWidth={2.2} />
           ) : (
             <Dumbbell className="h-5 w-5" strokeWidth={2.2} />
@@ -191,6 +262,16 @@ function ExerciseCard({ exercise }: { exercise: AssignedExercise }) {
           {exercise.notes}
         </div>
       ) : null}
+
+      <button
+        type="button"
+        disabled={isCompleted || isCompleting}
+        onClick={() => onComplete(exercise.assignmentId)}
+        className="mt-4 flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-primary px-4 text-sm font-bold text-on-primary transition hover:shadow-ambient-lg active:scale-[0.98] disabled:cursor-not-allowed disabled:bg-surface-container-high disabled:text-on-surface-variant"
+      >
+        {isCompleting ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />}
+        {isCompleted ? 'Completed' : 'Mark as completed'}
+      </button>
     </article>
   );
 }
