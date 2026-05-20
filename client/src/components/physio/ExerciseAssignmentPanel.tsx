@@ -1,5 +1,6 @@
 import { CalendarDays, CheckCircle2, ClipboardList, Dumbbell, HeartPulse, Loader2, Plus, UserRound } from 'lucide-react';
 import { FormEvent, useEffect, useMemo, useState } from 'react';
+import { MessageThread } from '../messages/MessageThread';
 
 const apiBaseUrl = 'http://localhost:3000';
 
@@ -330,6 +331,16 @@ export function ExerciseAssignmentPanel() {
             )}
 
             <PatientProgressSection progress={progress} isLoading={isProgressLoading} />
+
+            {selectedPatientId ? (
+              <div className="mt-6">
+                <MessageThread
+                  userId={selectedPatientId}
+                  title="Patient notes"
+                  subtitle={`Notes with ${selectedPatient?.name || selectedPatient?.email}`}
+                />
+              </div>
+            ) : null}
           </div>
         </div>
       )}

@@ -73,6 +73,41 @@ router.get('/daily-summary', requireAuth, requirePatient, async (request, respon
   }
 });
 
+router.get('/therapists', requireAuth, requirePatient, async (request, response, next) => {
+  try {
+    const patient = request.user;
+
+    if (!patient) {
+      response.status(401).json({ message: 'Authentication required' });
+      return;
+    }
+
+    const links = await prisma.therapistPatient.findMany({
+      where: {
+        patientId: patient.id,
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+      include: {
+        therapist: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          },
+        },
+      },
+    });
+
+    response.json({
+      therapists: links.map((link) => link.therapist),
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
 router.get('/exercises', requireAuth, requirePatient, async (request, response, next) => {
   try {
     const patient = request.user;

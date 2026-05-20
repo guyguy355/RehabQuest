@@ -5,6 +5,7 @@ import { BadgePreviewCard } from '../components/dashboard/BadgePreviewCard';
 import { DailyGoalCard } from '../components/dashboard/DailyGoalCard';
 import { ExercisePreviewCard } from '../components/dashboard/ExercisePreviewCard';
 import { JourneyProgressCard } from '../components/dashboard/JourneyProgressCard';
+import { PatientMessagesSection } from '../components/dashboard/PatientMessagesSection';
 import { ProgressCard } from '../components/dashboard/ProgressCard';
 import { QuestCard } from '../components/dashboard/QuestCard';
 import { StreakCard } from '../components/dashboard/StreakCard';
@@ -61,6 +62,8 @@ export function PatientDashboardPage() {
         <JourneyProgressCard steps={patientDashboardData.journey} weekLabel="Week 1 of 4" />
 
         <AssignedExercisesSection />
+
+        <PatientMessagesSection />
 
         <section className="md:col-span-8">
           <div className="mb-4 flex items-end justify-between gap-4">
