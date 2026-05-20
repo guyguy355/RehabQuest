@@ -1,0 +1,33 @@
+import cors from 'cors';
+import dotenv from 'dotenv';
+import express from 'express';
+import authRoutes from './routes/auth.routes.js';
+import therapistRoutes from './routes/therapist.routes.js';
+
+dotenv.config();
+
+const app = express();
+const port = process.env.PORT ?? 3000;
+
+app.use(cors());
+app.use(express.json());
+
+app.use('/auth', authRoutes);
+app.use('/therapist', therapistRoutes);
+
+app.get('/', (_request, response) => {
+  response.json({
+    message: 'Welcome to the RehabQuest API',
+  });
+});
+
+app.get('/health', (_request, response) => {
+  response.json({
+    status: 'ok',
+    service: 'RehabQuest API',
+  });
+});
+
+app.listen(port, () => {
+  console.log(`RehabQuest API running on port ${port}`);
+});

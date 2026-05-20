@@ -16,6 +16,7 @@ import { PhysioDashboardPage } from '../pages/PhysioDashboardPage';
 import { ProgressPage } from '../pages/ProgressPage';
 import { QuestCompletedPage } from '../pages/QuestCompletedPage';
 import { RegisterPage } from '../pages/RegisterPage';
+import { TherapistPatientsPage } from '../pages/TherapistPatientsPage';
 
 export const router = createBrowserRouter([
   {
@@ -77,6 +78,14 @@ export const router = createBrowserRouter([
   {
     path: '/physio/patients',
     element: <PatientsListPage />,
+  },
+  {
+    path: '/physio/patient-links',
+    element: <TherapistPatientsPage />,
+  },
+  {
+    path: '/therapist/patients',
+    element: <TherapistPatientsPage />,
   },
   {
     path: '/physio/patients/:patientId',

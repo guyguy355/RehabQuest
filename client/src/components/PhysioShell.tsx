@@ -1,10 +1,11 @@
-import { Bell, ClipboardList, Dumbbell, FilePlus2, LayoutDashboard, UsersRound } from 'lucide-react';
+import { Bell, ClipboardList, Dumbbell, FilePlus2, LayoutDashboard, UserPlus, UsersRound } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { Link, NavLink } from 'react-router-dom';
 
 const physioNavItems = [
   { label: 'Dashboard', to: '/physio/dashboard', icon: LayoutDashboard },
   { label: 'Patients', to: '/physio/patients', icon: UsersRound },
+  { label: 'Links', to: '/physio/patient-links', icon: UserPlus },
   { label: 'Plans', to: '/physio/plans/new', icon: FilePlus2 },
   { label: 'Library', to: '/physio/exercises', icon: Dumbbell },
 ];

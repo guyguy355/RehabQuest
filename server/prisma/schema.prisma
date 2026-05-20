@@ -1,0 +1,173 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  PATIENT
+  PHYSIO
+  THERAPIST
+}
+
+enum PlanStatus {
+  ACTIVE
+  COMPLETED
+  PAUSED
+}
+
+enum Difficulty {
+  EASY
+  MEDIUM
+  HARD
+}
+
+model User {
+  id           String   @id @default(cuid())
+  name         String
+  email        String   @unique
+  passwordHash String
+  role         Role
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  patientProfile PatientProfile?
+  physioPatients PatientProfile[]   @relation("PhysioPatients")
+  rehabPlans     RehabPlan[]        @relation("PhysioRehabPlans")
+  badges         UserBadge[]
+  therapistLinks TherapistPatient[] @relation("TherapistLinks")
+  patientLinks   TherapistPatient[] @relation("PatientLinks")
+}
+
+model TherapistPatient {
+  id          String   @id @default(cuid())
+  therapistId String
+  patientId   String
+  createdAt   DateTime @default(now())
+
+  therapist User @relation("TherapistLinks", fields: [therapistId], references: [id], onDelete: Cascade)
+  patient   User @relation("PatientLinks", fields: [patientId], references: [id], onDelete: Cascade)
+
+  @@unique([therapistId, patientId])
+  @@index([therapistId])
+  @@index([patientId])
+}
+
+model PatientProfile {
+  id           String   @id @default(cuid())
+  userId       String   @unique
+  physioId     String?
+  injuryType   String
+  currentStage String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  user            User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  physiotherapist User?            @relation("PhysioPatients", fields: [physioId], references: [id], onDelete: SetNull)
+  rehabPlans      RehabPlan[]
+  completions     TaskCompletion[]
+
+  @@index([userId])
+  @@index([physioId])
+}
+
+model Exercise {
+  id                     String     @id @default(cuid())
+  name                   String
+  description            String
+  instructions           String
+  videoUrl               String?
+  targetArea             String
+  difficulty             Difficulty
+  defaultSets            Int
+  defaultReps            Int
+  defaultDurationSeconds Int
+  safetyNotes            String?
+  createdAt              DateTime   @default(now())
+  updatedAt              DateTime   @updatedAt
+
+  tasks RehabTask[]
+}
+
+model RehabPlan {
+  id         String     @id @default(cuid())
+  patientId  String
+  physioId   String
+  title      String
+  injuryType String
+  startDate  DateTime
+  endDate    DateTime
+  status     PlanStatus @default(ACTIVE)
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+
+  patient PatientProfile @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  physio  User           @relation("PhysioRehabPlans", fields: [physioId], references: [id], onDelete: Restrict)
+  tasks   RehabTask[]
+
+  @@index([patientId])
+  @@index([physioId])
+}
+
+model RehabTask {
+  id              String   @id @default(cuid())
+  planId          String
+  exerciseId      String
+  dayNumber       Int
+  sets            Int
+  reps            Int
+  durationSeconds Int
+  orderIndex      Int
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  plan        RehabPlan        @relation(fields: [planId], references: [id], onDelete: Cascade)
+  exercise    Exercise         @relation(fields: [exerciseId], references: [id], onDelete: Restrict)
+  completions TaskCompletion[]
+
+  @@index([planId])
+}
+
+model TaskCompletion {
+  id          String   @id @default(cuid())
+  taskId      String
+  patientId   String
+  completedAt DateTime @default(now())
+  painLevel   Int
+  notes       String?
+  createdAt   DateTime @default(now())
+
+  task    RehabTask      @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  patient PatientProfile @relation(fields: [patientId], references: [id], onDelete: Cascade)
+
+  @@index([patientId])
+  @@index([taskId])
+}
+
+model Badge {
+  id            String   @id @default(cuid())
+  name          String
+  description   String
+  icon          String?
+  conditionType String
+  createdAt     DateTime @default(now())
+
+  users UserBadge[]
+}
+
+model UserBadge {
+  id       String   @id @default(cuid())
+  userId   String
+  badgeId  String
+  earnedAt DateTime @default(now())
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  badge Badge @relation(fields: [badgeId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, badgeId])
+  @@index([userId])
+  @@index([badgeId])
+}
