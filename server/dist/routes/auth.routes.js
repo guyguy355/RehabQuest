@@ -1,7 +1,8 @@
 import { PrismaClient, Role } from '@prisma/client';
 import bcrypt from 'bcrypt';
 import { Router } from 'express';
-import { createAuthToken, getUserIdFromAuthHeader, publicUserSelect } from '../auth.js';
+import { createAuthToken, publicUserSelect } from '../auth.js';
+import { requireAuth } from '../middleware/auth.middleware.js';
 const prisma = new PrismaClient();
 const router = Router();
 router.post('/register', async (request, response, next) => {
@@ -64,28 +65,8 @@ router.post('/login', async (request, response, next) => {
         next(error);
     }
 });
-router.get('/me', async (request, response, next) => {
-    try {
-        const userId = getUserIdFromAuthHeader(request.headers.authorization);
-        if (!userId) {
-            response.status(401).json({ message: 'Missing or invalid Authorization header' });
-            return;
-        }
-        const user = await prisma.user.findUnique({
-            where: {
-                id: userId,
-            },
-            select: publicUserSelect,
-        });
-        if (!user) {
-            response.status(401).json({ message: 'Invalid auth token' });
-            return;
-        }
-        response.json({ user });
-    }
-    catch (error) {
-        next(error);
-    }
+router.get('/me', requireAuth, (request, response) => {
+    response.json({ user: request.user });
 });
 function toPublicUser(user) {
     return {

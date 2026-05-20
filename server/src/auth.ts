@@ -1,4 +1,4 @@
-import type { PrismaClient } from '@prisma/client';
+import type { Prisma, PrismaClient } from '@prisma/client';
 
 const publicUserSelect = {
   id: true,
@@ -8,6 +8,10 @@ const publicUserSelect = {
   createdAt: true,
   updatedAt: true,
 } as const;
+
+export type AuthenticatedUser = Prisma.UserGetPayload<{
+  select: typeof publicUserSelect;
+}>;
 
 export function createAuthToken(userId: string) {
   return Buffer.from(userId, 'utf8').toString('base64url');

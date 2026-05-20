@@ -1,6 +1,6 @@
 import { Prisma, PrismaClient, Role } from '@prisma/client';
 import { Router } from 'express';
-import { getAuthenticatedUser } from '../auth.js';
+import { requireAuth, requireTherapist } from '../middleware/auth.middleware.js';
 const prisma = new PrismaClient();
 const router = Router();
 const linkedPatientSelect = {
@@ -11,10 +11,11 @@ const linkedPatientSelect = {
     createdAt: true,
     updatedAt: true,
 };
-router.post('/patients/link', async (request, response, next) => {
+router.post('/patients/link', requireAuth, requireTherapist, async (request, response, next) => {
     try {
-        const therapist = await getTherapistUser(request.headers.authorization, response);
+        const therapist = request.user;
         if (!therapist) {
+            response.status(401).json({ message: 'Authentication required' });
             return;
         }
         const { patientEmail } = request.body;
@@ -77,10 +78,11 @@ router.post('/patients/link', async (request, response, next) => {
         next(error);
     }
 });
-router.get('/patients', async (request, response, next) => {
+router.get('/patients', requireAuth, requireTherapist, async (request, response, next) => {
     try {
-        const therapist = await getTherapistUser(request.headers.authorization, response);
+        const therapist = request.user;
         if (!therapist) {
+            response.status(401).json({ message: 'Authentication required' });
             return;
         }
         const links = await prisma.therapistPatient.findMany({
@@ -108,16 +110,4 @@ router.get('/patients', async (request, response, next) => {
         next(error);
     }
 });
-async function getTherapistUser(authorization, response) {
-    const user = await getAuthenticatedUser(prisma, authorization);
-    if (!user) {
-        response.status(401).json({ message: 'Missing or invalid Authorization header' });
-        return null;
-    }
-    if (user.role !== Role.THERAPIST) {
-        response.status(403).json({ message: 'Only therapists can manage linked patients' });
-        return null;
-    }
-    return user;
-}
 export default router;
