@@ -16,12 +16,14 @@ export function TherapistPatientsPage() {
   const [patientEmail, setPatientEmail] = useState('');
   const [patients, setPatients] = useState<LinkedPatient[]>([]);
   const [message, setMessage] = useState('');
+  const [isError, setIsError] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   async function loadPatients() {
     setIsLoading(true);
     setMessage('');
+    setIsError(false);
 
     try {
       const response = await fetch(`${apiBaseUrl}/therapist/patients`, {
@@ -31,12 +33,14 @@ export function TherapistPatientsPage() {
 
       if (!response.ok) {
         setMessage(data.message ?? 'Could not load linked patients');
+        setIsError(true);
         return;
       }
 
       setPatients(data.patients ?? []);
     } catch {
       setMessage('Could not reach the RehabQuest API');
+      setIsError(true);
     } finally {
       setIsLoading(false);
     }
@@ -49,6 +53,7 @@ export function TherapistPatientsPage() {
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setMessage('');
+    setIsError(false);
     setIsSubmitting(true);
 
     try {
@@ -64,6 +69,7 @@ export function TherapistPatientsPage() {
 
       if (!response.ok) {
         setMessage(data.message ?? 'Could not link patient');
+        setIsError(true);
         return;
       }
 
@@ -72,6 +78,7 @@ export function TherapistPatientsPage() {
       await loadPatients();
     } catch {
       setMessage('Could not reach the RehabQuest API');
+      setIsError(true);
     } finally {
       setIsSubmitting(false);
     }
@@ -112,7 +119,14 @@ export function TherapistPatientsPage() {
           </form>
 
           {message ? (
-            <p className="mt-4 rounded-xl bg-surface-container-low px-4 py-3 text-sm font-semibold text-on-surface-variant">
+            <p
+              className={[
+                'mt-4 rounded-xl px-4 py-3 text-sm font-semibold',
+                isError
+                  ? 'border border-red-200 bg-red-50 text-red-700'
+                  : 'bg-surface-container-low text-on-surface-variant',
+              ].join(' ')}
+            >
               {message}
             </p>
           ) : null}

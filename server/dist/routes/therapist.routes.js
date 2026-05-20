@@ -1,4 +1,4 @@
-import { PrismaClient, Role } from '@prisma/client';
+import { Prisma, PrismaClient, Role } from '@prisma/client';
 import { Router } from 'express';
 import { getAuthenticatedUser } from '../auth.js';
 const prisma = new PrismaClient();
@@ -29,8 +29,16 @@ router.post('/patients/link', async (request, response, next) => {
             },
             select: linkedPatientSelect,
         });
-        if (!patient || patient.role !== Role.PATIENT) {
+        if (!patient) {
             response.status(404).json({ message: 'Patient not found' });
+            return;
+        }
+        if (patient.id === therapist.id) {
+            response.status(400).json({ message: 'Therapists cannot link themselves as patients' });
+            return;
+        }
+        if (patient.role !== Role.PATIENT) {
+            response.status(400).json({ message: 'Linked user must have role PATIENT' });
             return;
         }
         const existingLink = await prisma.therapistPatient.findUnique({
@@ -62,6 +70,10 @@ router.post('/patients/link', async (request, response, next) => {
         });
     }
     catch (error) {
+        if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
+            response.status(409).json({ message: 'Patient is already linked to this therapist' });
+            return;
+        }
         next(error);
     }
 });
