@@ -1,5 +1,6 @@
 import { CalendarCheck, HeartPulse, TrendingUp } from 'lucide-react';
 import { AppShell } from '../components/AppShell';
+import { AssignedExercisesSection } from '../components/dashboard/AssignedExercisesSection';
 import { BadgePreviewCard } from '../components/dashboard/BadgePreviewCard';
 import { ExercisePreviewCard } from '../components/dashboard/ExercisePreviewCard';
 import { JourneyProgressCard } from '../components/dashboard/JourneyProgressCard';
@@ -55,6 +56,8 @@ export function PatientDashboardPage() {
         </div>
 
         <JourneyProgressCard steps={patientDashboardData.journey} weekLabel="Week 1 of 4" />
+
+        <AssignedExercisesSection />
 
         <section className="md:col-span-8">
           <div className="mb-4 flex items-end justify-between gap-4">
