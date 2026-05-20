@@ -12,7 +12,7 @@ router.post('/register', async (request, response, next) => {
             return;
         }
         if (!Object.values(Role).includes(role)) {
-            response.status(400).json({ message: 'role must be PATIENT, PHYSIO, or THERAPIST' });
+            response.status(400).json({ message: 'role must be PATIENT, THERAPIST, or ADMIN' });
             return;
         }
         const passwordHash = await bcrypt.hash(password, 10);

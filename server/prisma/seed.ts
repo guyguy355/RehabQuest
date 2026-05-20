@@ -87,6 +87,7 @@ const badgeData = [
 ];
 
 async function clearDemoData() {
+  await prisma.therapistPatient.deleteMany();
   await prisma.userBadge.deleteMany();
   await prisma.badge.deleteMany();
   await prisma.taskCompletion.deleteMany();
@@ -97,7 +98,12 @@ async function clearDemoData() {
   await prisma.user.deleteMany({
     where: {
       email: {
-        in: ['physio@rehabquest.com', 'patient@rehabquest.com'],
+        in: [
+          'physio@rehabquest.com',
+          'therapist@rehabquest.com',
+          'patient@rehabquest.com',
+          'admin@rehabquest.com',
+        ],
       },
     },
   });
@@ -108,12 +114,12 @@ async function main() {
 
   await clearDemoData();
 
-  const physioUser = await prisma.user.create({
+  const therapistUser = await prisma.user.create({
     data: {
       name: 'Dr. Amit Levi',
-      email: 'physio@rehabquest.com',
+      email: 'therapist@rehabquest.com',
       passwordHash,
-      role: Role.PHYSIO,
+      role: Role.THERAPIST,
     },
   });
 
@@ -126,10 +132,19 @@ async function main() {
     },
   });
 
+  await prisma.user.create({
+    data: {
+      name: 'RehabQuest Admin',
+      email: 'admin@rehabquest.com',
+      passwordHash,
+      role: Role.ADMIN,
+    },
+  });
+
   const patientProfile = await prisma.patientProfile.create({
     data: {
       userId: patientUser.id,
-      physioId: physioUser.id,
+      physioId: therapistUser.id,
       injuryType: 'Knee rehabilitation',
       currentStage: 'Strength & stability',
     },
@@ -161,7 +176,7 @@ async function main() {
   const rehabPlan = await prisma.rehabPlan.create({
     data: {
       patientId: patientProfile.id,
-      physioId: physioUser.id,
+      physioId: therapistUser.id,
       title: 'Knee Stability Phase 1',
       injuryType: 'Knee rehabilitation',
       startDate: new Date('2026-05-01T00:00:00.000Z'),
@@ -247,6 +262,13 @@ async function main() {
       userId: patientUser.id,
       badgeId: getBadgeId(badges, badgeName),
     })),
+  });
+
+  await prisma.therapistPatient.create({
+    data: {
+      therapistId: therapistUser.id,
+      patientId: patientUser.id,
+    },
   });
 
   console.log('RehabQuest demo seed data created successfully.');
