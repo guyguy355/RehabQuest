@@ -197,18 +197,18 @@ export function TherapistExercisesPage() {
 
   return (
     <PhysioShell>
-      <main className="mx-auto max-w-[1140px] px-5 py-7">
-        <section className="rounded-2xl border border-outline-variant/40 bg-surface-container-lowest p-6 shadow-ambient md:p-8">
+      <main className="mx-auto max-w-[1140px] px-4 py-6 sm:px-5 sm:py-7">
+        <section className="rounded-2xl border border-outline-variant/40 bg-surface-container-lowest p-5 shadow-ambient sm:p-6 md:p-8">
           <p className="text-xs font-bold uppercase tracking-[0.18em] text-primary">Custom exercises</p>
-          <h1 className="mt-2 font-display text-[2.3rem] font-bold leading-tight text-on-background md:text-[2.9rem]">
+          <h1 className="mt-2 break-words font-display text-[2rem] font-bold leading-tight text-on-background sm:text-[2.3rem] md:text-[2.9rem]">
             Therapist Exercises
           </h1>
-          <p className="mt-2 max-w-2xl text-lg font-semibold text-on-surface-variant">
+          <p className="mt-2 max-w-2xl text-base font-semibold text-on-surface-variant sm:text-lg">
             Create exercise templates that stay scoped to your therapist account.
           </p>
         </section>
 
-        <section className="mt-6 rounded-2xl border border-outline-variant/40 bg-surface-container-lowest p-6 shadow-ambient">
+        <section className="mt-6 rounded-2xl border border-outline-variant/40 bg-surface-container-lowest p-5 shadow-ambient sm:p-6">
           <div className="mb-5">
             <p className="text-xs font-bold uppercase tracking-[0.18em] text-primary">
               {editingExerciseId ? 'Edit' : 'Create'}
@@ -279,7 +279,7 @@ export function TherapistExercisesPage() {
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="flex h-12 items-center justify-center gap-2 rounded-xl bg-primary px-5 font-display text-sm font-semibold text-on-primary shadow-md transition hover:shadow-ambient-lg active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
+                className="flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-primary px-5 font-display text-sm font-semibold text-on-primary shadow-md transition hover:shadow-ambient-lg active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
               >
                 {isSubmitting ? <Loader2 className="h-5 w-5 animate-spin" /> : <Save className="h-5 w-5" />}
                 {editingExerciseId ? 'Save Changes' : 'Create Exercise'}
@@ -288,7 +288,7 @@ export function TherapistExercisesPage() {
                 <button
                   type="button"
                   onClick={cancelEdit}
-                  className="flex h-12 items-center justify-center gap-2 rounded-xl border border-outline-variant/60 px-5 font-display text-sm font-semibold text-on-surface-variant transition hover:bg-surface-container-high"
+                  className="flex min-h-12 w-full items-center justify-center gap-2 rounded-xl border border-outline-variant/60 px-5 font-display text-sm font-semibold text-on-surface-variant transition hover:bg-surface-container-high sm:w-auto"
                 >
                   <X className="h-5 w-5" />
                   Cancel
@@ -373,7 +373,7 @@ function ExerciseCard({
   onDelete: (exerciseId: string) => void;
 }) {
   return (
-    <article className="rounded-2xl border border-outline-variant/40 bg-surface-container-lowest p-5 shadow-ambient">
+    <article className="rounded-2xl border border-outline-variant/40 bg-surface-container-lowest p-4 shadow-ambient sm:p-5">
       {exercise.imageUrl ? (
         <img
           src={exercise.imageUrl}
@@ -387,14 +387,14 @@ function ExerciseCard({
           <Dumbbell className="h-6 w-6" strokeWidth={2.2} />
         </div>
         <div className="min-w-0">
-          <h3 className="font-display text-2xl font-semibold text-on-surface">{exercise.title}</h3>
+          <h3 className="break-words font-display text-xl font-semibold text-on-surface sm:text-2xl">{exercise.title}</h3>
           <p className="mt-1 text-sm font-semibold text-on-surface-variant">{exercise.bodyPart}</p>
         </div>
       </div>
 
       <p className="mt-5 text-sm leading-6 text-on-surface-variant">{exercise.description}</p>
 
-      <div className="mt-5 grid grid-cols-3 gap-3">
+      <div className="mt-5 grid gap-3 sm:grid-cols-3">
         <Metric icon={Target} label="Sets" value={String(exercise.sets)} />
         <Metric icon={Repeat2} label="Reps" value={String(exercise.reps)} />
         <Metric icon={Clock3} label="Duration" value={`${exercise.durationSeconds}s`} />
@@ -415,7 +415,7 @@ function ExerciseCard({
         <button
           type="button"
           onClick={() => onEdit(exercise)}
-          className="flex h-11 items-center justify-center gap-2 rounded-xl border border-outline-variant/60 px-4 text-sm font-bold text-on-surface-variant transition hover:bg-surface-container-high"
+          className="flex min-h-12 items-center justify-center gap-2 rounded-xl border border-outline-variant/60 px-4 text-sm font-bold text-on-surface-variant transition hover:bg-surface-container-high"
         >
           <Pencil className="h-4 w-4" />
           Edit
@@ -424,7 +424,7 @@ function ExerciseCard({
           type="button"
           disabled={isDeleting}
           onClick={() => onDelete(exercise.id)}
-          className="flex h-11 items-center justify-center gap-2 rounded-xl border border-red-200 px-4 text-sm font-bold text-red-700 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-60"
+          className="flex min-h-12 items-center justify-center gap-2 rounded-xl border border-red-200 px-4 text-sm font-bold text-red-700 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-60"
         >
           {isDeleting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
           Delete

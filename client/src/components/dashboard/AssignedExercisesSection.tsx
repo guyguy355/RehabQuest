@@ -177,7 +177,7 @@ export function AssignedExercisesSection() {
         </div>
       ) : null}
 
-      <div className="grid gap-6 lg:grid-cols-3">
+      <div className="grid gap-5 lg:grid-cols-3 lg:gap-6">
         <ExerciseGroup
           title="Today"
           exercises={groupedExercises.today}
@@ -280,7 +280,7 @@ function ExerciseCard({
   const isCompleted = exercise.status === 'COMPLETED';
 
   return (
-    <article className="rounded-2xl border border-outline-variant/40 bg-surface-container-lowest p-5 shadow-ambient">
+    <article className="rounded-2xl border border-outline-variant/40 bg-surface-container-lowest p-4 shadow-ambient sm:p-5">
       {exercise.imageUrl ? (
         <img
           src={exercise.imageUrl}
@@ -305,7 +305,7 @@ function ExerciseCard({
 
       <p className="mt-4 text-sm leading-6 text-on-surface-variant">{exercise.description}</p>
 
-      <div className="mt-4 grid grid-cols-3 gap-2">
+      <div className="mt-4 grid gap-2 sm:grid-cols-3">
         <Metric icon={Target} label="Sets" value={String(exercise.sets)} />
         <Metric icon={Repeat2} label="Reps" value={String(exercise.reps)} />
         <Metric icon={Clock3} label="Time" value={`${exercise.durationSeconds}s`} />
@@ -381,7 +381,7 @@ function FeedbackForm({
   }
 
   return (
-    <form onSubmit={handleSubmit} className="mt-4 grid gap-3 rounded-xl bg-surface-container-low p-4">
+    <form onSubmit={handleSubmit} className="mt-4 grid gap-3 rounded-xl bg-surface-container-low p-3 sm:p-4">
       <p className="text-sm font-bold text-on-surface">How did it feel?</p>
       <label className="grid gap-2">
         <span className="text-xs font-bold uppercase tracking-[0.12em] text-on-surface-variant">Pain level</span>
@@ -415,7 +415,7 @@ function FeedbackForm({
       <button
         type="submit"
         disabled={isSaving}
-        className="flex h-11 items-center justify-center gap-2 rounded-xl bg-primary px-4 text-sm font-bold text-on-primary transition hover:shadow-ambient-lg active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
+        className="flex min-h-12 items-center justify-center gap-2 rounded-xl bg-primary px-4 text-sm font-bold text-on-primary transition hover:shadow-ambient-lg active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
       >
         {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />}
         Save Feedback

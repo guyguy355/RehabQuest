@@ -40,7 +40,7 @@ export function DailyGoalCard() {
   }, []);
 
   return (
-    <section className="rounded-2xl border border-outline-variant/40 bg-surface-container-lowest p-6 shadow-ambient md:col-span-12">
+    <section className="rounded-2xl border border-outline-variant/40 bg-surface-container-lowest p-5 shadow-ambient sm:p-6 md:col-span-12">
       <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
         <div>
           <span className="inline-flex items-center gap-2 rounded-full bg-secondary-container px-4 py-1.5 text-xs font-bold uppercase tracking-wide text-on-secondary-container">
@@ -56,7 +56,7 @@ export function DailyGoalCard() {
         <div className="grid gap-3 sm:grid-cols-2 lg:min-w-[360px]">
           <div className="rounded-2xl bg-surface-container-low p-4">
             <Target className="h-5 w-5 text-primary" />
-            <p className="mt-2 text-xs font-bold uppercase tracking-[0.14em] text-on-surface-variant">Completed today</p>
+            <p className="mt-2 text-xs font-bold uppercase tracking-[0.1em] text-on-surface-variant sm:tracking-[0.14em]">Completed today</p>
             <p className="mt-1 font-display text-2xl font-semibold text-on-surface">
               {isLoading ? '...' : `${summary?.completedDueToday ?? 0}/${summary?.totalDueToday ?? 0}`}
             </p>

@@ -9,10 +9,10 @@ import { Link } from 'react-router-dom';
 export function ProgressPage() {
   return (
     <AppShell>
-      <main className="mx-auto max-w-[1140px] px-5 py-7">
-        <section className="rounded-2xl border border-outline-variant/40 bg-surface-container-lowest p-6 shadow-ambient md:p-8">
+      <main className="mx-auto max-w-[1140px] px-4 py-6 sm:px-5 sm:py-7">
+        <section className="rounded-2xl border border-outline-variant/40 bg-surface-container-lowest p-5 shadow-ambient sm:p-6 md:p-8">
           <p className="text-xs font-bold uppercase tracking-[0.18em] text-primary">Progress</p>
-          <h1 className="mt-2 font-display text-[2.3rem] font-bold leading-tight text-on-background md:text-[2.9rem]">
+          <h1 className="mt-2 break-words font-display text-[2rem] font-bold leading-tight text-on-background sm:text-[2.3rem] md:text-[2.9rem]">
             Your Recovery Progress
           </h1>
           <p className="mt-2 text-lg font-semibold text-on-surface">Knee Stability Phase 1</p>
@@ -40,7 +40,7 @@ export function ProgressPage() {
           </section>
         </div>
 
-        <section className="mt-6 rounded-2xl border border-outline-variant/40 bg-surface-container-lowest p-6 shadow-ambient">
+        <section className="mt-6 rounded-2xl border border-outline-variant/40 bg-surface-container-lowest p-5 shadow-ambient sm:p-6">
           <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
             <div>
               <p className="text-xs font-bold uppercase tracking-[0.18em] text-primary">Badges</p>
@@ -48,12 +48,12 @@ export function ProgressPage() {
             </div>
             <Link
               to="/patient/badges"
-              className="inline-flex h-11 items-center justify-center rounded-xl border border-primary px-4 text-sm font-bold text-primary transition hover:bg-primary/5"
+              className="inline-flex min-h-12 w-full items-center justify-center rounded-xl border border-primary px-4 text-sm font-bold text-primary transition hover:bg-primary/5 sm:w-auto"
             >
               View all badges
             </Link>
           </div>
-          <div className="grid gap-4 sm:grid-cols-3">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {earnedBadges.map((badge) => (
               <EarnedBadgeCard key={badge.name} {...badge} />
             ))}

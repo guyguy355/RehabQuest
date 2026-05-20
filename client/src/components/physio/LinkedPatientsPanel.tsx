@@ -95,7 +95,7 @@ export function LinkedPatientsPanel({
   }
 
   return (
-    <section className="rounded-2xl border border-outline-variant/40 bg-surface-container-lowest p-6 shadow-ambient">
+    <section className="rounded-2xl border border-outline-variant/40 bg-surface-container-lowest p-5 shadow-ambient sm:p-6">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <p className="text-xs font-bold uppercase tracking-[0.18em] text-primary">Patient links</p>
@@ -105,7 +105,7 @@ export function LinkedPatientsPanel({
         <button
           type="button"
           onClick={loadPatients}
-          className="flex h-11 items-center justify-center gap-2 rounded-xl border border-outline-variant/60 px-4 text-sm font-bold text-on-surface-variant transition hover:bg-surface-container-high"
+          className="flex min-h-12 w-full items-center justify-center gap-2 rounded-xl border border-outline-variant/60 px-4 text-sm font-bold text-on-surface-variant transition hover:bg-surface-container-high sm:w-auto"
         >
           <RefreshCw className="h-4 w-4" />
           Refresh
@@ -127,7 +127,7 @@ export function LinkedPatientsPanel({
         <button
           type="submit"
           disabled={isSubmitting}
-          className="flex h-12 items-center justify-center gap-2 rounded-xl bg-primary px-5 font-display text-sm font-semibold text-on-primary shadow-md transition hover:shadow-ambient-lg active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
+          className="flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-primary px-5 font-display text-sm font-semibold text-on-primary shadow-md transition hover:shadow-ambient-lg active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60 md:w-auto"
         >
           {isSubmitting ? <Loader2 className="h-5 w-5 animate-spin" /> : <UserPlus className="h-5 w-5" />}
           Link Patient
@@ -175,14 +175,14 @@ function LinkedPatientRow({ patient }: { patient: LinkedPatient }) {
   const linkDate = patient.linkedAt ?? patient.createdAt;
 
   return (
-    <article className="rounded-2xl border border-outline-variant/40 bg-surface-container-lowest p-5 shadow-ambient">
+    <article className="rounded-2xl border border-outline-variant/40 bg-surface-container-lowest p-4 shadow-ambient sm:p-5">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="min-w-0">
-          <h3 className="font-display text-2xl font-semibold text-on-surface">{patient.name || 'Unnamed patient'}</h3>
+          <h3 className="break-words font-display text-xl font-semibold text-on-surface sm:text-2xl">{patient.name || 'Unnamed patient'}</h3>
           <p className="mt-1 break-words text-sm font-semibold text-on-surface-variant">{patient.email}</p>
         </div>
         {linkDate ? (
-          <div className="rounded-xl bg-surface-container-low px-4 py-3 text-sm font-semibold text-on-surface-variant">
+          <div className="w-full rounded-xl bg-surface-container-low px-4 py-3 text-sm font-semibold text-on-surface-variant sm:w-auto">
             Linked {new Date(linkDate).toLocaleDateString()}
           </div>
         ) : null}

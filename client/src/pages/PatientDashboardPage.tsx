@@ -16,13 +16,13 @@ export function PatientDashboardPage() {
 
   return (
     <AppShell>
-      <main className="mx-auto grid max-w-[1140px] grid-cols-1 gap-6 px-5 py-7 md:grid-cols-12">
+      <main className="mx-auto grid max-w-[1140px] grid-cols-1 gap-5 px-4 py-6 sm:px-5 sm:py-7 md:grid-cols-12 md:gap-6">
         <section className="flex flex-col items-start justify-between gap-5 md:col-span-12 md:flex-row md:items-center">
-          <div>
-            <h1 className="font-display text-[2.45rem] font-bold leading-tight text-on-background md:text-[2.8rem]">
+          <div className="min-w-0">
+            <h1 className="break-words font-display text-[2rem] font-bold leading-tight text-on-background sm:text-[2.45rem] md:text-[2.8rem]">
               Good morning, {firstName}!
             </h1>
-            <p className="mt-1 text-lg italic text-on-surface-variant">Consistency is the key to recovery.</p>
+            <p className="mt-1 text-base italic text-on-surface-variant sm:text-lg">Consistency is the key to recovery.</p>
             <p className="mt-3 text-sm font-semibold text-on-surface-variant">
               {patientDashboardData.injury} - {patientDashboardData.currentPlan}
             </p>
@@ -66,7 +66,7 @@ export function PatientDashboardPage() {
         <PatientMessagesSection />
 
         <section className="md:col-span-8">
-          <div className="mb-4 flex items-end justify-between gap-4">
+          <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
             <div>
               <p className="text-xs font-bold uppercase tracking-[0.18em] text-primary">Today</p>
               <h2 className="mt-1 font-display text-2xl font-semibold text-on-surface">Exercise Preview</h2>

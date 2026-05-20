@@ -17,15 +17,15 @@ type PhysioShellProps = {
 
 export function PhysioShell({ children }: PhysioShellProps) {
   return (
-    <div className="min-h-screen bg-background text-on-background">
+    <div className="min-h-screen overflow-x-hidden bg-background text-on-background">
       <header className="sticky top-0 z-40 border-b border-outline-variant/40 bg-surface/95 shadow-sm backdrop-blur">
-        <div className="mx-auto flex h-[72px] max-w-[1140px] items-center justify-between px-5">
-          <Link to="/physio/dashboard" className="flex items-center gap-3">
+        <div className="mx-auto flex h-[72px] max-w-[1140px] items-center justify-between gap-3 px-4 sm:px-5">
+          <Link to="/physio/dashboard" className="flex min-w-0 items-center gap-3">
             <div className="grid h-10 w-10 place-items-center rounded-full bg-primary text-on-primary">
               <ClipboardList className="h-5 w-5" strokeWidth={2.2} />
             </div>
-            <div>
-              <span className="block font-display text-2xl font-bold text-primary">RehabQuest</span>
+            <div className="min-w-0">
+              <span className="block truncate font-display text-xl font-bold text-primary sm:text-2xl">RehabQuest</span>
               <span className="block text-xs font-bold uppercase tracking-[0.16em] text-on-surface-variant">
                 Clinician
               </span>
@@ -69,14 +69,14 @@ export function PhysioShell({ children }: PhysioShellProps) {
       </header>
 
       <nav className="border-b border-outline-variant/40 bg-surface px-4 py-3 lg:hidden">
-        <div className="mx-auto flex max-w-[1140px] gap-2 overflow-x-auto">
+        <div className="mx-auto flex max-w-[1140px] flex-wrap gap-2">
           {physioNavItems.map((item) => (
             <NavLink
               key={item.label}
               to={item.to}
               className={({ isActive }) =>
                 [
-                  'flex h-10 shrink-0 items-center gap-2 rounded-xl px-3 text-sm font-bold transition',
+                  'flex min-h-11 shrink-0 items-center gap-2 rounded-xl px-3 text-sm font-bold transition',
                   isActive ? 'bg-secondary-container text-on-secondary-container' : 'text-on-surface-variant hover:bg-surface-container-high',
                 ].join(' ')
               }

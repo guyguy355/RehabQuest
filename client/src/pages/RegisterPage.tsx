@@ -51,10 +51,10 @@ export function RegisterPage() {
   }
 
   return (
-    <main className="min-h-screen bg-background px-5 py-10 text-on-background">
-      <section className="mx-auto max-w-[520px] rounded-2xl border border-outline-variant/40 bg-surface-container-lowest p-6 shadow-ambient md:p-8">
+    <main className="min-h-screen overflow-x-hidden bg-background px-4 py-6 text-on-background sm:px-5 sm:py-10">
+      <section className="mx-auto max-w-[520px] rounded-2xl border border-outline-variant/40 bg-surface-container-lowest p-5 shadow-ambient sm:p-6 md:p-8">
         <p className="text-xs font-bold uppercase tracking-[0.18em] text-primary">Join RehabQuest</p>
-        <h1 className="mt-2 font-display text-[2.3rem] font-bold leading-tight text-on-background">
+        <h1 className="mt-2 font-display text-[2rem] font-bold leading-tight text-on-background sm:text-[2.3rem]">
           Create your account
         </h1>
         <p className="mt-2 text-sm font-semibold text-on-surface-variant">
@@ -71,7 +71,7 @@ export function RegisterPage() {
             <select
               value={role}
               onChange={(event) => setRole(event.target.value as RegisterRole)}
-              className="h-12 rounded-xl border border-outline-variant/50 bg-surface-container-lowest px-4 text-on-surface shadow-ambient outline-none transition focus:border-primary focus:ring-4 focus:ring-primary/10"
+              className="h-12 w-full min-w-0 rounded-xl border border-outline-variant/50 bg-surface-container-lowest px-4 text-on-surface shadow-ambient outline-none transition focus:border-primary focus:ring-4 focus:ring-primary/10"
             >
               <option value="PATIENT">Patient</option>
               <option value="THERAPIST">Therapist</option>
@@ -87,7 +87,7 @@ export function RegisterPage() {
           <button
             type="submit"
             disabled={isSubmitting}
-            className="flex h-12 items-center justify-center gap-2 rounded-xl bg-primary px-5 font-display text-sm font-semibold text-on-primary shadow-md transition hover:shadow-ambient-lg active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
+            className="flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-primary px-5 font-display text-sm font-semibold text-on-primary shadow-md transition hover:shadow-ambient-lg active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
           >
             {isSubmitting ? <Loader2 className="h-5 w-5 animate-spin" /> : <UserPlus className="h-5 w-5" />}
             Create Account
@@ -123,7 +123,7 @@ function TextField({
         type={type}
         value={value}
         onChange={(event) => onChange(event.target.value)}
-        className="h-12 rounded-xl border border-outline-variant/50 bg-surface-container-lowest px-4 text-on-surface shadow-ambient outline-none transition focus:border-primary focus:ring-4 focus:ring-primary/10"
+        className="h-12 w-full min-w-0 rounded-xl border border-outline-variant/50 bg-surface-container-lowest px-4 text-on-surface shadow-ambient outline-none transition focus:border-primary focus:ring-4 focus:ring-primary/10"
       />
     </label>
   );

@@ -215,7 +215,7 @@ export function ExerciseAssignmentPanel() {
   }
 
   return (
-    <section className="rounded-2xl border border-outline-variant/40 bg-surface-container-lowest p-6 shadow-ambient">
+    <section className="rounded-2xl border border-outline-variant/40 bg-surface-container-lowest p-5 shadow-ambient sm:p-6">
       <div className="mb-5">
         <p className="text-xs font-bold uppercase tracking-[0.18em] text-primary">Assignments</p>
         <h2 className="mt-1 font-display text-2xl font-semibold text-on-surface">Assign exercises</h2>
@@ -300,7 +300,7 @@ export function ExerciseAssignmentPanel() {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="flex h-12 items-center justify-center gap-2 rounded-xl bg-primary px-5 font-display text-sm font-semibold text-on-primary shadow-md transition hover:shadow-ambient-lg active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
+              className="flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-primary px-5 font-display text-sm font-semibold text-on-primary shadow-md transition hover:shadow-ambient-lg active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
             >
               {isSubmitting ? <Loader2 className="h-5 w-5 animate-spin" /> : <Plus className="h-5 w-5" />}
               Assign Exercise
@@ -352,8 +352,8 @@ function AssignedExerciseCard({ assignment }: { assignment: AssignedExercise }) 
   return (
     <article className="rounded-2xl border border-outline-variant/40 bg-surface-container-lowest p-4 shadow-ambient">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-        <div>
-          <h4 className="font-display text-xl font-semibold text-on-surface">{assignment.exercise.title}</h4>
+        <div className="min-w-0">
+          <h4 className="break-words font-display text-xl font-semibold text-on-surface">{assignment.exercise.title}</h4>
           <p className="mt-1 text-sm font-semibold text-on-surface-variant">
             {assignment.exercise.bodyPart} - {assignment.exercise.sets} sets - {assignment.exercise.reps} reps
           </p>
@@ -468,15 +468,15 @@ function FeedbackList({ title, items, type }: { title: string; items: PatientPro
       {items.length > 0 ? (
         <div className="mt-3 grid gap-3">
           {items.map((item) => (
-            <div key={`${type}-${item.id}`} className="rounded-xl bg-surface-container-low px-4 py-3">
+          <div key={`${type}-${item.id}`} className="rounded-xl bg-surface-container-low px-4 py-3">
               <div className="flex items-start gap-2">
                 {type === 'pain' ? (
                   <HeartPulse className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
                 ) : (
                   <ClipboardList className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
                 )}
-                <div>
-                  <p className="font-semibold text-on-surface">{item.exerciseTitle}</p>
+                <div className="min-w-0">
+                  <p className="break-words font-semibold text-on-surface">{item.exerciseTitle}</p>
                   {type === 'pain' ? (
                     <p className="mt-1 text-sm font-semibold text-on-surface-variant">
                       Pain {item.painLevel}/10{item.difficultyFeedback ? ` - ${item.difficultyFeedback}` : ''}

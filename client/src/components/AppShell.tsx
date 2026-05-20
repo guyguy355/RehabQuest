@@ -17,14 +17,14 @@ type AppShellProps = {
 
 export function AppShell({ children }: AppShellProps) {
   return (
-    <div className="min-h-screen bg-background pb-28 text-on-background">
+    <div className="min-h-screen overflow-x-hidden bg-background pb-28 text-on-background">
       <header className="sticky top-0 z-40 border-b border-outline-variant/40 bg-surface/95 shadow-sm backdrop-blur">
-        <div className="mx-auto flex h-[72px] max-w-[1140px] items-center justify-between px-5">
-          <Link to="/patient/dashboard" className="flex items-center gap-3">
+        <div className="mx-auto flex h-[72px] max-w-[1140px] items-center justify-between gap-3 px-4 sm:px-5">
+          <Link to="/patient/dashboard" className="flex min-w-0 items-center gap-3">
             <div className="grid h-10 w-10 place-items-center overflow-hidden rounded-full bg-surface-container-highest text-sm font-bold text-primary ring-1 ring-outline-variant/60">
               GA
             </div>
-            <span className="font-display text-2xl font-bold text-primary">RehabQuest</span>
+            <span className="truncate font-display text-xl font-bold text-primary sm:text-2xl">RehabQuest</span>
           </Link>
           <div className="flex items-center gap-2">
             <Link
