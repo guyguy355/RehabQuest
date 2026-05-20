@@ -16,6 +16,7 @@ type TherapistExercise = {
   reps: number;
   durationSeconds: number;
   videoUrl?: string | null;
+  imageUrl?: string | null;
   createdAt: string;
 };
 
@@ -28,6 +29,7 @@ type ExerciseForm = {
   reps: string;
   durationSeconds: string;
   videoUrl: string;
+  imageUrl: string;
 };
 
 const initialForm: ExerciseForm = {
@@ -39,6 +41,7 @@ const initialForm: ExerciseForm = {
   reps: '10',
   durationSeconds: '60',
   videoUrl: '',
+  imageUrl: '',
 };
 
 export function TherapistExercisesPage() {
@@ -108,6 +111,7 @@ export function TherapistExercisesPage() {
             reps: Number(form.reps),
             durationSeconds: Number(form.durationSeconds),
             videoUrl: form.videoUrl,
+            imageUrl: form.imageUrl,
           }),
         },
       );
@@ -178,6 +182,7 @@ export function TherapistExercisesPage() {
       reps: String(exercise.reps),
       durationSeconds: String(exercise.durationSeconds),
       videoUrl: exercise.videoUrl ?? '',
+      imageUrl: exercise.imageUrl ?? '',
     });
   }
 
@@ -252,7 +257,10 @@ export function TherapistExercisesPage() {
               />
             </div>
 
-            <TextField label="Video URL" value={form.videoUrl} onChange={(value) => updateForm('videoUrl', value)} />
+            <div className="grid gap-4 md:grid-cols-2">
+              <TextField label="Video URL" value={form.videoUrl} onChange={(value) => updateForm('videoUrl', value)} />
+              <TextField label="Image URL" value={form.imageUrl} onChange={(value) => updateForm('imageUrl', value)} />
+            </div>
 
             {message ? (
               <p
@@ -366,6 +374,14 @@ function ExerciseCard({
 }) {
   return (
     <article className="rounded-2xl border border-outline-variant/40 bg-surface-container-lowest p-5 shadow-ambient">
+      {exercise.imageUrl ? (
+        <img
+          src={exercise.imageUrl}
+          alt={exercise.title}
+          className="mb-5 h-44 w-full rounded-2xl object-cover"
+        />
+      ) : null}
+
       <div className="flex items-start gap-4">
         <div className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-primary-container/20 text-primary">
           <Dumbbell className="h-6 w-6" strokeWidth={2.2} />

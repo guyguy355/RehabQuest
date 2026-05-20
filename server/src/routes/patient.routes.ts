@@ -28,6 +28,7 @@ const patientExerciseSelect = {
       reps: true,
       durationSeconds: true,
       videoUrl: true,
+      imageUrl: true,
     },
   },
 } as const;

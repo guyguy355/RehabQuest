@@ -24,6 +24,7 @@ const exerciseSelect = {
   reps: true,
   durationSeconds: true,
   videoUrl: true,
+  imageUrl: true,
   createdById: true,
   createdAt: true,
   updatedAt: true,
@@ -149,7 +150,7 @@ router.post('/exercises', requireAuth, requireTherapist, async (request, respons
       return;
     }
 
-    const { title, description, bodyPart, difficulty, sets, reps, durationSeconds, videoUrl } = request.body as {
+    const { title, description, bodyPart, difficulty, sets, reps, durationSeconds, videoUrl, imageUrl } = request.body as {
       title?: string;
       description?: string;
       bodyPart?: string;
@@ -158,12 +159,14 @@ router.post('/exercises', requireAuth, requireTherapist, async (request, respons
       reps?: number;
       durationSeconds?: number;
       videoUrl?: string;
+      imageUrl?: string;
     };
 
     const normalizedTitle = title?.trim();
     const normalizedDescription = description?.trim();
     const normalizedBodyPart = bodyPart?.trim();
     const normalizedVideoUrl = videoUrl?.trim();
+    const normalizedImageUrl = imageUrl?.trim();
 
     if (!normalizedTitle || !normalizedDescription || !normalizedBodyPart || !difficulty) {
       response.status(400).json({ message: 'title, description, bodyPart, and difficulty are required' });
@@ -190,6 +193,7 @@ router.post('/exercises', requireAuth, requireTherapist, async (request, respons
         reps,
         durationSeconds,
         videoUrl: normalizedVideoUrl || null,
+        imageUrl: normalizedImageUrl || null,
         createdById: therapist.id,
       },
       select: exerciseSelect,
@@ -528,14 +532,16 @@ type ExerciseInput = {
   reps?: number;
   durationSeconds?: number;
   videoUrl?: string;
+  imageUrl?: string;
 };
 
 function parseExerciseInput(body: unknown) {
-  const { title, description, bodyPart, difficulty, sets, reps, durationSeconds, videoUrl } = body as ExerciseInput;
+  const { title, description, bodyPart, difficulty, sets, reps, durationSeconds, videoUrl, imageUrl } = body as ExerciseInput;
   const normalizedTitle = title?.trim();
   const normalizedDescription = description?.trim();
   const normalizedBodyPart = bodyPart?.trim();
   const normalizedVideoUrl = videoUrl?.trim();
+  const normalizedImageUrl = imageUrl?.trim();
 
   if (!normalizedTitle || !normalizedDescription || !normalizedBodyPart || !difficulty) {
     return { error: 'title, description, bodyPart, and difficulty are required' };
@@ -559,6 +565,7 @@ function parseExerciseInput(body: unknown) {
       reps,
       durationSeconds,
       videoUrl: normalizedVideoUrl || null,
+      imageUrl: normalizedImageUrl || null,
     },
   };
 }

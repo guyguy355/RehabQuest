@@ -14,6 +14,7 @@ type AssignedExercise = {
   reps: number;
   durationSeconds: number;
   videoUrl?: string | null;
+  imageUrl?: string | null;
   dueDate?: string | null;
   notes?: string | null;
   completedAt?: string | null;
@@ -280,6 +281,14 @@ function ExerciseCard({
 
   return (
     <article className="rounded-2xl border border-outline-variant/40 bg-surface-container-lowest p-5 shadow-ambient">
+      {exercise.imageUrl ? (
+        <img
+          src={exercise.imageUrl}
+          alt={exercise.title}
+          className="mb-4 h-40 w-full rounded-2xl object-cover"
+        />
+      ) : null}
+
       <div className="flex items-start gap-4">
         <div className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-primary-container/20 text-primary">
           {isCompleted ? (

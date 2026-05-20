@@ -21,6 +21,7 @@ const exerciseSelect = {
     reps: true,
     durationSeconds: true,
     videoUrl: true,
+    imageUrl: true,
     createdById: true,
     createdAt: true,
     updatedAt: true,
@@ -129,11 +130,12 @@ router.post('/exercises', requireAuth, requireTherapist, async (request, respons
             response.status(401).json({ message: 'Authentication required' });
             return;
         }
-        const { title, description, bodyPart, difficulty, sets, reps, durationSeconds, videoUrl } = request.body;
+        const { title, description, bodyPart, difficulty, sets, reps, durationSeconds, videoUrl, imageUrl } = request.body;
         const normalizedTitle = title?.trim();
         const normalizedDescription = description?.trim();
         const normalizedBodyPart = bodyPart?.trim();
         const normalizedVideoUrl = videoUrl?.trim();
+        const normalizedImageUrl = imageUrl?.trim();
         if (!normalizedTitle || !normalizedDescription || !normalizedBodyPart || !difficulty) {
             response.status(400).json({ message: 'title, description, bodyPart, and difficulty are required' });
             return;
@@ -156,6 +158,7 @@ router.post('/exercises', requireAuth, requireTherapist, async (request, respons
                 reps,
                 durationSeconds,
                 videoUrl: normalizedVideoUrl || null,
+                imageUrl: normalizedImageUrl || null,
                 createdById: therapist.id,
             },
             select: exerciseSelect,
@@ -435,11 +438,12 @@ router.get('/patients', requireAuth, requireTherapist, async (request, response,
     }
 });
 function parseExerciseInput(body) {
-    const { title, description, bodyPart, difficulty, sets, reps, durationSeconds, videoUrl } = body;
+    const { title, description, bodyPart, difficulty, sets, reps, durationSeconds, videoUrl, imageUrl } = body;
     const normalizedTitle = title?.trim();
     const normalizedDescription = description?.trim();
     const normalizedBodyPart = bodyPart?.trim();
     const normalizedVideoUrl = videoUrl?.trim();
+    const normalizedImageUrl = imageUrl?.trim();
     if (!normalizedTitle || !normalizedDescription || !normalizedBodyPart || !difficulty) {
         return { error: 'title, description, bodyPart, and difficulty are required' };
     }
@@ -459,6 +463,7 @@ function parseExerciseInput(body) {
             reps,
             durationSeconds,
             videoUrl: normalizedVideoUrl || null,
+            imageUrl: normalizedImageUrl || null,
         },
     };
 }
