@@ -1,4 +1,5 @@
 import { PhysioShell } from '../components/PhysioShell';
+import { LinkedPatientsPanel } from '../components/physio/LinkedPatientsPanel';
 import { AttentionPatientCard } from '../components/physio/AttentionPatientCard';
 import { PatientActivityCard } from '../components/physio/PatientActivityCard';
 import { PhysioMetricCard } from '../components/physio/PhysioMetricCard';
@@ -54,6 +55,14 @@ export function PhysioDashboardPage() {
               ))}
             </div>
           </section>
+        </div>
+
+        <div className="mt-6">
+          <LinkedPatientsPanel
+            title="Your Linked Patients"
+            description="Patients connected to your therapist account."
+            compact
+          />
         </div>
 
         <section className="mt-6">
