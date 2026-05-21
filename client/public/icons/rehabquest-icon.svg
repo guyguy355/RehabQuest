@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="RehabQuest icon">
+  <rect width="512" height="512" rx="112" fill="#0f766e"/>
+  <circle cx="256" cy="256" r="168" fill="#ccfbf1"/>
+  <path fill="#0f766e" d="M242 136h48v96h92v48h-92v96h-48v-96h-92v-48h92z"/>
+  <path fill="#134e4a" d="M176 388c34 28 73 42 118 42 36 0 70-9 102-28-36 47-84 70-144 70-44 0-83-13-116-40z" opacity=".35"/>
+</svg>
