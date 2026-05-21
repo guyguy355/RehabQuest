@@ -5,6 +5,7 @@ import { BadgePreviewCard } from '../components/dashboard/BadgePreviewCard';
 import { DailyGoalCard } from '../components/dashboard/DailyGoalCard';
 import { ExercisePreviewCard } from '../components/dashboard/ExercisePreviewCard';
 import { JourneyProgressCard } from '../components/dashboard/JourneyProgressCard';
+import { NotificationPreferencesCard } from '../components/dashboard/NotificationPreferencesCard';
 import { PatientMessagesSection } from '../components/dashboard/PatientMessagesSection';
 import { ProgressCard } from '../components/dashboard/ProgressCard';
 import { QuestCard } from '../components/dashboard/QuestCard';
@@ -31,6 +32,8 @@ export function PatientDashboardPage() {
         </section>
 
         <DailyGoalCard />
+
+        <NotificationPreferencesCard />
 
         <QuestCard
           plan={patientDashboardData.currentPlan}
