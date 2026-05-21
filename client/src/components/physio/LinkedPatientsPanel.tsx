@@ -1,7 +1,6 @@
 import { Link2, Loader2, RefreshCw, UserPlus, UsersRound } from 'lucide-react';
 import { FormEvent, useEffect, useState } from 'react';
-
-const apiBaseUrl = 'http://localhost:3000';
+import { apiBaseUrl } from '../../config/api';
 
 type LinkedPatient = {
   linkId: string;

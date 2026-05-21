@@ -1,7 +1,6 @@
 import { CalendarDays, CheckCircle2, Clock3, Dumbbell, Loader2, PlayCircle, Repeat2, Target } from 'lucide-react';
 import { FormEvent, useEffect, useMemo, useState } from 'react';
-
-const apiBaseUrl = 'http://localhost:3000';
+import { apiBaseUrl } from '../../config/api';
 
 type AssignedExercise = {
   assignmentId: string;

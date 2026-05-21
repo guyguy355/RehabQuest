@@ -1,8 +1,7 @@
 import { Loader2, UserPlus } from 'lucide-react';
 import { FormEvent, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-
-const apiBaseUrl = 'http://localhost:3000';
+import { apiBaseUrl } from '../config/api';
 
 type RegisterRole = 'PATIENT' | 'THERAPIST';
 

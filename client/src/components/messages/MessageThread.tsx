@@ -1,7 +1,6 @@
 import { Loader2, MessageSquare, Send } from 'lucide-react';
 import { FormEvent, useEffect, useState } from 'react';
-
-const apiBaseUrl = 'http://localhost:3000';
+import { apiBaseUrl } from '../../config/api';
 
 type ThreadUser = {
   id: string;

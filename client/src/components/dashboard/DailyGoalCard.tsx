@@ -1,7 +1,6 @@
 import { Flame, Loader2, Medal, Target } from 'lucide-react';
 import { useEffect, useState } from 'react';
-
-const apiBaseUrl = 'http://localhost:3000';
+import { apiBaseUrl } from '../../config/api';
 
 type DailySummary = {
   totalDueToday: number;

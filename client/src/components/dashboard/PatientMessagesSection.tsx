@@ -1,8 +1,7 @@
 import { Loader2, MessageSquare } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { apiBaseUrl } from '../../config/api';
 import { MessageThread } from '../messages/MessageThread';
-
-const apiBaseUrl = 'http://localhost:3000';
 
 type ThreadUser = {
   id: string;

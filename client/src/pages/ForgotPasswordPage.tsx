@@ -1,8 +1,7 @@
 import { FormEvent, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { KeyRound, Loader2 } from 'lucide-react';
-
-const apiBaseUrl = 'http://localhost:3000';
+import { apiBaseUrl } from '../config/api';
 
 export function ForgotPasswordPage() {
   const [email, setEmail] = useState('');

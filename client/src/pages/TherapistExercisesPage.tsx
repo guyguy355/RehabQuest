@@ -1,8 +1,7 @@
 import { Clock3, Dumbbell, Loader2, Pencil, PlayCircle, Repeat2, Save, Target, Trash2, X } from 'lucide-react';
 import { FormEvent, useEffect, useState } from 'react';
+import { apiBaseUrl } from '../config/api';
 import { PhysioShell } from '../components/PhysioShell';
-
-const apiBaseUrl = 'http://localhost:3000';
 
 type Difficulty = 'EASY' | 'MEDIUM' | 'HARD';
 

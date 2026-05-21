@@ -1,8 +1,7 @@
 import { FormEvent, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Loader2, LockKeyhole } from 'lucide-react';
-
-const apiBaseUrl = 'http://localhost:3000';
+import { apiBaseUrl } from '../config/api';
 
 export function ResetPasswordPage() {
   const navigate = useNavigate();

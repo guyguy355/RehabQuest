@@ -1,8 +1,7 @@
 import { CalendarDays, CheckCircle2, ClipboardList, Dumbbell, HeartPulse, Loader2, Plus, UserRound } from 'lucide-react';
 import { FormEvent, useEffect, useMemo, useState } from 'react';
+import { apiBaseUrl } from '../../config/api';
 import { MessageThread } from '../messages/MessageThread';
-
-const apiBaseUrl = 'http://localhost:3000';
 
 type LinkedPatient = {
   id: string;
