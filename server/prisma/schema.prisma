@@ -1,0 +1,309 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Roles are assigned server-side only. Public registration always creates
+// PATIENT accounts; THERAPIST accounts are provisioned with
+// `npm run therapist:create` (or the demo seed).
+enum Role {
+  PATIENT
+  THERAPIST
+  ADMIN
+}
+
+enum PlanStatus {
+  ACTIVE
+  COMPLETED
+  PAUSED
+}
+
+enum Difficulty {
+  EASY
+  MEDIUM
+  HARD
+}
+
+// COMPLETED: the patient did the prescribed exercise.
+// STOPPED:   the patient stopped because of pain or other symptoms. It earns no
+//            XP, never breaks a streak, and is always flagged for therapist review.
+enum CompletionStatus {
+  COMPLETED
+  STOPPED
+}
+
+enum DifficultyRating {
+  TOO_EASY
+  JUST_RIGHT
+  TOO_HARD
+}
+
+enum XpReason {
+  TASK_COMPLETED
+  SESSION_COMPLETED
+}
+
+enum SummarySource {
+  MODEL
+  RULE_BASED
+}
+
+model User {
+  id                String    @id @default(cuid())
+  name              String
+  email             String    @unique
+  passwordHash      String
+  role              Role
+  // IANA timezone used to decide which calendar day a completion belongs to.
+  timezone          String    @default("Asia/Jerusalem")
+  // Tokens issued before this instant are rejected (set on password reset).
+  passwordChangedAt DateTime?
+  // Patients only: a code the patient shares with a therapist to consent to
+  // being linked. A therapist needs both the email and this code.
+  careCode          String?   @unique
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  therapistLinks         TherapistPatient[]             @relation("TherapistLinks")
+  patientLinks           TherapistPatient[]             @relation("PatientLinks")
+  createdExercises       Exercise[]                     @relation("CreatedExercises")
+  patientPlans           RehabPlan[]                    @relation("PatientPlans")
+  therapistPlans         RehabPlan[]                    @relation("TherapistPlans")
+  completions            TaskCompletion[]               @relation("PatientCompletions")
+  reviewedCompletions    TaskCompletion[]               @relation("ReviewedCompletions")
+  xpEvents               XpEvent[]
+  badges                 UserBadge[]
+  sentMessages           Message[]                      @relation("SentMessages")
+  receivedMessages       Message[]                      @relation("ReceivedMessages")
+  passwordResetTokens    PasswordResetToken[]
+  notificationPreference PatientNotificationPreference?
+  summaryRequests        AiSummaryRequest[]             @relation("SummaryTherapist")
+  summarySubjects        AiSummaryRequest[]             @relation("SummaryPatient")
+}
+
+model PatientNotificationPreference {
+  id                            String   @id @default(cuid())
+  userId                        String   @unique
+  dailyExerciseRemindersEnabled Boolean  @default(false)
+  reminderTime                  String   @default("09:00")
+  createdAt                     DateTime @default(now())
+  updatedAt                     DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model PasswordResetToken {
+  id        String    @id @default(cuid())
+  userId    String
+  // SHA-256 of the token; the raw token is never stored.
+  tokenHash String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model Message {
+  id         String   @id @default(cuid())
+  senderId   String
+  receiverId String
+  text       String
+  createdAt  DateTime @default(now())
+
+  sender   User @relation("SentMessages", fields: [senderId], references: [id], onDelete: Cascade)
+  receiver User @relation("ReceivedMessages", fields: [receiverId], references: [id], onDelete: Cascade)
+
+  @@index([senderId])
+  @@index([receiverId])
+}
+
+// A therapist may only see or change data for patients they are linked to.
+model TherapistPatient {
+  id          String   @id @default(cuid())
+  therapistId String
+  patientId   String
+  createdAt   DateTime @default(now())
+
+  therapist User @relation("TherapistLinks", fields: [therapistId], references: [id], onDelete: Cascade)
+  patient   User @relation("PatientLinks", fields: [patientId], references: [id], onDelete: Cascade)
+
+  @@unique([therapistId, patientId])
+  @@index([therapistId])
+  @@index([patientId])
+}
+
+// A therapist's private exercise library.
+model Exercise {
+  id              String     @id @default(cuid())
+  title           String
+  description     String
+  instructions    String?
+  safetyNotes     String?
+  bodyPart        String
+  difficulty      Difficulty
+  sets            Int
+  reps            Int
+  durationSeconds Int
+  videoUrl        String?
+  imageUrl        String?
+  createdById     String
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+
+  createdBy User        @relation("CreatedExercises", fields: [createdById], references: [id], onDelete: Restrict)
+  tasks     RehabTask[]
+
+  @@index([createdById])
+}
+
+// A therapist-approved plan. The same set of tasks is prescribed on every
+// training weekday between startDate and endDate (inclusive). Weekdays that
+// are not in trainingWeekdays are scheduled rest days.
+//
+// A partial unique index (see migration 20261012090000_rehab_plans_and_rewards)
+// guarantees at most one ACTIVE plan per patient.
+model RehabPlan {
+  id               String     @id @default(cuid())
+  patientId        String
+  therapistId      String
+  title            String
+  condition        String
+  startDate        DateTime   @db.Date
+  endDate          DateTime   @db.Date
+  // 0 = Sunday ... 6 = Saturday
+  trainingWeekdays Int[]
+  therapistNotes   String?
+  status           PlanStatus @default(ACTIVE)
+  createdAt        DateTime   @default(now())
+  updatedAt        DateTime   @updatedAt
+
+  patient   User        @relation("PatientPlans", fields: [patientId], references: [id], onDelete: Cascade)
+  therapist User        @relation("TherapistPlans", fields: [therapistId], references: [id], onDelete: Restrict)
+  tasks     RehabTask[]
+
+  @@index([patientId])
+  @@index([therapistId])
+}
+
+// One prescribed exercise inside a plan. Tasks are never hard-deleted once a
+// plan is in use; removing a task sets activeUntil so history stays intact.
+model RehabTask {
+  id              String    @id @default(cuid())
+  planId          String
+  exerciseId      String
+  sets            Int
+  reps            Int
+  durationSeconds Int
+  orderIndex      Int
+  notes           String?
+  // Patient-local dates (inclusive) on which this task is prescribed.
+  activeFrom      DateTime  @db.Date
+  activeUntil     DateTime? @db.Date
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  plan        RehabPlan        @relation(fields: [planId], references: [id], onDelete: Cascade)
+  exercise    Exercise         @relation(fields: [exerciseId], references: [id], onDelete: Restrict)
+  completions TaskCompletion[]
+
+  @@index([planId])
+}
+
+// One completion (or symptom stop) of one task on one patient-local day.
+// The unique constraint on (taskId, sessionDate) makes completion idempotent:
+// retries, double clicks and concurrent requests cannot create a second row.
+model TaskCompletion {
+  id                      String            @id @default(cuid())
+  taskId                  String
+  patientId               String
+  sessionDate             DateTime          @db.Date
+  status                  CompletionStatus  @default(COMPLETED)
+  painLevel               Int
+  difficulty              DifficultyRating?
+  notes                   String?
+  prescribedSets          Int
+  prescribedReps          Int
+  prescribedDurationSecs  Int
+  xpAwarded               Int               @default(0)
+  needsReview             Boolean           @default(false)
+  reviewedAt              DateTime?
+  reviewedById            String?
+  completedAt             DateTime          @default(now())
+  createdAt               DateTime          @default(now())
+
+  task       RehabTask @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  patient    User      @relation("PatientCompletions", fields: [patientId], references: [id], onDelete: Cascade)
+  reviewedBy User?     @relation("ReviewedCompletions", fields: [reviewedById], references: [id], onDelete: SetNull)
+
+  @@unique([taskId, sessionDate])
+  @@index([patientId, sessionDate])
+  @@index([needsReview])
+}
+
+// Append-only XP ledger. sourceKey is unique, so the same reward can never be
+// written twice (e.g. "task:<completionId>" or "session:<planId>:<date>").
+model XpEvent {
+  id          String   @id @default(cuid())
+  userId      String
+  amount      Int
+  reason      XpReason
+  sourceKey   String   @unique
+  sessionDate DateTime @db.Date
+  createdAt   DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, sessionDate])
+}
+
+// Achievement definitions. The id is a stable key (e.g. "first-session").
+model Badge {
+  id          String   @id
+  name        String
+  description String
+  icon        String?
+  createdAt   DateTime @default(now())
+
+  users UserBadge[]
+}
+
+model UserBadge {
+  id       String   @id @default(cuid())
+  userId   String
+  badgeId  String
+  earnedAt DateTime @default(now())
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  badge Badge @relation(fields: [badgeId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, badgeId])
+  @@index([userId])
+  @@index([badgeId])
+}
+
+// Audit log + usage limiting for therapist summary drafts.
+model AiSummaryRequest {
+  id          String        @id @default(cuid())
+  therapistId String
+  patientId   String
+  periodStart DateTime      @db.Date
+  periodEnd   DateTime      @db.Date
+  source      SummarySource
+  // Why the rule-based fallback was used (e.g. "not_configured", "timeout").
+  fallbackReason String?
+  createdAt   DateTime      @default(now())
+
+  therapist User @relation("SummaryTherapist", fields: [therapistId], references: [id], onDelete: Cascade)
+  patient   User @relation("SummaryPatient", fields: [patientId], references: [id], onDelete: Cascade)
+
+  @@index([therapistId, createdAt])
+}

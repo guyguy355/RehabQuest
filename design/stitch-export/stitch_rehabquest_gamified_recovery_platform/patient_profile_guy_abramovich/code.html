@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Patient Profile - Guy Abramovich</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&amp;family=Manrope:wght@600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .pain-chart-gradient {
+            background: linear-gradient(180deg, rgba(0, 100, 146, 0.1) 0%, rgba(248, 249, 255, 0) 100%);
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-tertiary-fixed": "#2f1500",
+                        "primary-fixed-dim": "#8ccdff",
+                        "on-primary": "#ffffff",
+                        "background": "#f8f9ff",
+                        "surface-container": "#e6eeff",
+                        "inverse-on-surface": "#eaf1ff",
+                        "secondary": "#006d41",
+                        "on-primary-container": "#003049",
+                        "outline-variant": "#bec7d1",
+                        "surface": "#f8f9ff",
+                        "surface-variant": "#d9e3f6",
+                        "error": "#ba1a1a",
+                        "primary": "#006492",
+                        "error-container": "#ffdad6",
+                        "surface-dim": "#d0dbed",
+                        "on-error-container": "#93000a",
+                        "surface-container-high": "#dee9fc",
+                        "secondary-container": "#95f7bb",
+                        "inverse-surface": "#27313f",
+                        "surface-bright": "#f8f9ff",
+                        "tertiary-fixed-dim": "#ffb77d",
+                        "on-tertiary": "#ffffff",
+                        "inverse-primary": "#8ccdff",
+                        "on-tertiary-container": "#482300",
+                        "on-secondary-container": "#007346",
+                        "tertiary": "#904d00",
+                        "on-surface-variant": "#3f4850",
+                        "primary-fixed": "#cae6ff",
+                        "on-primary-fixed-variant": "#004b6f",
+                        "on-secondary-fixed-variant": "#005230",
+                        "surface-tint": "#006492",
+                        "surface-container-lowest": "#ffffff",
+                        "tertiary-fixed": "#ffdcc3",
+                        "tertiary-container": "#d38033",
+                        "secondary-fixed": "#95f7bb",
+                        "on-error": "#ffffff",
+                        "on-secondary-fixed": "#002110",
+                        "primary-container": "#2d9cdb",
+                        "on-surface": "#121c2a",
+                        "on-tertiary-fixed-variant": "#6e3900",
+                        "outline": "#6f7881",
+                        "on-secondary": "#ffffff",
+                        "on-background": "#121c2a",
+                        "on-primary-fixed": "#001e2f",
+                        "secondary-fixed-dim": "#7adaa1",
+                        "surface-container-highest": "#d9e3f6",
+                        "surface-container-low": "#eff4ff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "gutter": "16px",
+                        "md": "16px",
+                        "container-margin": "20px",
+                        "xl": "32px",
+                        "base": "4px",
+                        "sm": "12px",
+                        "xs": "8px",
+                        "lg": "24px"
+                    },
+                    "fontFamily": {
+                        "headline-sm": ["Manrope"],
+                        "display-lg-mobile": ["Manrope"],
+                        "body-md": ["Inter"],
+                        "display-lg": ["Manrope"],
+                        "body-sm": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "headline-md": ["Manrope"],
+                        "label-md": ["Inter"]
+                    },
+                    "fontSize": {
+                        "headline-sm": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                        "display-lg-mobile": ["28px", {"lineHeight": "36px", "fontWeight": "700"}],
+                        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "display-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                        "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                        "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                        "label-md": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}]
+                    }
+                },
+            },
+        }
+    </script>
+</head>
+<body class="bg-background text-on-background font-body-md min-h-screen">
+<!-- NavigationDrawer -->
+<aside class="h-full w-72 fixed left-0 top-0 z-50 bg-surface-container-low border-r border-outline-variant flex flex-col py-lg px-md space-y-xs">
+<div class="flex items-center gap-md mb-lg px-xs">
+<img alt="Dr. Miller" class="w-12 h-12 rounded-full object-cover" data-alt="A professional portrait of a male physiotherapist in a clean medical setting. He wears a subtle clinical uniform, conveying expertise and empathy. The lighting is soft and high-key, reflecting a modern healthcare environment with a palette of soft teals and clean whites." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAfJPwy-DPH9PmP81zbbp-nnRoRKBRZAwK_nF2CBHeq5y_jzoXq_gdy3OKFT2knVmUtce3sRDlc1mLH6lOM9kALLPODtT0h44oo-d3HaO6sMUFqHEqPynmDr-lv0tKulLTmG30Sb2YuGS4QR7zqJVfOYUYN1onVeyojj9JtgQUGzk1Ueh_hm2L-bGQ9x_DLYErzUaM42z11FIDYFeKGSCnioELTgAvQWUL_sipU8JEljHwczmEu3U3kgWKQYe7GXLCbjc_pJr6B60VB"/>
+<div>
+<h3 class="font-headline-sm text-headline-sm text-primary">Dr. Miller</h3>
+<p class="font-label-md text-label-md text-on-surface-variant">Lead Physiotherapist</p>
+<p class="font-label-md text-[10px] text-outline">Clinic ID: #4492</p>
+</div>
+</div>
+<nav class="space-y-xs">
+<a class="flex items-center gap-md text-on-surface-variant px-md py-sm hover:bg-surface-variant transition-colors cursor-pointer" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span class="font-body-md text-body-md">Dashboard</span>
+</a>
+<a class="flex items-center gap-md bg-secondary-container text-on-secondary-container rounded-lg px-md py-sm font-bold cursor-pointer active:translate-x-1 transition-transform" href="#">
+<span class="material-symbols-outlined" data-icon="group">group</span>
+<span class="font-body-md text-body-md">Patients</span>
+</a>
+<a class="flex items-center gap-md text-on-surface-variant px-md py-sm hover:bg-surface-variant transition-colors cursor-pointer" href="#">
+<span class="material-symbols-outlined" data-icon="assignment">assignment</span>
+<span class="font-body-md text-body-md">Plans</span>
+</a>
+<a class="flex items-center gap-md text-on-surface-variant px-md py-sm hover:bg-surface-variant transition-colors cursor-pointer" href="#">
+<span class="material-symbols-outlined" data-icon="fitness_center">fitness_center</span>
+<span class="font-body-md text-body-md">Exercises</span>
+</a>
+</nav>
+</aside>
+<!-- Main Content Canvas -->
+<main class="ml-72 p-xl max-w-[1140px] mx-auto">
+<!-- Header Section -->
+<header class="flex flex-col md:flex-row md:items-end justify-between gap-lg mb-xl">
+<div class="flex items-start gap-lg">
+<div class="relative">
+<img alt="Guy Abramovich" class="w-24 h-24 rounded-xl object-cover shadow-md" data-alt="Close-up portrait of a young man with a determined expression, wearing athletic apparel. The background is a brightly lit, clean rehabilitation clinic. The lighting is natural and uplifting, using a soft teal and white color scheme to emphasize clinical empathy." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDohrvPW4a2tVlnltZFQ7prC1KPGfbgMPTrVDYLyec9iHYsZyE2wyQv2sFSFChYSdz4IoQ7jdHTgKUIJNPRQ6FxVWfiv09vwwVVy54UarhgmfJXt0YKc0WZHWRYbI9x9iJkFvQXXec1EYof35bhnO308u3KnMhnQZn8ef4opK-8ywfKsPHfJFqA70g_lND9SYk7bnJxCIOsC9Q58bV0Fmt6RCXh-XfdsvbyWVe7N-kBm0GwoKs5ohhYYIZj1G7Bwsv86O-u4Xi70WYQ"/>
+<span class="absolute -bottom-2 -right-2 bg-secondary text-on-secondary text-[10px] font-bold px-2 py-1 rounded-full border-2 border-surface">ACTIVE</span>
+</div>
+<div>
+<h1 class="font-display-lg text-display-lg text-on-surface mb-xs">Guy Abramovich</h1>
+<div class="flex flex-wrap gap-xs items-center">
+<span class="bg-surface-container-highest text-on-surface-variant px-sm py-xs rounded-full font-label-md text-label-md flex items-center gap-xs">
+<span class="material-symbols-outlined text-[16px]" data-icon="healing">healing</span>
+                            ACL Reconstruction
+                        </span>
+<span class="bg-primary-container text-on-primary-container px-sm py-xs rounded-full font-label-md text-label-md flex items-center gap-xs">
+<span class="material-symbols-outlined text-[16px]" data-icon="step">step</span>
+                            Phase 1: Mobility
+                        </span>
+</div>
+</div>
+</div>
+<div class="flex gap-md">
+<button class="bg-surface-container-highest text-primary font-label-md text-label-md px-lg h-12 rounded-xl border border-primary hover:bg-surface-variant transition-all active:scale-95 flex items-center gap-xs">
+<span class="material-symbols-outlined" data-icon="edit">edit</span>
+                    Edit Rehab Plan
+                </button>
+<button class="bg-primary text-on-primary font-label-md text-label-md px-lg h-12 rounded-xl shadow-md hover:shadow-lg transition-all active:scale-95 flex items-center gap-xs">
+<span class="material-symbols-outlined" data-icon="auto_awesome">auto_awesome</span>
+                    Generate AI Summary
+                </button>
+</div>
+</header>
+<!-- Bento Grid Stats & Trends -->
+<div class="grid grid-cols-12 gap-lg mb-xl">
+<!-- Stats Column -->
+<div class="col-span-12 lg:col-span-4 grid grid-cols-1 gap-md">
+<div class="bg-surface-container-lowest p-lg rounded-xl shadow-[0px_4px_12px_rgba(31,41,55,0.05)] border border-surface-container">
+<p class="font-label-md text-label-md text-outline uppercase mb-xs">Completion Rate</p>
+<div class="flex items-end justify-between">
+<h2 class="text-4xl font-bold text-primary">94%</h2>
+<span class="text-secondary font-bold flex items-center text-sm">
+<span class="material-symbols-outlined" data-icon="trending_up">trending_up</span>
+                            +2%
+                        </span>
+</div>
+<div class="w-full bg-surface-container-high h-2 rounded-full mt-md">
+<div class="bg-secondary h-full rounded-full w-[94%]"></div>
+</div>
+</div>
+<div class="bg-surface-container-lowest p-lg rounded-xl shadow-[0px_4px_12px_rgba(31,41,55,0.05)] border border-surface-container">
+<p class="font-label-md text-label-md text-outline uppercase mb-xs">Avg Pain Level</p>
+<div class="flex items-end justify-between">
+<h2 class="text-4xl font-bold text-error">3.2</h2>
+<span class="text-secondary font-bold flex items-center text-sm">
+<span class="material-symbols-outlined" data-icon="trending_down">trending_down</span>
+                            -0.5
+                        </span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-md">Moderate improvement this week</p>
+</div>
+<div class="bg-surface-container-lowest p-lg rounded-xl shadow-[0px_4px_12px_rgba(31,41,55,0.05)] border border-surface-container flex items-center justify-between">
+<div>
+<p class="font-label-md text-label-md text-outline uppercase mb-xs">Current Streak</p>
+<h2 class="text-4xl font-bold text-tertiary-container">12 Days</h2>
+</div>
+<div class="bg-tertiary-fixed text-on-tertiary-fixed-variant p-md rounded-full">
+<span class="material-symbols-outlined text-4xl" data-icon="local_fire_department" style="font-variation-settings: 'FILL' 1;">local_fire_department</span>
+</div>
+</div>
+</div>
+<!-- Pain Trend Chart -->
+<div class="col-span-12 lg:col-span-8 bg-surface-container-lowest p-lg rounded-xl shadow-[0px_4px_12px_rgba(31,41,55,0.05)] border border-surface-container">
+<div class="flex justify-between items-center mb-lg">
+<h3 class="font-headline-sm text-headline-sm text-on-surface">Pain Trend Analysis</h3>
+<div class="flex gap-xs">
+<span class="bg-surface-container-high px-3 py-1 rounded text-xs font-bold text-outline">WEEKLY</span>
+<span class="px-3 py-1 rounded text-xs font-bold text-primary">MONTHLY</span>
+</div>
+</div>
+<div class="relative h-64 w-full pain-chart-gradient border-b border-l border-outline-variant flex items-end px-md">
+<!-- SVG Chart Representation -->
+<svg class="absolute inset-0 w-full h-full p-4" preserveaspectratio="none" viewbox="0 0 400 200">
+<path d="M0,160 Q50,140 100,120 T200,100 T300,60 T400,40" fill="none" stroke="#006492" stroke-width="3"></path>
+<circle cx="0" cy="160" fill="#006492" r="4"></circle>
+<circle cx="100" cy="120" fill="#006492" r="4"></circle>
+<circle cx="200" cy="100" fill="#006492" r="4"></circle>
+<circle cx="300" cy="60" fill="#006492" r="4"></circle>
+<circle cx="400" cy="40" fill="#006492" r="4"></circle>
+</svg>
+<div class="w-full flex justify-between pt-xs text-xs text-outline font-bold">
+<span>Wk 1</span>
+<span>Wk 2</span>
+<span>Wk 3</span>
+<span>Wk 4</span>
+<span>Today</span>
+</div>
+</div>
+<div class="mt-lg flex items-center gap-md">
+<div class="flex items-center gap-xs">
+<div class="w-3 h-3 rounded-full bg-primary"></div>
+<span class="text-body-sm text-on-surface-variant">Reported Intensity</span>
+</div>
+<p class="text-body-sm text-outline italic">Showing steady decline in baseline pain levels.</p>
+</div>
+</div>
+</div>
+<!-- Recent Pain Reports -->
+<section>
+<div class="flex items-center justify-between mb-md">
+<h3 class="font-headline-sm text-headline-sm text-on-surface">Recent Reports</h3>
+<button class="text-primary font-label-md text-label-md flex items-center gap-xs hover:underline">
+                    View Full History
+                    <span class="material-symbols-outlined" data-icon="chevron_right">chevron_right</span>
+</button>
+</div>
+<div class="space-y-sm">
+<!-- Report Row 1 -->
+<div class="bg-surface-container-lowest p-md rounded-xl shadow-[0px_4px_12px_rgba(31,41,55,0.05)] border border-surface-container flex flex-col md:flex-row md:items-center gap-md hover:shadow-md transition-shadow">
+<div class="flex items-center gap-md md:w-48">
+<div class="bg-error-container text-on-error-container w-10 h-10 rounded-lg flex items-center justify-center font-bold">4</div>
+<div>
+<p class="font-label-md text-label-md text-on-surface">Oct 24, 2023</p>
+<p class="text-[10px] text-outline uppercase font-bold">Post-Exercise</p>
+</div>
+</div>
+<div class="flex-grow">
+<p class="text-body-sm text-on-surface-variant leading-relaxed">"Slight sharp pain in the medial joint line during the final set of terminal knee extensions. Settled after 5 minutes of rest."</p>
+</div>
+<div class="md:w-32 flex justify-end">
+<span class="bg-surface-container text-on-surface-variant px-sm py-1 rounded text-xs font-bold">Review Needed</span>
+</div>
+</div>
+<!-- Report Row 2 -->
+<div class="bg-surface-container-lowest p-md rounded-xl shadow-[0px_4px_12px_rgba(31,41,55,0.05)] border border-surface-container flex flex-col md:flex-row md:items-center gap-md hover:shadow-md transition-shadow">
+<div class="flex items-center gap-md md:w-48">
+<div class="bg-secondary-container text-on-secondary-container w-10 h-10 rounded-lg flex items-center justify-center font-bold">2</div>
+<div>
+<p class="font-label-md text-label-md text-on-surface">Oct 22, 2023</p>
+<p class="text-[10px] text-outline uppercase font-bold">Daily Baseline</p>
+</div>
+</div>
+<div class="flex-grow">
+<p class="text-body-sm text-on-surface-variant leading-relaxed">"Woke up with very little stiffness. Felt confident during the morning walk."</p>
+</div>
+<div class="md:w-32 flex justify-end">
+<span class="bg-secondary-container text-on-secondary-container px-sm py-1 rounded text-xs font-bold">Normal Progress</span>
+</div>
+</div>
+<!-- Report Row 3 -->
+<div class="bg-surface-container-lowest p-md rounded-xl shadow-[0px_4px_12px_rgba(31,41,55,0.05)] border border-surface-container flex flex-col md:flex-row md:items-center gap-md hover:shadow-md transition-shadow">
+<div class="flex items-center gap-md md:w-48">
+<div class="bg-secondary-container text-on-secondary-container w-10 h-10 rounded-lg flex items-center justify-center font-bold">3</div>
+<div>
+<p class="font-label-md text-label-md text-on-surface">Oct 20, 2023</p>
+<p class="text-[10px] text-outline uppercase font-bold">Post-Exercise</p>
+</div>
+</div>
+<div class="flex-grow">
+<p class="text-body-sm text-on-surface-variant leading-relaxed">"Muscle fatigue in the quads, but joint feels stable. No swelling noticed."</p>
+</div>
+<div class="md:w-32 flex justify-end">
+<span class="bg-secondary-container text-on-secondary-container px-sm py-1 rounded text-xs font-bold">Normal Progress</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Upcoming Session Card (Contextual FAB Suppression as it's a detail screen) -->
+<section class="mt-xl bg-surface-variant p-lg rounded-xl flex items-center justify-between border-l-4 border-primary">
+<div class="flex items-center gap-lg">
+<div class="bg-surface-container-lowest p-md rounded-full shadow-sm">
+<span class="material-symbols-outlined text-primary text-3xl" data-icon="event">event</span>
+</div>
+<div>
+<h4 class="font-headline-sm text-headline-sm text-on-surface">Next Clinical Review</h4>
+<p class="text-body-md text-on-surface-variant">Thursday, Oct 26th @ 10:30 AM (In-person)</p>
+</div>
+</div>
+<button class="bg-primary text-on-primary font-label-md text-label-md h-10 px-md rounded-lg active:scale-95 transition-transform">Reschedule</button>
+</section>
+</main>
+</body></html>

@@ -1,0 +1,128 @@
+@import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Nunito:wght@500;600;700;800;900&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    color-scheme: light;
+    color: theme('colors.ink.900');
+    background: theme('colors.canvas');
+    font-synthesis: none;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  body {
+    @apply min-h-screen bg-canvas font-sans text-[15px] leading-relaxed text-ink-900 sm:text-base;
+    min-width: 320px;
+  }
+
+  h1,
+  h2,
+  h3 {
+    text-wrap: balance;
+  }
+
+  button,
+  input,
+  textarea,
+  select {
+    font: inherit;
+  }
+
+  /* One visible, high-contrast focus style for every interactive element. */
+  :focus-visible {
+    outline: 3px solid theme('colors.sky.500');
+    outline-offset: 3px;
+    border-radius: 0.75rem;
+  }
+
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+@layer components {
+  /* Chunky buttons with a visible "edge" that disappears when pressed. */
+  .btn {
+    @apply relative inline-flex select-none items-center justify-center gap-2 rounded-2xl px-5 font-extrabold tracking-[0.01em] transition-[transform,box-shadow,background-color] duration-100;
+    min-height: 3rem;
+    box-shadow: 0 4px 0 0 var(--edge, transparent);
+  }
+  .btn:active:not(:disabled) {
+    transform: translateY(4px);
+    box-shadow: 0 0 0 0 var(--edge, transparent);
+  }
+  .btn:disabled {
+    @apply cursor-not-allowed bg-ink-100 text-ink-400;
+    --edge: theme('colors.ink.200');
+  }
+  .btn-lg {
+    @apply rounded-[1.1rem] px-6 text-lg;
+    min-height: 3.5rem;
+  }
+  .btn-sm {
+    @apply rounded-xl px-3.5 text-sm;
+    min-height: 2.5rem;
+    box-shadow: 0 3px 0 0 var(--edge, transparent);
+  }
+  .btn-primary {
+    @apply bg-brand-600 text-white hover:bg-brand-500;
+    --edge: theme('colors.brand.800');
+  }
+  .btn-secondary {
+    @apply border-2 border-ink-200 bg-white text-brand-700 hover:bg-ink-50;
+    --edge: theme('colors.ink.200');
+  }
+  .btn-sun {
+    @apply bg-sun-400 text-ink-900 hover:bg-sun-300;
+    --edge: theme('colors.sun.600');
+  }
+  .btn-soft-danger {
+    @apply border-2 border-rose-200 bg-rose-50 text-rose-700 hover:bg-rose-100;
+    --edge: theme('colors.rose.200');
+  }
+  .btn-ghost {
+    @apply text-brand-700 hover:bg-brand-50;
+    box-shadow: none;
+  }
+  .btn-ghost:active:not(:disabled) {
+    transform: translateY(1px);
+  }
+
+  .card {
+    @apply rounded-3xl border-2 border-ink-100 bg-white;
+  }
+  /* Cards the user can act on get the same tactile edge as buttons. */
+  .card-raised {
+    @apply rounded-3xl border-2 border-ink-100 bg-white;
+    box-shadow: 0 4px 0 0 theme('colors.ink.100');
+  }
+
+  .eyebrow {
+    @apply text-xs font-extrabold uppercase tracking-[0.12em] text-ink-500;
+  }
+
+  .field-label {
+    @apply text-sm font-extrabold text-ink-900;
+  }
+  .field-input {
+    @apply min-h-12 w-full min-w-0 rounded-2xl border-2 border-ink-200 bg-white px-4 py-2.5 text-ink-900 outline-none transition placeholder:text-ink-400 focus:border-brand-500 focus:ring-4 focus:ring-brand-100;
+  }
+  .field-input[aria-invalid='true'] {
+    @apply border-rose-500 focus:ring-rose-100;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

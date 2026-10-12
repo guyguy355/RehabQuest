@@ -1,0 +1,70 @@
+import type { PatientDashboardData } from '../types/patientDashboard';
+
+export const patientDashboardData: PatientDashboardData = {
+  patientName: 'Guy Abramovich',
+  injury: 'Knee rehabilitation',
+  currentPlan: 'Knee Stability Phase 1',
+  todayQuest: 'Complete 3 exercises',
+  streakDays: 5,
+  progressPercent: 42,
+  averagePain: 3.1,
+  completedExercises: 0,
+  totalExercises: 3,
+  adherencePercent: 92,
+  nextAssessment: 'Friday, 10:00 AM',
+  exercises: [
+    {
+      id: '1',
+      name: 'Heel Slides',
+      targetArea: 'Knee',
+      sets: 3,
+      reps: 12,
+      difficulty: 'Easy',
+      status: 'not-completed',
+    },
+    {
+      id: '2',
+      name: 'Quad Sets',
+      targetArea: 'Knee',
+      sets: 3,
+      reps: 10,
+      difficulty: 'Easy',
+      status: 'not-completed',
+    },
+    {
+      id: '3',
+      name: 'Glute Bridges',
+      targetArea: 'Hip / Knee Support',
+      sets: 3,
+      reps: 12,
+      difficulty: 'Medium',
+      status: 'not-completed',
+    },
+  ],
+  badges: [
+    {
+      title: '5 Day Streak',
+      description: 'Complete rehab tasks for five days in a row.',
+      status: 'earned',
+    },
+    {
+      title: 'Phase Starter',
+      description: 'Begin Knee Stability Phase 1.',
+      status: 'earned',
+    },
+    {
+      title: 'Pain Reporter',
+      description: "Log pain after today's quest.",
+      status: 'in-progress',
+    },
+  ],
+  journey: [
+    { label: 'Day 1', status: 'completed' },
+    { label: 'Day 2', status: 'completed' },
+    { label: 'Day 3', status: 'completed' },
+    { label: 'Day 4', status: 'completed' },
+    { label: 'Day 5', status: 'current' },
+    { label: 'Day 6', status: 'upcoming' },
+    { label: 'Day 7', status: 'upcoming' },
+  ],
+};

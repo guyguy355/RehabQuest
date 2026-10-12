@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>RehabQuest - Daily Quests</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;700;800&amp;family=Nunito+Sans:wght@400;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-surface-variant": "#3f4a36",
+                        "on-primary-fixed": "#082100",
+                        "background": "#fbf9f9",
+                        "tertiary-fixed-dim": "#ffba26",
+                        "surface-container-high": "#e9e8e7",
+                        "secondary-fixed": "#c8e6ff",
+                        "on-tertiary-fixed": "#271900",
+                        "on-error": "#ffffff",
+                        "surface-container-low": "#f5f3f3",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-container": "#efeded",
+                        "on-surface": "#1b1c1c",
+                        "surface-tint": "#2b6c00",
+                        "secondary-fixed-dim": "#88ceff",
+                        "tertiary": "#7d5800",
+                        "surface-bright": "#fbf9f9",
+                        "on-primary-container": "#1e5000",
+                        "on-secondary-fixed-variant": "#004c6e",
+                        "inverse-on-surface": "#f2f0f0",
+                        "secondary-container": "#2fb8ff",
+                        "on-error-container": "#93000a",
+                        "inverse-primary": "#6be026",
+                        "outline": "#6f7b64",
+                        "secondary": "#006590",
+                        "tertiary-container": "#e9a700",
+                        "on-primary": "#ffffff",
+                        "on-tertiary-fixed-variant": "#5e4100",
+                        "tertiary-fixed": "#ffdea9",
+                        "outline-variant": "#becbb1",
+                        "on-secondary-fixed": "#001e2e",
+                        "inverse-surface": "#303031",
+                        "primary-fixed-dim": "#6be026",
+                        "on-background": "#1b1c1c",
+                        "on-secondary": "#ffffff",
+                        "surface": "#fbf9f9",
+                        "primary-container": "#58cc02",
+                        "error": "#ba1a1a",
+                        "surface-variant": "#e3e2e2",
+                        "on-secondary-container": "#004666",
+                        "primary-fixed": "#87fe45",
+                        "surface-dim": "#dbdad9",
+                        "surface-container-highest": "#e3e2e2",
+                        "primary": "#2b6c00",
+                        "on-primary-fixed-variant": "#1f5100",
+                        "on-tertiary": "#ffffff",
+                        "error-container": "#ffdad6",
+                        "on-tertiary-container": "#5c4000"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "sm": "16px",
+                        "base": "4px",
+                        "lg": "32px",
+                        "margin-mobile": "20px",
+                        "margin-desktop": "40px",
+                        "md": "24px",
+                        "xs": "8px",
+                        "xl": "48px",
+                        "gutter": "16px"
+                    },
+                    "fontFamily": {
+                        "body-lg": ["Nunito Sans"],
+                        "body-md": ["Nunito Sans"],
+                        "headline-lg": ["Lexend"],
+                        "headline-xl": ["Lexend"],
+                        "headline-md": ["Lexend"],
+                        "label-lg": ["Lexend"],
+                        "label-sm": ["Lexend"]
+                    },
+                    "fontSize": {
+                        "body-lg": ["18px", {"lineHeight": "26px", "fontWeight": "600"}],
+                        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "headline-lg": ["28px", {"lineHeight": "34px", "letterSpacing": "-0.01em", "fontWeight": "700"}],
+                        "headline-xl": ["36px", {"lineHeight": "44px", "letterSpacing": "-0.02em", "fontWeight": "800"}],
+                        "headline-md": ["22px", {"lineHeight": "28px", "fontWeight": "700"}],
+                        "label-lg": ["16px", {"lineHeight": "20px", "fontWeight": "700"}],
+                        "label-sm": ["13px", {"lineHeight": "16px", "fontWeight": "700"}]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 48;
+        }
+        .chunky-button {
+            box-shadow: 0 4px 0 0 rgba(0,0,0,0.2);
+            transition: all 0.1s ease;
+        }
+        .chunky-button:active {
+            transform: translateY(2px);
+            box-shadow: 0 2px 0 0 rgba(0,0,0,0.2);
+        }
+        .chunky-card {
+            box-shadow: 0 4px 0 0 #e5e5e5;
+        }
+        .progress-bar-fill {
+            box-shadow: inset 0 -4px 0 0 rgba(0,0,0,0.1);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background font-body-md selection:bg-primary-container">
+<!-- Top Navigation Anchor -->
+<header class="bg-surface border-b-2 border-outline-variant fixed top-0 w-full z-50 h-16 flex justify-between items-center px-margin-mobile md:px-margin-desktop">
+<div class="flex items-center gap-sm">
+<div class="w-10 h-10 rounded-full border-2 border-outline-variant overflow-hidden">
+<img alt="User avatar profile photo" data-alt="A professional headshot of a smiling young adult in a brightly lit studio setting with a clean, blurred background. The individual has friendly eyes and a confident posture, reflecting a modern, resilient personality. The lighting is soft and high-key, aligning with a professional yet approachable healthcare and fitness brand aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuA3-Ok9NDIxNL0BNs7PGcMyVYueqE9mjl_rm0-KgFnZvipOz9Ntyx7R_fSUwaKnaRP7T3EGY3Cs-nYJSA1QZx64SNcP1_wtEplVV3EXG0hnCd7DYsPegDj8aNGlZ-o00hC6r2Xv2FrfrmlCL7ufiHidIBS8p_3acgm8Lv1sD5rQRjoDPFJ5xODeJiTtZLSRFu3KcMxRdwwNDMIg6ARqFKBAw8pAiEYMQBa3rkh0j9kXI7zDlreCz4DpeaykgXA3b41sQw32yDrDXE5N"/>
+</div>
+<h1 class="font-headline-md text-headline-md font-bold text-primary">RehabQuest</h1>
+</div>
+<button class="material-symbols-outlined text-primary text-2xl p-2 rounded-xl hover:bg-surface-container-high transition-colors">
+            notifications
+        </button>
+</header>
+<main class="pt-24 pb-32 px-margin-mobile max-w-[600px] mx-auto">
+<!-- Header Section -->
+<section class="mb-xl">
+<div class="flex justify-between items-end mb-sm">
+<h2 class="font-headline-xl text-headline-xl text-on-surface">Today's Quest</h2>
+<span class="font-label-lg text-primary">33% Done</span>
+</div>
+<!-- Duolingo style chunky progress bar -->
+<div class="h-6 w-full bg-surface-container rounded-full border-2 border-outline-variant relative overflow-hidden">
+<div class="progress-bar-fill h-full bg-primary-container w-1/3 rounded-full transition-all duration-500"></div>
+</div>
+</section>
+<!-- Exercise List -->
+<div class="flex flex-col gap-sm">
+<!-- Card 1: Completed -->
+<div class="chunky-card bg-surface border-2 border-primary-container rounded-xl p-md flex items-center gap-md">
+<div class="w-16 h-16 bg-primary-container rounded-xl flex items-center justify-center border-2 border-primary">
+<span class="material-symbols-outlined text-white text-3xl" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+<div class="flex-grow">
+<div class="flex items-center gap-xs">
+<h3 class="font-headline-md text-headline-md text-on-surface">Heel Slides</h3>
+<span class="bg-primary-container text-on-primary-container text-[10px] font-bold px-2 py-0.5 rounded-full border border-primary uppercase">Done</span>
+</div>
+<div class="flex flex-wrap gap-xs mt-1">
+<span class="bg-surface-container text-on-surface-variant font-label-sm text-label-sm px-2 py-0.5 rounded-lg border border-outline-variant">Knee</span>
+<span class="bg-surface-container text-on-surface-variant font-label-sm text-label-sm px-2 py-0.5 rounded-lg border border-outline-variant">3x12</span>
+<span class="bg-surface-container text-on-surface-variant font-label-sm text-label-sm px-2 py-0.5 rounded-lg border border-outline-variant">Easy</span>
+</div>
+</div>
+</div>
+<!-- Card 2: Active -->
+<div class="chunky-card bg-white border-2 border-secondary-container rounded-xl p-md flex flex-col gap-md">
+<div class="flex items-center gap-md">
+<div class="w-16 h-16 bg-secondary-container rounded-xl flex items-center justify-center border-2 border-secondary overflow-hidden">
+<img alt="Exercise thumbnail" data-alt="A detailed close-up of a person performing a quadriceps muscle contraction exercise on a clean, light grey yoga mat. The lighting is crisp and natural, highlighting the muscle definition and movement. The scene conveys focus and medical reliability with a vibrant, energetic feel consistent with a tactile app-first rehabilitation interface." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB18aBz9WYv20CPJeMYGjB93pz3lf4X5EMAJV6kGAwZleC_KqA9BbLYwIURqG-ksYMN3L-rDZcG1JRB5lkjWLjvVjZiMISyd_rtPpJi5oXlVp_GGZwC9gNuGGWvN6kFysnMo_zobxuGDTZYV0XhFwPjQAOBgtaBKmVmw476cixoupQMNiZtRL6CFPssRWYiV98OpNpUlCWPr-eld_iDzxshkrzQTRYWb5oIKdJmp7RRsw6M0So46qpIdQyenmtThkr-7jFWIlzATaU7"/>
+</div>
+<div class="flex-grow">
+<div class="flex items-center gap-xs">
+<h3 class="font-headline-md text-headline-md text-on-surface">Quad Sets</h3>
+<span class="bg-secondary-container text-on-secondary-container text-[10px] font-bold px-2 py-0.5 rounded-full border border-secondary uppercase">Active</span>
+</div>
+<div class="flex flex-wrap gap-xs mt-1">
+<span class="bg-surface-container text-on-surface-variant font-label-sm text-label-sm px-2 py-0.5 rounded-lg border border-outline-variant">Knee</span>
+<span class="bg-surface-container text-on-surface-variant font-label-sm text-label-sm px-2 py-0.5 rounded-lg border border-outline-variant">3x15</span>
+<span class="bg-surface-container text-on-surface-variant font-label-sm text-label-sm px-2 py-0.5 rounded-lg border border-outline-variant">Medium</span>
+</div>
+</div>
+</div>
+<button class="chunky-button w-full bg-primary-container text-on-primary-container font-label-lg text-label-lg py-3 rounded-xl border-2 border-primary flex items-center justify-center gap-xs">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">play_arrow</span>
+                    Start Exercise
+                </button>
+</div>
+<!-- Card 3: Locked -->
+<div class="chunky-card bg-surface-container border-2 border-outline-variant rounded-xl p-md flex items-center gap-md opacity-70 grayscale">
+<div class="w-16 h-16 bg-surface-variant rounded-xl flex items-center justify-center border-2 border-outline">
+<span class="material-symbols-outlined text-outline text-3xl" style="font-variation-settings: 'FILL' 1;">lock</span>
+</div>
+<div class="flex-grow">
+<h3 class="font-headline-md text-headline-md text-on-surface-variant">Glute Bridges</h3>
+<div class="flex flex-wrap gap-xs mt-1">
+<span class="bg-surface-container-high text-on-surface-variant font-label-sm text-label-sm px-2 py-0.5 rounded-lg border border-outline-variant">Knee</span>
+<span class="bg-surface-container-high text-on-surface-variant font-label-sm text-label-sm px-2 py-0.5 rounded-lg border border-outline-variant">3x10</span>
+<span class="bg-surface-container-high text-on-surface-variant font-label-sm text-label-sm px-2 py-0.5 rounded-lg border border-outline-variant">Hard</span>
+</div>
+</div>
+</div>
+<!-- Card 4: Locked -->
+<div class="chunky-card bg-surface-container border-2 border-outline-variant rounded-xl p-md flex items-center gap-md opacity-70 grayscale">
+<div class="w-16 h-16 bg-surface-variant rounded-xl flex items-center justify-center border-2 border-outline">
+<span class="material-symbols-outlined text-outline text-3xl" style="font-variation-settings: 'FILL' 1;">lock</span>
+</div>
+<div class="flex-grow">
+<h3 class="font-headline-md text-headline-md text-on-surface-variant">Step Ups</h3>
+<div class="flex flex-wrap gap-xs mt-1">
+<span class="bg-surface-container-high text-on-surface-variant font-label-sm text-label-sm px-2 py-0.5 rounded-lg border border-outline-variant">Balance</span>
+<span class="bg-surface-container-high text-on-surface-variant font-label-sm text-label-sm px-2 py-0.5 rounded-lg border border-outline-variant">2x10</span>
+<span class="bg-surface-container-high text-on-surface-variant font-label-sm text-label-sm px-2 py-0.5 rounded-lg border border-outline-variant">Medium</span>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Bottom Navigation Shell -->
+<nav class="fixed bottom-0 left-0 w-full flex justify-around items-center px-4 py-2 bg-surface border-t-2 border-outline-variant shadow-lg z-50 rounded-t-xl h-20">
+<a class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-1 hover:bg-surface-container transition-all" href="#">
+<span class="material-symbols-outlined">home</span>
+<span class="font-label-sm text-label-sm">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center bg-primary-container text-on-primary-container rounded-xl px-4 py-1 translate-y-[-2px] border-b-4 border-primary transition-transform duration-100 scale-95" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">fitness_center</span>
+<span class="font-label-sm text-label-sm">Quests</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-1 hover:bg-surface-container transition-all" href="#">
+<span class="material-symbols-outlined">leaderboard</span>
+<span class="font-label-sm text-label-sm">Progress</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-1 hover:bg-surface-container transition-all" href="#">
+<span class="material-symbols-outlined">person</span>
+<span class="font-label-sm text-label-sm">Profile</span>
+</a>
+</nav>
+<!-- Contextual FAB - Only for Quests/Home -->
+<button class="fixed bottom-24 right-6 w-16 h-16 bg-tertiary-container text-on-tertiary-container rounded-2xl border-b-4 border-tertiary shadow-xl flex items-center justify-center chunky-button z-40">
+<span class="material-symbols-outlined text-3xl" style="font-variation-settings: 'FILL' 1;">add</span>
+</button>
+</body></html>

@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>RehabQuest - Patient Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;700;800&amp;family=Nunito+Sans:wght@400;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "on-surface-variant": "#3f4a36",
+                      "on-primary-fixed": "#082100",
+                      "background": "#fbf9f9",
+                      "tertiary-fixed-dim": "#ffba26",
+                      "surface-container-high": "#e9e8e7",
+                      "secondary-fixed": "#c8e6ff",
+                      "on-tertiary-fixed": "#271900",
+                      "on-error": "#ffffff",
+                      "surface-container-low": "#f5f3f3",
+                      "surface-container-lowest": "#ffffff",
+                      "surface-container": "#efeded",
+                      "on-surface": "#1b1c1c",
+                      "surface-tint": "#2b6c00",
+                      "secondary-fixed-dim": "#88ceff",
+                      "tertiary": "#7d5800",
+                      "surface-bright": "#fbf9f9",
+                      "on-primary-container": "#1e5000",
+                      "on-secondary-fixed-variant": "#004c6e",
+                      "inverse-on-surface": "#f2f0f0",
+                      "secondary-container": "#2fb8ff",
+                      "on-error-container": "#93000a",
+                      "inverse-primary": "#6be026",
+                      "outline": "#6f7b64",
+                      "secondary": "#006590",
+                      "tertiary-container": "#e9a700",
+                      "on-primary": "#ffffff",
+                      "on-tertiary-fixed-variant": "#5e4100",
+                      "tertiary-fixed": "#ffdea9",
+                      "outline-variant": "#becbb1",
+                      "on-secondary-fixed": "#001e2e",
+                      "inverse-surface": "#303031",
+                      "primary-fixed-dim": "#6be026",
+                      "on-background": "#1b1c1c",
+                      "on-secondary": "#ffffff",
+                      "surface": "#fbf9f9",
+                      "primary-container": "#58cc02",
+                      "error": "#ba1a1a",
+                      "surface-variant": "#e3e2e2",
+                      "on-secondary-container": "#004666",
+                      "primary-fixed": "#87fe45",
+                      "surface-dim": "#dbdad9",
+                      "surface-container-highest": "#e3e2e2",
+                      "primary": "#2b6c00",
+                      "on-primary-fixed-variant": "#1f5100",
+                      "on-tertiary": "#ffffff",
+                      "error-container": "#ffdad6",
+                      "on-tertiary-container": "#5c4000"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "sm": "16px",
+                      "base": "4px",
+                      "lg": "32px",
+                      "margin-mobile": "20px",
+                      "margin-desktop": "40px",
+                      "md": "24px",
+                      "xs": "8px",
+                      "xl": "48px",
+                      "gutter": "16px"
+              },
+              "fontFamily": {
+                      "body-lg": ["Nunito Sans"],
+                      "body-md": ["Nunito Sans"],
+                      "headline-lg": ["Lexend"],
+                      "headline-xl": ["Lexend"],
+                      "headline-md": ["Lexend"],
+                      "label-lg": ["Lexend"],
+                      "label-sm": ["Lexend"]
+              },
+              "fontSize": {
+                      "body-lg": ["18px", {"lineHeight": "26px", "fontWeight": "600"}],
+                      "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                      "headline-lg": ["28px", {"lineHeight": "34px", "letterSpacing": "-0.01em", "fontWeight": "700"}],
+                      "headline-xl": ["36px", {"lineHeight": "44px", "letterSpacing": "-0.02em", "fontWeight": "800"}],
+                      "headline-md": ["22px", {"lineHeight": "28px", "fontWeight": "700"}],
+                      "label-lg": ["16px", {"lineHeight": "20px", "fontWeight": "700"}],
+                      "label-sm": ["13px", {"lineHeight": "16px", "fontWeight": "700"}]
+              }
+            },
+          },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 600, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        .chunky-button-primary {
+            box-shadow: 0 4px 0 #1e5000;
+        }
+        .chunky-button-primary:active {
+            box-shadow: 0 0px 0 #1e5000;
+            transform: translateY(4px);
+        }
+        .chunky-button-secondary {
+            box-shadow: 0 4px 0 #004666;
+        }
+        .chunky-button-secondary:active {
+            box-shadow: 0 0px 0 #004666;
+            transform: translateY(4px);
+        }
+        .chunky-card {
+            box-shadow: 0 2px 0 #e5e5e5;
+        }
+        .streak-card {
+            box-shadow: 0 4px 0 #e67e22;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background font-body-md min-h-screen pb-32">
+<!-- TopAppBar -->
+<header class="bg-surface border-b-2 border-outline-variant flex justify-between items-center w-full px-margin-mobile md:px-margin-desktop h-16 sticky top-0 z-50">
+<div class="flex items-center gap-sm">
+<div class="w-10 h-10 rounded-full border-2 border-outline overflow-hidden">
+<img alt="User profile" class="w-full h-full object-cover" data-alt="A professional headshot of a smiling young man with friendly features, set against a soft-focus indoor clinic background. The lighting is bright and optimistic, matching a clean medical app aesthetic with soft warm tones." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBRHT2KibcvnrUqQllcd8dyLE2ZsrB6QjCMh6fwzB5_p5ZHZfFn6OOPKyLMUtnzEfbYD0NwgspxMn3biF1YMt_To2mp0zWSh0FFQlp6Mlh9AKuuGXNwrCYA4HwZdqGQNXjZaGftms_0niQbfgteEhf0-T7jUTGbcEO_A8ZfeXRMb1S5SG2SacLas48q9L4XKu7Ej06Bz6Ipagr4Eo6lDmc4cBKGmq8R_D-ZXFb5tWf0zTVNYr9O_Q2aEavp7ok-x1wo4K6gxd77tphJ"/>
+</div>
+<span class="font-headline-md text-headline-md font-bold text-primary">RehabQuest</span>
+</div>
+<div class="text-on-surface-variant hover:bg-surface-container-high transition-colors p-2 rounded-xl cursor-pointer">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</div>
+</header>
+<main class="max-w-[1200px] mx-auto px-margin-mobile md:px-margin-desktop py-lg grid grid-cols-4 md:grid-cols-12 gap-gutter">
+<!-- Welcome Section -->
+<section class="col-span-4 md:col-span-12 flex items-center justify-between bg-surface-container-lowest p-md border-2 border-outline-variant rounded-xl chunky-card">
+<div class="flex flex-col gap-xs">
+<h1 class="font-headline-xl text-headline-xl text-on-surface">Good morning, Guy!</h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant">Ready to crush your goals today?</p>
+</div>
+<div class="w-24 h-24 relative">
+<img alt="Mascot" class="w-full h-full object-contain" data-alt="A friendly, stylized 3D mascot character of a small resilient robot with a warm screen face showing a happy expression. It is waving enthusiastically with one hand. The style is smooth, vibrant, and tactile, like a character from a high-end mobile game, featuring bold green and white colors." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAqpw8uAuKrzMKED5Pu7HtbtBGDBIdDOyLaAdzVAk_GgZIUufhxJP-svpIgFOpkL29VaP6cejSZY8Ye1sMK31ezLZtvtmPJrabd5_g3gtQRpll8od7GcGmBWsJGDhC3KJ4yYndtnWDb7m6opUHwMZ5bmoNXDglg34nYo9Oh2_ymgAqpGVgP_-DgCpPLzyG9mHtUd2Ro_3JoVx0fykm452i106oJMzHzfObURZSD9Txsv8YTPT9pv47cihifCPFEp2-i8Xca4iT0YESu"/>
+</div>
+</section>
+<!-- Streak Card -->
+<section class="col-span-4 md:col-span-4 bg-[#ff9c41] p-md border-2 border-[#e67e22] rounded-xl streak-card text-white flex items-center gap-md">
+<div class="bg-white/20 p-sm rounded-full">
+<span class="material-symbols-outlined !text-4xl text-white" data-icon="local_fire_department" style="font-variation-settings: 'FILL' 1;">local_fire_department</span>
+</div>
+<div class="flex flex-col">
+<span class="font-headline-lg text-headline-lg">5 Day Streak</span>
+<span class="font-label-lg text-label-lg opacity-90">Keep the flame alive!</span>
+</div>
+</section>
+<!-- Active Quest Card -->
+<section class="col-span-4 md:col-span-8 bg-surface-container-lowest p-md border-2 border-outline-variant rounded-xl chunky-card flex flex-col gap-sm">
+<div class="flex justify-between items-start">
+<div class="flex flex-col gap-xs">
+<span class="font-label-sm text-label-sm text-primary uppercase tracking-wider">Active Quest</span>
+<h2 class="font-headline-md text-headline-md">Knee Stability Phase 1</h2>
+</div>
+<div class="bg-secondary-container text-on-secondary-container px-sm py-xs rounded-full font-label-sm border-2 border-secondary">
+                    Intermediate
+                </div>
+</div>
+<div class="flex flex-col gap-xs mt-xs">
+<div class="flex justify-between font-label-lg">
+<span>33% complete</span>
+<span>1/3 exercises</span>
+</div>
+<div class="w-full h-5 bg-surface-container-high rounded-full overflow-hidden border-2 border-outline-variant">
+<div class="h-full bg-primary-container rounded-r-full" style="width: 33%"></div>
+</div>
+</div>
+<button class="w-full bg-secondary-container text-on-secondary-container py-sm rounded-xl font-headline-md chunky-button-secondary transition-all flex items-center justify-center gap-xs mt-xs">
+<span class="material-symbols-outlined" data-icon="play_arrow" style="font-variation-settings: 'FILL' 1;">play_arrow</span>
+                Start Today's Rehab
+            </button>
+</section>
+<!-- Progress Path Preview (Vertical) -->
+<section class="col-span-4 md:col-span-12 py-lg flex flex-col items-center">
+<h3 class="font-headline-lg text-headline-lg mb-xl text-center">Your Recovery Journey</h3>
+<div class="relative flex flex-col items-center gap-xl w-full max-w-md">
+<!-- Path Line -->
+<div class="absolute top-0 bottom-0 w-2 bg-surface-container-high left-1/2 -translate-x-1/2 -z-10 rounded-full"></div>
+<!-- Node 1: Completed -->
+<div class="flex flex-col items-center gap-xs">
+<div class="w-16 h-16 rounded-full bg-primary-container border-4 border-primary flex items-center justify-center text-white chunky-card">
+<span class="material-symbols-outlined !text-3xl" data-icon="check" style="font-variation-settings: 'FILL' 1;">check</span>
+</div>
+<span class="font-label-lg text-primary">Mobility Intro</span>
+</div>
+<!-- Node 2: Current (Active) -->
+<div class="flex flex-col items-center gap-xs">
+<div class="w-20 h-20 rounded-full bg-secondary-container border-4 border-secondary flex items-center justify-center text-on-secondary-container chunky-card scale-110 relative">
+<!-- Pulsing ring effect simulation -->
+<div class="absolute inset-0 rounded-full border-4 border-secondary-container animate-ping opacity-20"></div>
+<span class="material-symbols-outlined !text-4xl" data-icon="fitness_center">fitness_center</span>
+</div>
+<span class="font-headline-md text-secondary">Phase 1: Stability</span>
+</div>
+<!-- Node 3: Locked -->
+<div class="flex flex-col items-center gap-xs opacity-50">
+<div class="w-16 h-16 rounded-full bg-surface-container-high border-4 border-outline flex items-center justify-center text-outline">
+<span class="material-symbols-outlined !text-3xl" data-icon="lock" style="font-variation-settings: 'FILL' 1;">lock</span>
+</div>
+<span class="font-label-lg text-on-surface-variant">Phase 2: Strength</span>
+</div>
+<!-- Node 4: Locked -->
+<div class="flex flex-col items-center gap-xs opacity-50">
+<div class="w-16 h-16 rounded-full bg-surface-container-high border-4 border-outline flex items-center justify-center text-outline">
+<span class="material-symbols-outlined !text-3xl" data-icon="lock" style="font-variation-settings: 'FILL' 1;">lock</span>
+</div>
+<span class="font-label-lg text-on-surface-variant">Return to Sport</span>
+</div>
+</div>
+</section>
+<!-- Motivational Quote -->
+<section class="col-span-4 md:col-span-12 text-center p-xl italic text-on-surface-variant font-body-lg">
+<span class="material-symbols-outlined opacity-20 text-4xl block mb-sm" data-icon="format_quote">format_quote</span>
+            "Resilience is not what happens to you. It's how you react, respond, and recover."
+        </section>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 w-full flex justify-around items-center px-4 py-2 bg-surface border-t-2 border-outline-variant shadow-lg z-50 rounded-t-xl">
+<!-- Home (Active) -->
+<a class="flex flex-col items-center justify-center bg-primary-container text-on-primary-container rounded-xl px-4 py-1 translate-y-[-2px] border-b-4 border-primary active:scale-95 transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="home" style="font-variation-settings: 'FILL' 1;">home</span>
+<span class="font-label-sm text-label-sm">Home</span>
+</a>
+<!-- Quests -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-1 hover:bg-surface-container transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="fitness_center">fitness_center</span>
+<span class="font-label-sm text-label-sm">Quests</span>
+</a>
+<!-- Progress -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-1 hover:bg-surface-container transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="leaderboard">leaderboard</span>
+<span class="font-label-sm text-label-sm">Progress</span>
+</a>
+<!-- Profile -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-1 hover:bg-surface-container transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="person">person</span>
+<span class="font-label-sm text-label-sm">Profile</span>
+</a>
+</nav>
+</body></html>
