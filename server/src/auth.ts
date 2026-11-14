@@ -1,11 +1,14 @@
-import type { Prisma, PrismaClient } from '@prisma/client';
-import crypto from 'node:crypto';
+import type { Prisma } from '@prisma/client';
+import jwt, { type JwtPayload, type SignOptions } from 'jsonwebtoken';
+import { config, getJwtSecret } from './config.js';
+import type { Db } from './db.js';
 
-const publicUserSelect = {
+export const publicUserSelect = {
   id: true,
   name: true,
   email: true,
   role: true,
+  timezone: true,
   createdAt: true,
   updatedAt: true,
 } as const;
@@ -14,15 +17,20 @@ export type AuthenticatedUser = Prisma.UserGetPayload<{
   select: typeof publicUserSelect;
 }>;
 
-export function createAuthToken(userId: string) {
-  const header = encodeJson({ alg: 'HS256', typ: 'JWT' });
-  const payload = encodeJson({ sub: userId });
-  const signature = signTokenParts(header, payload);
+const issuer = 'rehabquest';
 
-  return `${header}.${payload}.${signature}`;
+export function createAuthToken(userId: string) {
+  return jwt.sign({}, getJwtSecret(), {
+    algorithm: 'HS256',
+    expiresIn: config.jwtExpiresIn as SignOptions['expiresIn'],
+    issuer,
+    subject: userId,
+  });
 }
 
-export function getUserIdFromAuthHeader(authorization?: string) {
+type VerifiedToken = { userId: string; issuedAt: number };
+
+export function verifyAuthHeader(authorization?: string): VerifiedToken | null {
   const [scheme, token] = authorization?.split(' ') ?? [];
 
   if (scheme !== 'Bearer' || !token) {
@@ -30,66 +38,43 @@ export function getUserIdFromAuthHeader(authorization?: string) {
   }
 
   try {
-    const [header, payload, signature] = token.split('.');
+    const decoded = jwt.verify(token, getJwtSecret(), {
+      algorithms: ['HS256'],
+      issuer,
+    }) as JwtPayload;
 
-    if (!header || !payload || !signature) {
+    if (typeof decoded.sub !== 'string' || typeof decoded.iat !== 'number') {
       return null;
     }
 
-    const expectedSignature = signTokenParts(header, payload);
-
-    if (!signaturesMatch(signature, expectedSignature)) {
-      return null;
-    }
-
-    const decodedPayload = JSON.parse(Buffer.from(payload, 'base64url').toString('utf8')) as {
-      sub?: string;
-    };
-
-    return decodedPayload.sub ?? null;
+    return { userId: decoded.sub, issuedAt: decoded.iat };
   } catch {
+    // Expired, malformed or wrongly signed tokens are all treated as "not authenticated".
     return null;
   }
 }
 
-export async function getAuthenticatedUser(prisma: PrismaClient, authorization?: string) {
-  const userId = getUserIdFromAuthHeader(authorization);
+export async function getAuthenticatedUser(db: Db, authorization?: string): Promise<AuthenticatedUser | null> {
+  const verified = verifyAuthHeader(authorization);
 
-  if (!userId) {
+  if (!verified) {
     return null;
   }
 
-  return prisma.user.findUnique({
-    where: {
-      id: userId,
-    },
-    select: publicUserSelect,
+  const user = await db.user.findUnique({
+    where: { id: verified.userId },
+    select: { ...publicUserSelect, passwordChangedAt: true },
   });
-}
 
-function encodeJson(value: object) {
-  return Buffer.from(JSON.stringify(value), 'utf8').toString('base64url');
-}
-
-function signTokenParts(header: string, payload: string) {
-  return crypto.createHmac('sha256', getJwtSecret()).update(`${header}.${payload}`).digest('base64url');
-}
-
-function signaturesMatch(value: string, expected: string) {
-  const valueBuffer = Buffer.from(value);
-  const expectedBuffer = Buffer.from(expected);
-
-  return valueBuffer.length === expectedBuffer.length && crypto.timingSafeEqual(valueBuffer, expectedBuffer);
-}
-
-function getJwtSecret() {
-  const secret = process.env.JWT_SECRET;
-
-  if (!secret && process.env.NODE_ENV === 'production') {
-    throw new Error('JWT_SECRET is required in production');
+  if (!user) {
+    return null;
   }
 
-  return secret ?? 'rehabquest-development-secret';
-}
+  // A password reset invalidates every token issued before it (JWT iat has second precision).
+  if (user.passwordChangedAt && verified.issuedAt < Math.floor(user.passwordChangedAt.getTime() / 1000)) {
+    return null;
+  }
 
-export { publicUserSelect };
+  const { passwordChangedAt: _ignored, ...publicUser } = user;
+  return publicUser;
+}

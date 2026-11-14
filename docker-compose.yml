@@ -1,0 +1,44 @@
+# Local infrastructure for RehabQuest.
+#
+# - `postgres`       development + demo database (persistent volume, port 5432, db "rehabquest")
+# - `postgres-test`  isolated test database (in-memory tmpfs, port 5433, db "rehabquest_test")
+#
+# The two databases run in separate containers on separate ports so that a test
+# run can never touch development data, even if a URL is mistyped.
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: rehabquest-postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: rehabquest
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d rehabquest"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  postgres-test:
+    image: postgres:16-alpine
+    container_name: rehabquest-postgres-test
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
+    ports:
+      - "5433:5432"
+    tmpfs:
+      - /var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  postgres-data:

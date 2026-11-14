@@ -2,6 +2,7 @@ import { Capacitor } from '@capacitor/core';
 import { LocalNotifications } from '@capacitor/local-notifications';
 import { BellRing, Loader2, Save } from 'lucide-react';
 import { FormEvent, useEffect, useState } from 'react';
+import { apiFetch, getAuthHeaders } from '../../auth/session';
 import { apiBaseUrl } from '../../config/api';
 
 const dailyReminderId = 1001;
@@ -26,7 +27,7 @@ export function NotificationPreferencesCard() {
   useEffect(() => {
     async function loadPreference() {
       try {
-        const response = await fetch(`${apiBaseUrl}/patient/notification-preferences`, {
+        const response = await apiFetch(`${apiBaseUrl}/patient/notification-preferences`, {
           headers: getAuthHeaders(),
         });
         const data = await response.json();
@@ -56,7 +57,7 @@ export function NotificationPreferencesCard() {
     setIsSaving(true);
 
     try {
-      const response = await fetch(`${apiBaseUrl}/patient/notification-preferences`, {
+      const response = await apiFetch(`${apiBaseUrl}/patient/notification-preferences`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -197,9 +198,3 @@ async function syncLocalReminder(preference: NotificationPreference) {
   });
 }
 
-function getAuthHeaders(): Record<string, string> {
-  const token =
-    localStorage.getItem('rehabquestToken') ?? localStorage.getItem('authToken') ?? localStorage.getItem('token');
-
-  return token ? { Authorization: `Bearer ${token}` } : {};
-}

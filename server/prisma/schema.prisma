@@ -7,16 +7,25 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// Roles are assigned server-side only. Public registration always creates
+// PATIENT accounts; THERAPIST accounts are provisioned with
+// `npm run therapist:create` (or the demo seed).
 enum Role {
   PATIENT
   THERAPIST
   ADMIN
 }
 
+// DRAFT: created but never published (invisible to the patient).
+// ACTIVE: the patient follows it (at most one per patient, enforced by a partial unique index).
+// PAUSED: approved pause; paused days are recorded in PlanPause and excluded from analytics.
+// COMPLETED / ARCHIVED: finished or put away; history is kept.
 enum PlanStatus {
   ACTIVE
   COMPLETED
   PAUSED
+  DRAFT
+  ARCHIVED
 }
 
 enum Difficulty {
@@ -25,39 +34,144 @@ enum Difficulty {
   HARD
 }
 
-enum PatientExerciseStatus {
-  ASSIGNED
+// COMPLETED: the patient did the prescribed exercise.
+// STOPPED:   the patient stopped because of pain or other symptoms. It earns no
+//            XP, never breaks a streak, and is always flagged for therapist review.
+// PARTIAL: some prescribed sets were done.
+// SKIPPED: not performed (reason optional).
+enum CompletionStatus {
   COMPLETED
+  STOPPED
+  PARTIAL
   SKIPPED
 }
 
-model User {
-  id           String   @id @default(cuid())
-  name         String
-  email        String   @unique
-  passwordHash String
-  role         Role
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+// Optional structured reason for a skipped or stopped exercise.
+enum OutcomeReason {
+  PAIN_OR_DISCOMFORT
+  TIRED
+  NO_TIME
+  FORGOT
+  NO_EQUIPMENT
+  UNSURE_HOW
+  OTHER
+}
 
-  patientProfile      PatientProfile?
-  physioPatients      PatientProfile[]   @relation("PhysioPatients")
-  rehabPlans          RehabPlan[]        @relation("PhysioRehabPlans")
-  badges              UserBadge[]
-  therapistLinks      TherapistPatient[] @relation("TherapistLinks")
-  patientLinks        TherapistPatient[] @relation("PatientLinks")
-  createdExercises    Exercise[]         @relation("CreatedExercises")
-  assignedExercises   PatientExercise[]  @relation("PatientExercisePatient")
-  exerciseAssignments PatientExercise[]  @relation("PatientExerciseAssignedBy")
-  sentMessages        Message[]          @relation("SentMessages")
-  receivedMessages    Message[]          @relation("ReceivedMessages")
-  passwordResetTokens PasswordResetToken[]
+// ONLINE: recorded directly. OFFLINE_SYNC: queued on the device and replayed later.
+enum CompletionSource {
+  ONLINE
+  OFFLINE_SYNC
+}
+
+enum VersionStatus {
+  DRAFT
+  PUBLISHED
+  DISCARDED
+}
+
+enum TemplateStatus {
+  ACTIVE
+  ARCHIVED
+}
+
+enum DifficultyRating {
+  TOO_EASY
+  JUST_RIGHT
+  TOO_HARD
+}
+
+enum XpReason {
+  TASK_COMPLETED
+  SESSION_COMPLETED
+}
+
+enum SummarySource {
+  MODEL
+  RULE_BASED
+}
+
+model User {
+  id                String    @id @default(cuid())
+  name              String
+  email             String    @unique
+  passwordHash      String
+  role              Role
+  // IANA timezone used to decide which calendar day a completion belongs to.
+  timezone          String    @default("Asia/Jerusalem")
+  // Tokens issued before this instant are rejected (set on password reset).
+  passwordChangedAt DateTime?
+  // Patients only: a code the patient shares with a therapist to consent to
+  // being linked. A therapist needs both the email and this code.
+  careCode          String?   @unique
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  therapistLinks         TherapistPatient[]             @relation("TherapistLinks")
+  patientLinks           TherapistPatient[]             @relation("PatientLinks")
+  createdExercises       Exercise[]                     @relation("CreatedExercises")
+  patientPlans           RehabPlan[]                    @relation("PatientPlans")
+  therapistPlans         RehabPlan[]                    @relation("TherapistPlans")
+  completions            TaskCompletion[]               @relation("PatientCompletions")
+  reviewedCompletions    TaskCompletion[]               @relation("ReviewedCompletions")
+  xpEvents               XpEvent[]
+  badges                 UserBadge[]
+  sentMessages           Message[]                      @relation("SentMessages")
+  receivedMessages       Message[]                      @relation("ReceivedMessages")
+  passwordResetTokens    PasswordResetToken[]
+  notificationPreference PatientNotificationPreference?
+  summaryRequests        AiSummaryRequest[]             @relation("SummaryTherapist")
+  summarySubjects        AiSummaryRequest[]             @relation("SummaryPatient")
+  templates              ProgramTemplate[]
+  createdVersions        PlanVersion[]                  @relation("VersionCreatedBy")
+  publishedVersions      PlanVersion[]                  @relation("VersionPublishedBy")
+  createdPauses          PlanPause[]
+  auditEvents            AuditEvent[]                   @relation("AuditActor")
+  notifications          Notification[]
+  pushSubscriptions      PushSubscription[]
+  outboxJobs             OutboxJob[]
+  reviewItemsAsTherapist ReviewItem[]                   @relation("ReviewTherapist")
+  reviewItemsAsPatient   ReviewItem[]                   @relation("ReviewPatient")
+  reviewSettings         ReviewSettings?
+  preference             UserPreference?
+  goalsAsPatient         Goal[]                         @relation("GoalPatient")
+  goalsAsTherapist       Goal[]                         @relation("GoalTherapist")
+  measurementDefinitions MeasurementDefinition[]        @relation("MeasurementDefinitionPatient")
+  definedMeasurements    MeasurementDefinition[]        @relation("MeasurementDefinitionTherapist")
+  measurements           Measurement[]                  @relation("MeasurementPatient")
+  recordedMeasurements   Measurement[]                  @relation("MeasurementRecordedBy")
+  checkIns               WeeklyCheckIn[]
+  weeklyGoalWeeks        WeeklyGoalWeek[]
+  educationCards         EducationCard[]
+  educationVersions      EducationCardVersion[]
+  educationAsPatient     EducationAssignment[]          @relation("EducationPatient")
+  educationAsTherapist   EducationAssignment[]          @relation("EducationTherapist")
+}
+
+model PatientNotificationPreference {
+  id                            String    @id @default(cuid())
+  userId                        String    @unique
+  dailyExerciseRemindersEnabled Boolean   @default(false)
+  // Local wall-clock time in the user's timezone (HH:mm).
+  reminderTime                  String    @default("09:00")
+  // Quiet hours (HH:mm, may span midnight). Reminders due inside them move to the end of the quiet period.
+  quietHoursStart               String?
+  quietHoursEnd                 String?
+  snoozedUntil                  DateTime?
+  inAppEnabled                  Boolean   @default(true)
+  pushEnabled                   Boolean   @default(false)
+  createdAt                     DateTime  @default(now())
+  updatedAt                     DateTime  @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }
 
 model PasswordResetToken {
   id        String    @id @default(cuid())
   userId    String
-  token     String    @unique
+  // SHA-256 of the token; the raw token is never stored.
+  tokenHash String    @unique
   expiresAt DateTime
   usedAt    DateTime?
   createdAt DateTime  @default(now())
@@ -67,25 +181,45 @@ model PasswordResetToken {
   @@index([userId])
 }
 
+// Optional link from a message to a record the message is about. The link is
+// authorized when the message is sent and again whenever it is read.
+enum MessageContextType {
+  TASK
+  COMPLETION
+  PLAN
+  REVIEW_ITEM
+}
+
 model Message {
-  id         String   @id @default(cuid())
-  senderId   String
-  receiverId String
-  text       String
-  createdAt  DateTime @default(now())
+  id              String              @id @default(cuid())
+  senderId        String
+  receiverId      String
+  text            String
+  // Client-generated key: a retried send with the same key returns the original message.
+  clientMessageId String?
+  contextType     MessageContextType?
+  contextId       String?
+  readAt          DateTime?
+  createdAt       DateTime            @default(now())
 
   sender   User @relation("SentMessages", fields: [senderId], references: [id], onDelete: Cascade)
   receiver User @relation("ReceivedMessages", fields: [receiverId], references: [id], onDelete: Cascade)
 
+  @@unique([senderId, clientMessageId])
   @@index([senderId])
-  @@index([receiverId])
+  @@index([receiverId, readAt])
+  @@index([senderId, receiverId, createdAt])
 }
 
+// A therapist may only see or change data for patients they are actively linked to
+// (endedAt = null). Ending the link keeps the row for history (ADR-004).
 model TherapistPatient {
-  id          String   @id @default(cuid())
+  id          String    @id @default(cuid())
   therapistId String
   patientId   String
-  createdAt   DateTime @default(now())
+  createdAt   DateTime  @default(now())
+  endedAt     DateTime?
+  endedById   String?
 
   therapist User @relation("TherapistLinks", fields: [therapistId], references: [id], onDelete: Cascade)
   patient   User @relation("PatientLinks", fields: [patientId], references: [id], onDelete: Cascade)
@@ -95,28 +229,13 @@ model TherapistPatient {
   @@index([patientId])
 }
 
-model PatientProfile {
-  id           String   @id @default(cuid())
-  userId       String   @unique
-  physioId     String?
-  injuryType   String
-  currentStage String
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-
-  user            User             @relation(fields: [userId], references: [id], onDelete: Cascade)
-  physiotherapist User?            @relation("PhysioPatients", fields: [physioId], references: [id], onDelete: SetNull)
-  rehabPlans      RehabPlan[]
-  completions     TaskCompletion[]
-
-  @@index([userId])
-  @@index([physioId])
-}
-
+// A therapist's private exercise library.
 model Exercise {
   id              String     @id @default(cuid())
   title           String
   description     String
+  instructions    String?
+  safetyNotes     String?
   bodyPart        String
   difficulty      Difficulty
   sets            Int
@@ -124,104 +243,151 @@ model Exercise {
   durationSeconds Int
   videoUrl        String?
   imageUrl        String?
+  // Caption / text alternative for the image or video (required when media is set).
+  mediaAlt        String?
+  // Set when the exercise was copied from the built-in starter catalog (src/data/exercise-catalog.ts).
+  catalogKey      String?
   createdById     String
   createdAt       DateTime   @default(now())
   updatedAt       DateTime   @updatedAt
 
-  createdBy        User              @relation("CreatedExercises", fields: [createdById], references: [id], onDelete: Restrict)
-  tasks            RehabTask[]
-  patientExercises PatientExercise[]
+  createdBy     User                  @relation("CreatedExercises", fields: [createdById], references: [id], onDelete: Restrict)
+  tasks         RehabTask[]
+  templateItems ProgramTemplateItem[]
+  versionItems  PlanVersionItem[]
 
+  @@unique([createdById, catalogKey])
   @@index([createdById])
 }
 
-model PatientExercise {
-  id                 String                @id @default(cuid())
-  patientId          String
-  exerciseId         String
-  assignedById       String
-  status             PatientExerciseStatus @default(ASSIGNED)
-  dueDate            DateTime?
-  notes              String?
-  completedAt        DateTime?
-  painLevel          Int?
-  difficultyFeedback String?
-  patientNote        String?
-  feedbackAt         DateTime?
-  createdAt          DateTime              @default(now())
-  updatedAt          DateTime              @updatedAt
-
-  patient    User     @relation("PatientExercisePatient", fields: [patientId], references: [id], onDelete: Cascade)
-  exercise   Exercise @relation(fields: [exerciseId], references: [id], onDelete: Cascade)
-  assignedBy User     @relation("PatientExerciseAssignedBy", fields: [assignedById], references: [id], onDelete: Cascade)
-
-  @@index([patientId])
-  @@index([exerciseId])
-  @@index([assignedById])
-}
-
+// A therapist-approved plan. The same set of tasks is prescribed on every
+// training weekday between startDate and endDate (inclusive). Weekdays that
+// are not in trainingWeekdays are scheduled rest days.
+//
+// A partial unique index (see migration 20261012090000_rehab_plans_and_rewards)
+// guarantees at most one ACTIVE plan per patient.
 model RehabPlan {
-  id         String     @id @default(cuid())
-  patientId  String
-  physioId   String
-  title      String
-  injuryType String
-  startDate  DateTime
-  endDate    DateTime
-  status     PlanStatus @default(ACTIVE)
-  createdAt  DateTime   @default(now())
-  updatedAt  DateTime   @updatedAt
+  id               String     @id @default(cuid())
+  patientId        String
+  therapistId      String
+  title            String
+  condition        String
+  startDate        DateTime   @db.Date
+  endDate          DateTime   @db.Date
+  // 0 = Sunday ... 6 = Saturday
+  trainingWeekdays Int[]
+  therapistNotes   String?
+  status           PlanStatus @default(ACTIVE)
+  // Incremented on every plan-level change (publish, pause, resume, complete) for optimistic concurrency.
+  revision         Int        @default(1)
+  createdAt        DateTime   @default(now())
+  updatedAt        DateTime   @updatedAt
 
-  patient PatientProfile @relation(fields: [patientId], references: [id], onDelete: Cascade)
-  physio  User           @relation("PhysioRehabPlans", fields: [physioId], references: [id], onDelete: Restrict)
-  tasks   RehabTask[]
+  patient   User          @relation("PatientPlans", fields: [patientId], references: [id], onDelete: Cascade)
+  therapist User          @relation("TherapistPlans", fields: [therapistId], references: [id], onDelete: Restrict)
+  tasks     RehabTask[]
+  versions  PlanVersion[]
+  pauses    PlanPause[]
 
   @@index([patientId])
-  @@index([physioId])
+  @@index([therapistId])
 }
 
+// One prescribed exercise inside a plan. Tasks are never hard-deleted once a
+// plan is in use; removing a task sets activeUntil so history stays intact.
 model RehabTask {
-  id              String   @id @default(cuid())
+  id              String    @id @default(cuid())
   planId          String
   exerciseId      String
-  dayNumber       Int
   sets            Int
   reps            Int
   durationSeconds Int
   orderIndex      Int
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  notes           String?
+  // Patient-local dates (inclusive) on which this task is prescribed.
+  activeFrom      DateTime  @db.Date
+  activeUntil     DateTime? @db.Date
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
 
-  plan        RehabPlan        @relation(fields: [planId], references: [id], onDelete: Cascade)
-  exercise    Exercise         @relation(fields: [exerciseId], references: [id], onDelete: Restrict)
-  completions TaskCompletion[]
+  plan         RehabPlan             @relation(fields: [planId], references: [id], onDelete: Cascade)
+  exercise     Exercise              @relation(fields: [exerciseId], references: [id], onDelete: Restrict)
+  completions  TaskCompletion[]
+  versionItems PlanVersionItem[]
+  education    EducationAssignment[]
 
   @@index([planId])
 }
 
+// One completion (or symptom stop) of one task on one patient-local day.
+// The unique constraint on (taskId, sessionDate) makes completion idempotent:
+// retries, double clicks and concurrent requests cannot create a second row.
 model TaskCompletion {
-  id          String   @id @default(cuid())
-  taskId      String
-  patientId   String
-  completedAt DateTime @default(now())
-  painLevel   Int
-  notes       String?
-  createdAt   DateTime @default(now())
+  id                     String            @id @default(cuid())
+  taskId                 String
+  patientId              String
+  sessionDate            DateTime          @db.Date
+  status                 CompletionStatus  @default(COMPLETED)
+  // Null when not reported (e.g. a skipped exercise). Missing is not "no pain".
+  painLevel              Int?
+  difficulty             DifficultyRating?
+  reason                 OutcomeReason?
+  setsCompleted          Int?
+  repsPerSet             Int[]
+  // Active exercise time measured by the player, excluding pauses.
+  activeSeconds          Int?
+  // When the patient says it happened (device clock). createdAt is the server receipt time.
+  occurredAt             DateTime?
+  idempotencyKey         String?           @unique
+  source                 CompletionSource  @default(ONLINE)
+  // The immutable plan version item that was prescribed (instructions + parameters).
+  planVersionItemId      String?
+  prescribedHoldSecs     Int?
+  prescribedRestSecs     Int?
+  notes                  String?
+  prescribedSets         Int
+  prescribedReps         Int
+  prescribedDurationSecs Int
+  xpAwarded              Int               @default(0)
+  needsReview            Boolean           @default(false)
+  reviewedAt             DateTime?
+  reviewedById           String?
+  completedAt            DateTime          @default(now())
+  createdAt              DateTime          @default(now())
 
-  task    RehabTask      @relation(fields: [taskId], references: [id], onDelete: Cascade)
-  patient PatientProfile @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  task        RehabTask        @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  patient     User             @relation("PatientCompletions", fields: [patientId], references: [id], onDelete: Cascade)
+  reviewedBy  User?            @relation("ReviewedCompletions", fields: [reviewedById], references: [id], onDelete: SetNull)
+  versionItem PlanVersionItem? @relation(fields: [planVersionItemId], references: [id], onDelete: SetNull)
 
-  @@index([patientId])
-  @@index([taskId])
+  @@unique([taskId, sessionDate])
+  @@index([patientId, sessionDate])
+  @@index([needsReview])
 }
 
+// Append-only XP ledger. sourceKey is unique, so the same reward can never be
+// written twice (e.g. "task:<completionId>" or "session:<planId>:<date>").
+model XpEvent {
+  id          String   @id @default(cuid())
+  userId      String
+  amount      Int
+  reason      XpReason
+  sourceKey   String   @unique
+  sessionDate DateTime @db.Date
+  createdAt   DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, sessionDate])
+}
+
+// Achievement definitions. The id is a stable key (e.g. "first-session").
 model Badge {
-  id            String   @id @default(cuid())
-  name          String
-  description   String
-  icon          String?
-  conditionType String
-  createdAt     DateTime @default(now())
+  id          String   @id
+  name        String
+  description String
+  icon        String?
+  createdAt   DateTime @default(now())
 
   users UserBadge[]
 }
@@ -238,4 +404,567 @@ model UserBadge {
   @@unique([userId, badgeId])
   @@index([userId])
   @@index([badgeId])
+}
+
+// Audit log + usage limiting for therapist summary drafts.
+model AiSummaryRequest {
+  id             String        @id @default(cuid())
+  therapistId    String
+  patientId      String
+  periodStart    DateTime      @db.Date
+  periodEnd      DateTime      @db.Date
+  source         SummarySource
+  // Why the rule-based fallback was used (e.g. "not_configured", "timeout").
+  fallbackReason String?
+  createdAt      DateTime      @default(now())
+
+  therapist User @relation("SummaryTherapist", fields: [therapistId], references: [id], onDelete: Cascade)
+  patient   User @relation("SummaryPatient", fields: [patientId], references: [id], onDelete: Cascade)
+
+  @@index([therapistId, createdAt])
+}
+
+// ---------------------------------------------------------------------------
+// Program authoring (Stage 1)
+// ---------------------------------------------------------------------------
+
+// A therapist's reusable program. Copied (never linked) into patient plans, so
+// editing a template never changes an assigned plan.
+model ProgramTemplate {
+  id               String         @id @default(cuid())
+  therapistId      String
+  title            String
+  condition        String
+  description      String?
+  trainingWeekdays Int[]
+  durationWeeks    Int
+  status           TemplateStatus @default(ACTIVE)
+  lockVersion      Int            @default(1)
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+
+  therapist User                  @relation(fields: [therapistId], references: [id], onDelete: Cascade)
+  items     ProgramTemplateItem[]
+
+  @@index([therapistId])
+}
+
+model ProgramTemplateItem {
+  id              String  @id @default(cuid())
+  templateId      String
+  exerciseId      String
+  orderIndex      Int
+  sets            Int
+  reps            Int
+  holdSeconds     Int?
+  restSeconds     Int?
+  durationSeconds Int
+  notes           String?
+
+  template ProgramTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  exercise Exercise        @relation(fields: [exerciseId], references: [id], onDelete: Restrict)
+
+  @@index([templateId])
+}
+
+// One version of a patient plan. Drafts are editable (optimistic lockVersion);
+// published versions are immutable. The version that applies to a date is the
+// published version with the latest effectiveFrom <= that date, so publishing a
+// revision never changes what applied on earlier dates.
+// Partial unique index (see migration): at most one DRAFT per plan.
+model PlanVersion {
+  id               String        @id @default(cuid())
+  planId           String
+  number           Int?
+  status           VersionStatus @default(DRAFT)
+  title            String
+  condition        String
+  therapistNotes   String?
+  trainingWeekdays Int[]
+  restDates        DateTime[]    @db.Date
+  effectiveFrom    DateTime      @db.Date
+  endDate          DateTime      @db.Date
+  changeNote       String?
+  lockVersion      Int           @default(1)
+  templateId       String?
+  basedOnVersionId String?
+  createdById      String
+  publishedById    String?
+  publishedAt      DateTime?
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+
+  plan        RehabPlan         @relation(fields: [planId], references: [id], onDelete: Cascade)
+  createdBy   User              @relation("VersionCreatedBy", fields: [createdById], references: [id], onDelete: Restrict)
+  publishedBy User?             @relation("VersionPublishedBy", fields: [publishedById], references: [id], onDelete: Restrict)
+  items       PlanVersionItem[]
+
+  @@unique([planId, number])
+  @@index([planId, status])
+}
+
+// A prescribed exercise inside a version, with a snapshot of the exercise text
+// taken at publication. taskId is the stable "slot" shared across versions, so a
+// completion stays unique per slot per day even if a revision is published mid-day.
+model PlanVersionItem {
+  id                  String     @id @default(cuid())
+  versionId           String
+  taskId              String?
+  exerciseId          String
+  orderIndex          Int
+  sets                Int
+  reps                Int
+  holdSeconds         Int?
+  restSeconds         Int?
+  durationSeconds     Int
+  notes               String?
+  exerciseTitle       String
+  exerciseDescription String
+  instructions        String?
+  safetyNotes         String?
+  bodyPart            String
+  difficulty          Difficulty
+  videoUrl            String?
+  imageUrl            String?
+  mediaAlt            String?
+
+  version     PlanVersion      @relation(fields: [versionId], references: [id], onDelete: Cascade)
+  task        RehabTask?       @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  exercise    Exercise         @relation(fields: [exerciseId], references: [id], onDelete: Restrict)
+  completions TaskCompletion[]
+
+  @@index([versionId])
+  @@index([taskId])
+}
+
+// An approved pause. Days from startDate to endDate (inclusive; null = ongoing)
+// are "paused": no reminders, no streak effect, excluded from adherence.
+model PlanPause {
+  id          String    @id @default(cuid())
+  planId      String
+  startDate   DateTime  @db.Date
+  endDate     DateTime? @db.Date
+  reason      String?
+  createdById String
+  createdAt   DateTime  @default(now())
+
+  plan      RehabPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
+  createdBy User      @relation(fields: [createdById], references: [id], onDelete: Restrict)
+
+  @@index([planId])
+}
+
+// Application audit trail. Never stores message bodies, tokens, passwords or care codes.
+model AuditEvent {
+  id          String   @id @default(cuid())
+  actorId     String?
+  action      String
+  patientId   String?
+  subjectType String?
+  subjectId   String?
+  metadata    Json?
+  createdAt   DateTime @default(now())
+
+  actor User? @relation("AuditActor", fields: [actorId], references: [id], onDelete: SetNull)
+
+  @@index([patientId, createdAt])
+  @@index([action, createdAt])
+}
+
+// ---------------------------------------------------------------------------
+// Notifications and reminder delivery (Stage 2D, ADR-003)
+// ---------------------------------------------------------------------------
+
+enum NotificationKind {
+  REMINDER
+  MESSAGE
+  REVIEW
+  PLAN
+  CARE
+}
+
+// The in-app notification center. readAt is set when the user opens or dismisses it.
+model Notification {
+  id        String           @id @default(cuid())
+  userId    String
+  kind      NotificationKind
+  title     String
+  body      String
+  link      String?
+  dedupeKey String           @unique
+  createdAt DateTime         @default(now())
+  readAt    DateTime?
+
+  user       User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  deliveries NotificationDelivery[]
+
+  @@index([userId, readAt])
+  @@index([userId, createdAt])
+}
+
+model PushSubscription {
+  id             String    @id @default(cuid())
+  userId         String
+  endpoint       String    @unique
+  p256dh         String
+  auth           String
+  userAgent      String?
+  createdAt      DateTime  @default(now())
+  lastAcceptedAt DateTime?
+  failureCount   Int       @default(0)
+  disabledAt     DateTime?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+enum OutboxStatus {
+  QUEUED
+  PROCESSING
+  DONE
+  SUPPRESSED
+  FAILED
+}
+
+// Database-backed job queue. Workers claim jobs with FOR UPDATE SKIP LOCKED, so several
+// worker processes never take the same job. dedupeKey makes enqueueing idempotent.
+model OutboxJob {
+  id          String       @id @default(cuid())
+  kind        String
+  userId      String?
+  dedupeKey   String       @unique
+  payload     Json?
+  status      OutboxStatus @default(QUEUED)
+  runAt       DateTime
+  attempts    Int          @default(0)
+  maxAttempts Int          @default(5)
+  lockedBy    String?
+  lockedAt    DateTime?
+  lastError   String?
+  result      String?
+  completedAt DateTime?
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  user       User?                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  deliveries NotificationDelivery[]
+
+  @@index([status, runAt])
+}
+
+enum DeliveryChannel {
+  IN_APP
+  WEB_PUSH
+  DEV_LOG
+}
+
+// SENT: stored in the notification center (in-app) or written to the development log.
+// ACCEPTED: the push service accepted the message. This is not proof the device showed it.
+enum DeliveryStatus {
+  SENT
+  ACCEPTED
+  FAILED
+  SKIPPED
+}
+
+model NotificationDelivery {
+  id             String          @id @default(cuid())
+  userId         String
+  jobId          String?
+  notificationId String?
+  channel        DeliveryChannel
+  status         DeliveryStatus
+  detail         String?
+  createdAt      DateTime        @default(now())
+
+  job          OutboxJob?    @relation(fields: [jobId], references: [id], onDelete: SetNull)
+  notification Notification? @relation(fields: [notificationId], references: [id], onDelete: SetNull)
+
+  @@index([userId, createdAt])
+}
+
+// ---------------------------------------------------------------------------
+// Review workspace (Stage 2E)
+// ---------------------------------------------------------------------------
+
+enum ReviewKind {
+  FEEDBACK
+  STOPPED
+  UNANSWERED_MESSAGE
+  MISSED_ACTIVITY
+}
+
+enum ReviewStatus {
+  OPEN
+  ACKNOWLEDGED
+  RESOLVED
+}
+
+// One workflow item for a therapist. dedupeKey ties it to its source event, so
+// processing the same event again updates the item instead of creating another.
+model ReviewItem {
+  id               String       @id @default(cuid())
+  therapistId      String
+  patientId        String
+  kind             ReviewKind
+  sourceType       String
+  sourceId         String
+  dedupeKey        String       @unique
+  reasons          String[]
+  status           ReviewStatus @default(OPEN)
+  acknowledgedAt   DateTime?
+  acknowledgedById String?
+  resolvedAt       DateTime?
+  resolvedById     String?
+  resolutionNote   String?
+  firstEventAt     DateTime
+  lastEventAt      DateTime
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+
+  therapist User @relation("ReviewTherapist", fields: [therapistId], references: [id], onDelete: Cascade)
+  patient   User @relation("ReviewPatient", fields: [patientId], references: [id], onDelete: Cascade)
+
+  @@index([therapistId, status, lastEventAt])
+  @@index([patientId])
+}
+
+// Review rules configured by each therapist. These are workflow rules, not clinical conclusions.
+model ReviewSettings {
+  therapistId             String   @id
+  painThreshold           Int      @default(7)
+  flagTooHard             Boolean  @default(true)
+  missedSessionsThreshold Int      @default(2)
+  updatedAt               DateTime @updatedAt
+
+  therapist User @relation(fields: [therapistId], references: [id], onDelete: Cascade)
+}
+
+// ---------------------------------------------------------------------------
+// Stage 3: preferences, goals, measurements, check-ins, gamification, education
+// ---------------------------------------------------------------------------
+
+// Account-level comfort and motivation settings (synced across devices).
+model UserPreference {
+  userId            String   @id
+  calmMode          Boolean  @default(false)
+  soundEnabled      Boolean  @default(false)
+  // Patients: planned sessions per week they aim for. Null = every planned session.
+  weeklySessionGoal Int?
+  // Patients: the chosen mascot cosmetic (must be unlocked; see services/gamification.ts).
+  mascotCosmetic    String   @default("classic")
+  updatedAt         DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+enum GoalKind {
+  FUNCTIONAL
+  MEASUREMENT
+}
+
+enum GoalStatus {
+  ACTIVE
+  ACHIEVED
+  ARCHIVED
+}
+
+enum MeasurementDirection {
+  HIGHER_IS_BETTER
+  LOWER_IS_BETTER
+}
+
+enum MeasurementSource {
+  THERAPIST
+  PATIENT
+}
+
+// Something measured over time for one patient, e.g. "Knee bend (right)" in degrees.
+model MeasurementDefinition {
+  id               String               @id @default(cuid())
+  patientId        String
+  therapistId      String
+  name             String
+  unit             String
+  direction        MeasurementDirection
+  minValue         Decimal              @db.Decimal(9, 2)
+  maxValue         Decimal              @db.Decimal(9, 2)
+  patientCanRecord Boolean              @default(false)
+  archivedAt       DateTime?
+  createdAt        DateTime             @default(now())
+
+  patient      User          @relation("MeasurementDefinitionPatient", fields: [patientId], references: [id], onDelete: Cascade)
+  therapist    User          @relation("MeasurementDefinitionTherapist", fields: [therapistId], references: [id], onDelete: Cascade)
+  measurements Measurement[]
+  goals        Goal[]
+
+  @@index([patientId])
+}
+
+model Measurement {
+  id             String            @id @default(cuid())
+  definitionId   String
+  patientId      String
+  recordedById   String
+  source         MeasurementSource
+  value          Decimal           @db.Decimal(9, 2)
+  measuredOn     DateTime          @db.Date
+  note           String?
+  idempotencyKey String?           @unique
+  createdAt      DateTime          @default(now())
+
+  definition MeasurementDefinition @relation(fields: [definitionId], references: [id], onDelete: Cascade)
+  patient    User                  @relation("MeasurementPatient", fields: [patientId], references: [id], onDelete: Cascade)
+  recordedBy User                  @relation("MeasurementRecordedBy", fields: [recordedById], references: [id], onDelete: Cascade)
+
+  @@index([definitionId, measuredOn])
+  @@index([patientId, measuredOn])
+}
+
+// A goal agreed between therapist and patient. Achievement is always confirmed by the therapist.
+model Goal {
+  id            String     @id @default(cuid())
+  patientId     String
+  therapistId   String
+  title         String
+  description   String?
+  kind          GoalKind
+  definitionId  String?
+  baselineValue Decimal?   @db.Decimal(9, 2)
+  targetValue   Decimal?   @db.Decimal(9, 2)
+  targetDate    DateTime?  @db.Date
+  status        GoalStatus @default(ACTIVE)
+  achievedAt    DateTime?
+  achievedById  String?
+  lockVersion   Int        @default(0)
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+
+  patient    User                   @relation("GoalPatient", fields: [patientId], references: [id], onDelete: Cascade)
+  therapist  User                   @relation("GoalTherapist", fields: [therapistId], references: [id], onDelete: Cascade)
+  definition MeasurementDefinition? @relation(fields: [definitionId], references: [id], onDelete: SetNull)
+  milestones Milestone[]
+
+  @@index([patientId, status])
+}
+
+model Milestone {
+  id           String    @id @default(cuid())
+  goalId       String
+  title        String
+  orderIndex   Int
+  targetDate   DateTime? @db.Date
+  achievedAt   DateTime?
+  achievedById String?
+  note         String?
+  createdAt    DateTime  @default(now())
+
+  goal Goal @relation(fields: [goalId], references: [id], onDelete: Cascade)
+
+  @@index([goalId])
+}
+
+// One check-in per patient per local week (weeks start on Sunday). Unanswered questions stay null.
+model WeeklyCheckIn {
+  id             String   @id @default(cuid())
+  patientId      String
+  weekStart      DateTime @db.Date
+  painTypical    Int?
+  painWorst      Int?
+  // 0 = no limits on daily activities, 10 = could not do daily activities.
+  activityLimit  Int?
+  // 1 = not confident, 5 = very confident managing on my own.
+  confidence     Int?
+  note           String?
+  idempotencyKey String?  @unique
+  submittedAt    DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  patient User @relation(fields: [patientId], references: [id], onDelete: Cascade)
+
+  @@unique([patientId, weekStart])
+}
+
+// A week in which the patient met their weekly session goal (recorded once: history and one celebration).
+model WeeklyGoalWeek {
+  id        String   @id @default(cuid())
+  userId    String
+  weekStart DateTime @db.Date
+  goal      Int
+  done      Int
+  metAt     DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, weekStart])
+}
+
+// Educational card owned by a therapist. Every save creates a new immutable version.
+model EducationCard {
+  id            String    @id @default(cuid())
+  ownerId       String
+  latestVersion Int       @default(1)
+  lockVersion   Int       @default(0)
+  archivedAt    DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  owner       User                   @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  versions    EducationCardVersion[]
+  assignments EducationAssignment[]
+
+  @@index([ownerId])
+}
+
+model EducationCardVersion {
+  id             String   @id @default(cuid())
+  cardId         String
+  number         Int
+  title          String
+  body           String
+  readingMinutes Int
+  createdById    String
+  createdAt      DateTime @default(now())
+
+  card            EducationCard             @relation(fields: [cardId], references: [id], onDelete: Cascade)
+  createdBy       User                      @relation(fields: [createdById], references: [id], onDelete: Cascade)
+  acknowledgments EducationAcknowledgment[]
+
+  @@unique([cardId, number])
+}
+
+// A card shared with a patient, optionally next to one exercise of their plan.
+// One active assignment per card and patient (partial unique index in the migration).
+model EducationAssignment {
+  id          String    @id @default(cuid())
+  cardId      String
+  patientId   String
+  therapistId String
+  taskId      String?
+  note        String?
+  assignedAt  DateTime  @default(now())
+  removedAt   DateTime?
+
+  card            EducationCard             @relation(fields: [cardId], references: [id], onDelete: Cascade)
+  patient         User                      @relation("EducationPatient", fields: [patientId], references: [id], onDelete: Cascade)
+  therapist       User                      @relation("EducationTherapist", fields: [therapistId], references: [id], onDelete: Cascade)
+  task            RehabTask?                @relation(fields: [taskId], references: [id], onDelete: SetNull)
+  acknowledgments EducationAcknowledgment[]
+
+  @@index([patientId])
+  @@index([therapistId])
+}
+
+// Read confirmation for one specific version. A newer version asks again.
+model EducationAcknowledgment {
+  id             String   @id @default(cuid())
+  assignmentId   String
+  versionId      String
+  acknowledgedAt DateTime @default(now())
+
+  assignment EducationAssignment  @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
+  version    EducationCardVersion @relation(fields: [versionId], references: [id], onDelete: Cascade)
+
+  @@unique([assignmentId, versionId])
 }

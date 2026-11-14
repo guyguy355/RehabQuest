@@ -1,5 +1,6 @@
 import { CalendarDays, CheckCircle2, Clock3, Dumbbell, Loader2, PlayCircle, Repeat2, Target } from 'lucide-react';
 import { FormEvent, useEffect, useMemo, useState } from 'react';
+import { apiFetch, getAuthHeaders } from '../../auth/session';
 import { apiBaseUrl } from '../../config/api';
 
 type AssignedExercise = {
@@ -35,7 +36,7 @@ export function AssignedExercisesSection() {
   useEffect(() => {
     async function loadExercises() {
       try {
-        const response = await fetch(`${apiBaseUrl}/patient/exercises`, {
+        const response = await apiFetch(`${apiBaseUrl}/patient/exercises`, {
           headers: getAuthHeaders(),
         });
         const data = await response.json();
@@ -61,7 +62,7 @@ export function AssignedExercisesSection() {
     setCompletingAssignmentId(assignmentId);
 
     try {
-      const response = await fetch(`${apiBaseUrl}/patient/exercises/${assignmentId}/complete`, {
+      const response = await apiFetch(`${apiBaseUrl}/patient/exercises/${assignmentId}/complete`, {
         method: 'PATCH',
         headers: getAuthHeaders(),
       });
@@ -92,7 +93,7 @@ export function AssignedExercisesSection() {
     setFeedbackAssignmentId(assignmentId);
 
     try {
-      const response = await fetch(`${apiBaseUrl}/patient/exercises/${assignmentId}/feedback`, {
+      const response = await apiFetch(`${apiBaseUrl}/patient/exercises/${assignmentId}/feedback`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -472,11 +473,4 @@ function isFutureDay(value: string | null | undefined, date: Date) {
   const startOfParsed = new Date(parsed.getFullYear(), parsed.getMonth(), parsed.getDate()).getTime();
 
   return startOfParsed > startOfToday;
-}
-
-function getAuthHeaders(): Record<string, string> {
-  const token =
-    localStorage.getItem('rehabquestToken') ?? localStorage.getItem('authToken') ?? localStorage.getItem('token');
-
-  return token ? { Authorization: `Bearer ${token}` } : {};
 }

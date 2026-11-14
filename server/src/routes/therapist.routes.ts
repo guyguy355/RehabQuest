@@ -1,23 +1,72 @@
-import { Difficulty, PatientExerciseStatus, Prisma, PrismaClient, Role } from '@prisma/client';
+import { Difficulty, PlanStatus, Prisma, Role, VersionStatus } from '@prisma/client';
 import { Router } from 'express';
-import { requireAuth, requireTherapist } from '../middleware/auth.middleware.js';
+import { z } from 'zod';
+import { config } from '../config.js';
+import { CATALOG_BY_KEY, EXERCISE_CATALOG } from '../data/exercise-catalog.js';
+import { prisma } from '../db.js';
+import { conflict, handle, notFound, param, parse, requireUser } from '../http.js';
+import { addDays, fromDbDate, localDateKey } from '../lib/dates.js';
+import { requireTherapist } from '../middleware/auth.middleware.js';
+import { rateLimit } from '../middleware/rateLimit.js';
+import { activeLinkWhere, getLinkedPatient } from '../services/access.js';
+import { audit } from '../services/audit.js';
+import { endCareRelationship } from '../services/messaging.js';
+import { activeReviewCount } from '../services/reviews.js';
+import { loadCompletions, loadPlan, serializeCompletion, serializePlan, toLite, toTimeline } from '../services/plans.js';
+import { buildDays, computeStreak, reviewReasons, sessionStats } from '../services/progress.js';
+import { createProgressSummary, type SummaryModel } from '../services/summary/index.js';
 
-const prisma = new PrismaClient();
-const router = Router();
+const optionalText = (max: number) => z.string().trim().max(max).nullish().transform((value) => value || null);
+const optionalUrl = z
+  .string()
+  .trim()
+  .url('Use a full https:// URL')
+  .max(500)
+  .refine((value) => value.startsWith('https://'), 'Only https:// links are allowed')
+  .nullish()
+  .or(z.literal(''))
+  .transform((value) => value || null);
 
-const linkedPatientSelect = {
-  id: true,
-  name: true,
-  email: true,
-  role: true,
-  createdAt: true,
-  updatedAt: true,
-} as const;
+const linkSchema = z.object({
+  patientEmail: z.string().trim().toLowerCase().email('Enter a valid email address'),
+  careCode: z.string().trim().toUpperCase().regex(/^[0-9A-F]{8}$/, 'The care code has 8 characters (0-9, A-F)'),
+});
+const summarySchema = z.object({ days: z.union([z.literal(7), z.literal(14), z.literal(30)]).default(14) });
+
+const exerciseSchema = z
+  .object({
+    title: z.string().trim().min(1, 'Title is required').max(100),
+    description: z.string().trim().min(1, 'Description is required').max(500),
+    instructions: optionalText(2000),
+    safetyNotes: optionalText(1000),
+    bodyPart: z.string().trim().min(1, 'Body area is required').max(60),
+    difficulty: z.nativeEnum(Difficulty),
+    sets: z.number().int().min(1).max(20),
+    reps: z.number().int().min(1).max(100),
+    durationSeconds: z.number().int().min(1).max(3600),
+    videoUrl: optionalUrl,
+    imageUrl: optionalUrl,
+    mediaAlt: optionalText(500),
+  })
+  .refine((exercise) => !(exercise.videoUrl || exercise.imageUrl) || exercise.mediaAlt, {
+    message: 'Describe the image or video in words (caption / text alternative)',
+    path: ['mediaAlt'],
+  });
+
+const catalogImportSchema = z.object({
+  keys: z
+    .array(z.string().refine((key) => CATALOG_BY_KEY.has(key), 'Unknown catalog exercise'))
+    .min(1, 'Choose at least one exercise')
+    .max(EXERCISE_CATALOG.length)
+    .transform((keys) => [...new Set(keys)]),
+});
 
 const exerciseSelect = {
   id: true,
   title: true,
   description: true,
+  instructions: true,
+  safetyNotes: true,
   bodyPart: true,
   difficulty: true,
   sets: true,
@@ -25,637 +74,224 @@ const exerciseSelect = {
   durationSeconds: true,
   videoUrl: true,
   imageUrl: true,
-  createdById: true,
+  mediaAlt: true,
   createdAt: true,
   updatedAt: true,
+  _count: { select: { tasks: true, versionItems: true, templateItems: true } },
 } as const;
 
-const assignedExerciseSelect = {
-  id: true,
-  patientId: true,
-  exerciseId: true,
-  assignedById: true,
-  status: true,
-  dueDate: true,
-  notes: true,
-  createdAt: true,
-  updatedAt: true,
-  exercise: {
-    select: exerciseSelect,
-  },
-} as const;
-
-const patientProgressSelect = {
-  id: true,
-  status: true,
-  dueDate: true,
-  completedAt: true,
-  painLevel: true,
-  difficultyFeedback: true,
-  patientNote: true,
-  createdAt: true,
-  exercise: {
-    select: {
-      title: true,
-      bodyPart: true,
-    },
-  },
-} as const;
-
-router.post('/patients/link', requireAuth, requireTherapist, async (request, response, next) => {
-  try {
-    const therapist = request.user;
-
-    if (!therapist) {
-      response.status(401).json({ message: 'Authentication required' });
-      return;
-    }
-
-    const { patientEmail } = request.body as { patientEmail?: string };
-    const normalizedEmail = normalizeText(patientEmail)?.toLowerCase();
-
-    if (!normalizedEmail) {
-      response.status(400).json({ message: 'patientEmail is required' });
-      return;
-    }
-
-    if (!isValidEmail(normalizedEmail)) {
-      response.status(400).json({ message: 'patientEmail must be a valid email address' });
-      return;
-    }
-
-    const patient = await prisma.user.findUnique({
-      where: {
-        email: normalizedEmail,
-      },
-      select: linkedPatientSelect,
-    });
-
-    if (!patient) {
-      response.status(404).json({ message: 'Patient not found' });
-      return;
-    }
-
-    if (patient.id === therapist.id) {
-      response.status(400).json({ message: 'Therapists cannot link themselves as patients' });
-      return;
-    }
-
-    if (patient.role !== Role.PATIENT) {
-      response.status(400).json({ message: 'Linked user must have role PATIENT' });
-      return;
-    }
-
-    const existingLink = await prisma.therapistPatient.findUnique({
-      where: {
-        therapistId_patientId: {
-          therapistId: therapist.id,
-          patientId: patient.id,
-        },
-      },
-    });
-
-    if (existingLink) {
-      response.status(409).json({ message: 'Patient is already linked to this therapist' });
-      return;
-    }
-
-    const link = await prisma.therapistPatient.create({
-      data: {
-        therapistId: therapist.id,
-        patientId: patient.id,
-      },
-      include: {
-        patient: {
-          select: linkedPatientSelect,
-        },
-      },
-    });
-
-    response.status(201).json({
-      patient: link.patient,
-      linkedAt: link.createdAt,
-    });
-  } catch (error) {
-    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
-      response.status(409).json({ message: 'Patient is already linked to this therapist' });
-      return;
-    }
-
-    next(error);
-  }
-});
-
-router.post('/exercises', requireAuth, requireTherapist, async (request, response, next) => {
-  try {
-    const therapist = request.user;
-
-    if (!therapist) {
-      response.status(401).json({ message: 'Authentication required' });
-      return;
-    }
-
-    const { title, description, bodyPart, difficulty, sets, reps, durationSeconds, videoUrl, imageUrl } = request.body as {
-      title?: string;
-      description?: string;
-      bodyPart?: string;
-      difficulty?: DifficultyInput;
-      sets?: number;
-      reps?: number;
-      durationSeconds?: number;
-      videoUrl?: string;
-      imageUrl?: string;
-    };
-
-    const normalizedTitle = normalizeText(title);
-    const normalizedDescription = normalizeText(description);
-    const normalizedBodyPart = normalizeText(bodyPart);
-    const normalizedVideoUrl = normalizeText(videoUrl);
-    const normalizedImageUrl = normalizeText(imageUrl);
-
-    if (!normalizedTitle) {
-      response.status(400).json({ message: 'title is required' });
-      return;
-    }
-
-    if (!normalizedDescription) {
-      response.status(400).json({ message: 'description is required' });
-      return;
-    }
-
-    if (!normalizedBodyPart || !difficulty) {
-      response.status(400).json({ message: 'bodyPart and difficulty are required' });
-      return;
-    }
-
-    if (!Object.values(Difficulty).includes(difficulty)) {
-      response.status(400).json({ message: 'difficulty must be EASY, MEDIUM, or HARD' });
-      return;
-    }
-
-    const exerciseNumbers = parseExerciseNumbers(sets, reps, durationSeconds);
-
-    if ('error' in exerciseNumbers) {
-      response.status(400).json({ message: exerciseNumbers.error });
-      return;
-    }
-
-    const exercise = await prisma.exercise.create({
-      data: {
-        title: normalizedTitle,
-        description: normalizedDescription,
-        bodyPart: normalizedBodyPart,
-        difficulty,
-        sets: exerciseNumbers.data.sets,
-        reps: exerciseNumbers.data.reps,
-        durationSeconds: exerciseNumbers.data.durationSeconds,
-        videoUrl: normalizedVideoUrl || null,
-        imageUrl: normalizedImageUrl || null,
-        createdById: therapist.id,
-      },
-      select: exerciseSelect,
-    });
-
-    response.status(201).json({ exercise });
-  } catch (error) {
-    next(error);
-  }
-});
-
-router.get('/exercises', requireAuth, requireTherapist, async (request, response, next) => {
-  try {
-    const therapist = request.user;
-
-    if (!therapist) {
-      response.status(401).json({ message: 'Authentication required' });
-      return;
-    }
-
-    const exercises = await prisma.exercise.findMany({
-      where: {
-        createdById: therapist.id,
-      },
-      orderBy: {
-        createdAt: 'desc',
-      },
-      select: exerciseSelect,
-    });
-
-    response.json({ exercises });
-  } catch (error) {
-    next(error);
-  }
-});
-
-router.put('/exercises/:id', requireAuth, requireTherapist, async (request, response, next) => {
-  try {
-    const therapist = request.user;
-    const exerciseId = getRouteParam(request.params.id);
-
-    if (!therapist) {
-      response.status(401).json({ message: 'Authentication required' });
-      return;
-    }
-
-    if (!exerciseId) {
-      response.status(400).json({ message: 'Exercise id is required' });
-      return;
-    }
-
-    const exercise = await prisma.exercise.findFirst({
-      where: {
-        id: exerciseId,
-        createdById: therapist.id,
-      },
-      select: {
-        id: true,
-      },
-    });
-
-    if (!exercise) {
-      response.status(404).json({ message: 'Exercise not found' });
-      return;
-    }
-
-    const exerciseData = parseExerciseInput(request.body);
-
-    if ('error' in exerciseData) {
-      response.status(400).json({ message: exerciseData.error });
-      return;
-    }
-
-    const updatedExercise = await prisma.exercise.update({
-      where: {
-        id: exercise.id,
-      },
-      data: exerciseData.data,
-      select: exerciseSelect,
-    });
-
-    response.json({ exercise: updatedExercise });
-  } catch (error) {
-    next(error);
-  }
-});
-
-router.delete('/exercises/:id', requireAuth, requireTherapist, async (request, response, next) => {
-  try {
-    const therapist = request.user;
-    const exerciseId = getRouteParam(request.params.id);
-
-    if (!therapist) {
-      response.status(401).json({ message: 'Authentication required' });
-      return;
-    }
-
-    if (!exerciseId) {
-      response.status(400).json({ message: 'Exercise id is required' });
-      return;
-    }
-
-    const exercise = await prisma.exercise.findFirst({
-      where: {
-        id: exerciseId,
-        createdById: therapist.id,
-      },
-      select: {
-        id: true,
-      },
-    });
-
-    if (!exercise) {
-      response.status(404).json({ message: 'Exercise not found' });
-      return;
-    }
-
-    await prisma.exercise.delete({
-      where: {
-        id: exercise.id,
-      },
-    });
-
-    response.status(204).send();
-  } catch (error) {
-    next(error);
-  }
-});
-
-router.post('/patients/:patientId/exercises', requireAuth, requireTherapist, async (request, response, next) => {
-  try {
-    const therapist = request.user;
-    const patientId = getRouteParam(request.params.patientId);
-
-    if (!therapist) {
-      response.status(401).json({ message: 'Authentication required' });
-      return;
-    }
-
-    if (!patientId) {
-      response.status(400).json({ message: 'Patient id is required' });
-      return;
-    }
-
-    const linkedPatient = await findLinkedPatient(therapist.id, patientId);
-
-    if (!linkedPatient) {
-      response.status(404).json({ message: 'Linked patient not found' });
-      return;
-    }
-
-    const { exerciseId, dueDate, notes } = request.body as {
-      exerciseId?: string;
-      dueDate?: string;
-      notes?: string;
-    };
-
-    if (!exerciseId) {
-      response.status(400).json({ message: 'exerciseId is required' });
-      return;
-    }
-
-    const exercise = await prisma.exercise.findFirst({
-      where: {
-        id: exerciseId,
-        createdById: therapist.id,
-      },
-      select: {
-        id: true,
-      },
-    });
-
-    if (!exercise) {
-      response.status(404).json({ message: 'Exercise not found' });
-      return;
-    }
-
-    const parsedDueDate = parseOptionalDate(dueDate);
-
-    if (parsedDueDate === 'invalid') {
-      response.status(400).json({ message: 'dueDate must be a valid date' });
-      return;
-    }
-
-    const assignment = await prisma.patientExercise.create({
-      data: {
-        patientId: linkedPatient.patientId,
-        exerciseId: exercise.id,
-        assignedById: therapist.id,
-        status: PatientExerciseStatus.ASSIGNED,
-        dueDate: parsedDueDate,
-        notes: notes?.trim() || null,
-      },
-      select: assignedExerciseSelect,
-    });
-
-    response.status(201).json({ assignment });
-  } catch (error) {
-    next(error);
-  }
-});
-
-router.get('/patients/:patientId/exercises', requireAuth, requireTherapist, async (request, response, next) => {
-  try {
-    const therapist = request.user;
-    const patientId = getRouteParam(request.params.patientId);
-
-    if (!therapist) {
-      response.status(401).json({ message: 'Authentication required' });
-      return;
-    }
-
-    if (!patientId) {
-      response.status(400).json({ message: 'Patient id is required' });
-      return;
-    }
-
-    const linkedPatient = await findLinkedPatient(therapist.id, patientId);
-
-    if (!linkedPatient) {
-      response.status(404).json({ message: 'Linked patient not found' });
-      return;
-    }
-
-    const assignments = await prisma.patientExercise.findMany({
-      where: {
-        patientId: linkedPatient.patientId,
-        assignedById: therapist.id,
-      },
-      orderBy: {
-        createdAt: 'desc',
-      },
-      select: assignedExerciseSelect,
-    });
-
-    response.json({ assignments });
-  } catch (error) {
-    next(error);
-  }
-});
-
-router.get('/patients/:patientId/progress', requireAuth, requireTherapist, async (request, response, next) => {
-  try {
-    const therapist = request.user;
-    const patientId = getRouteParam(request.params.patientId);
-
-    if (!therapist) {
-      response.status(401).json({ message: 'Authentication required' });
-      return;
-    }
-
-    if (!patientId) {
-      response.status(400).json({ message: 'Patient id is required' });
-      return;
-    }
-
-    const linkedPatient = await findLinkedPatient(therapist.id, patientId);
-
-    if (!linkedPatient) {
-      response.status(404).json({ message: 'Linked patient not found' });
-      return;
-    }
-
-    const progress = await prisma.patientExercise.findMany({
-      where: {
-        patientId: linkedPatient.patientId,
-        assignedById: therapist.id,
-      },
-      orderBy: {
-        createdAt: 'desc',
-      },
-      select: patientProgressSelect,
-    });
-
-    response.json({
-      progress: progress.map((assignment) => ({
-        id: assignment.id,
-        status: assignment.status,
-        dueDate: assignment.dueDate,
-        completedAt: assignment.completedAt,
-        painLevel: assignment.painLevel,
-        difficultyFeedback: assignment.difficultyFeedback,
-        patientNote: assignment.patientNote,
-        exerciseTitle: assignment.exercise.title,
-        exerciseBodyPart: assignment.exercise.bodyPart,
-      })),
-    });
-  } catch (error) {
-    next(error);
-  }
-});
-
-router.get('/patients', requireAuth, requireTherapist, async (request, response, next) => {
-  try {
-    const therapist = request.user;
-
-    if (!therapist) {
-      response.status(401).json({ message: 'Authentication required' });
-      return;
-    }
-
-    const links = await prisma.therapistPatient.findMany({
-      where: {
-        therapistId: therapist.id,
-      },
-      orderBy: {
-        createdAt: 'desc',
-      },
-      include: {
-        patient: {
-          select: linkedPatientSelect,
-        },
-      },
-    });
-
-    response.json({
-      patients: links.map((link) => ({
-        linkId: link.id,
-        linkedAt: link.createdAt,
-        ...link.patient,
-      })),
-    });
-  } catch (error) {
-    next(error);
-  }
-});
-
-type DifficultyInput = (typeof Difficulty)[keyof typeof Difficulty];
-
-type ExerciseInput = {
-  title?: string;
-  description?: string;
-  bodyPart?: string;
-  difficulty?: DifficultyInput;
-  sets?: number;
-  reps?: number;
-  durationSeconds?: number;
-  videoUrl?: string;
-  imageUrl?: string;
-};
-
-function parseExerciseInput(body: unknown) {
-  const { title, description, bodyPart, difficulty, sets, reps, durationSeconds, videoUrl, imageUrl } = body as ExerciseInput;
-  const normalizedTitle = normalizeText(title);
-  const normalizedDescription = normalizeText(description);
-  const normalizedBodyPart = normalizeText(bodyPart);
-  const normalizedVideoUrl = normalizeText(videoUrl);
-  const normalizedImageUrl = normalizeText(imageUrl);
-
-  if (!normalizedTitle) {
-    return { error: 'title is required' };
+type ExerciseRow = Prisma.ExerciseGetPayload<{ select: typeof exerciseSelect }>;
+const serializeExercise = ({ _count, ...exercise }: ExerciseRow) => ({ ...exercise, usedInPlans: _count.tasks + _count.versionItems, usedInTemplates: _count.templateItems });
+
+/** Snapshot used by the patient list and the patient detail header. */
+export async function patientSnapshot(therapistId: string, patient: { id: string; timezone: string }) {
+  const today = localDateKey(patient.timezone);
+  const plan =
+    (await loadPlan(prisma, { patientId: patient.id, therapistId, status: { in: [PlanStatus.ACTIVE, PlanStatus.PAUSED] } })) ??
+    (await loadPlan(prisma, { patientId: patient.id, therapistId, status: { in: [PlanStatus.COMPLETED, PlanStatus.DRAFT] } }));
+  const openReviews = await activeReviewCount(therapistId, patient.id);
+  const last = await prisma.taskCompletion.findFirst({ where: { patientId: patient.id, task: { plan: { therapistId } } }, orderBy: { completedAt: 'desc' }, select: { completedAt: true } });
+  const draft = plan ? await prisma.planVersion.findFirst({ where: { planId: plan.id, status: VersionStatus.DRAFT }, select: { id: true } }) : null;
+
+  if (!plan) {
+    return { today, plan: null, draftId: null, openReviews, lastActivityAt: last?.completedAt ?? null, streak: 0, last7Days: null, stats: null, todayState: null, days: [] };
   }
 
-  if (!normalizedDescription) {
-    return { error: 'description is required' };
-  }
-
-  if (!normalizedBodyPart || !difficulty) {
-    return { error: 'bodyPart and difficulty are required' };
-  }
-
-  if (!Object.values(Difficulty).includes(difficulty)) {
-    return { error: 'difficulty must be EASY, MEDIUM, or HARD' };
-  }
-
-  const exerciseNumbers = parseExerciseNumbers(sets, reps, durationSeconds);
-
-  if ('error' in exerciseNumbers) {
-    return { error: exerciseNumbers.error };
-  }
+  const days = plan.versions.length ? buildDays(toTimeline(plan), toLite(await loadCompletions(prisma, plan.id)), today) : [];
+  const recent = days.filter((day) => day.date > addDays(today, -7) && day.date <= today);
+  const serialized = serializePlan(plan, today);
 
   return {
-    data: {
-      title: normalizedTitle,
-      description: normalizedDescription,
-      bodyPart: normalizedBodyPart,
-      difficulty,
-      sets: exerciseNumbers.data.sets,
-      reps: exerciseNumbers.data.reps,
-      durationSeconds: exerciseNumbers.data.durationSeconds,
-      videoUrl: normalizedVideoUrl || null,
-      imageUrl: normalizedImageUrl || null,
-    },
+    today,
+    plan: { id: plan.id, title: serialized.title, status: plan.status, revision: plan.revision, startDate: serialized.startDate, endDate: serialized.endDate, versionNumber: serialized.versionNumber },
+    draftId: draft?.id ?? null,
+    openReviews,
+    lastActivityAt: last?.completedAt ?? null,
+    streak: plan.status === PlanStatus.ACTIVE ? computeStreak(days, today) : 0,
+    last7Days: days.length ? sessionStats(recent, today) : null,
+    stats: days.length ? sessionStats(days, today) : null,
+    todayState: days.find((day) => day.date === today)?.state ?? null,
+    days,
   };
 }
 
-function isPositiveInteger(value: unknown): value is number {
-  return typeof value === 'number' && Number.isInteger(value) && value > 0;
+export function createTherapistRouter(deps: { summaryModel?: SummaryModel | null } = {}) {
+  const router = Router();
+  router.use(requireTherapist);
+
+  // ---------------------------------------------------------------- patients
+  router.get(
+    '/patients',
+    handle(async (request, response) => {
+      const therapist = requireUser(request);
+      const links = await prisma.therapistPatient.findMany({
+        where: activeLinkWhere(therapist.id),
+        orderBy: { createdAt: 'asc' },
+        select: { createdAt: true, patient: { select: { id: true, name: true, email: true, timezone: true } } },
+      });
+      const patients = await Promise.all(
+        links.map(async (link) => {
+          const { days: _days, ...snapshot } = await patientSnapshot(therapist.id, link.patient);
+          return { id: link.patient.id, name: link.patient.name, email: link.patient.email, linkedAt: link.createdAt, ...snapshot };
+        }),
+      );
+      response.json({ patients });
+    }),
+  );
+
+  router.post(
+    '/patients/link',
+    rateLimit({ windowMs: 15 * 60 * 1000, max: config.authRateLimit.max }),
+    handle(async (request, response) => {
+      const therapist = requireUser(request);
+      const input = parse(linkSchema, request.body);
+      const patient = await prisma.user.findFirst({ where: { email: input.patientEmail, role: Role.PATIENT, careCode: input.careCode }, select: { id: true, name: true, email: true } });
+      // One generic message, so the endpoint does not reveal which emails exist.
+      if (!patient) throw notFound('No patient matches that email and care code. Ask the patient to check the code on their Profile screen.');
+
+      try {
+        const previous = await prisma.therapistPatient.findUnique({ where: { therapistId_patientId: { therapistId: therapist.id, patientId: patient.id } } });
+        if (previous && !previous.endedAt) throw conflict('This patient is already in your list', 'already_linked');
+        // A valid care code is the patient's consent, also for re-linking after the relationship ended.
+        const link = previous
+          ? await prisma.therapistPatient.update({ where: { id: previous.id }, data: { endedAt: null, endedById: null } })
+          : await prisma.therapistPatient.create({ data: { therapistId: therapist.id, patientId: patient.id } });
+        await audit(prisma, { actorId: therapist.id, action: 'CARE_LINK_CREATED', patientId: patient.id, subjectType: 'TherapistPatient', subjectId: link.id, metadata: { relinked: Boolean(previous) } });
+        response.status(201).json({ patient, linkedAt: link.createdAt, relinked: Boolean(previous) });
+      } catch (error) {
+        if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') throw conflict('This patient is already in your list', 'already_linked');
+        throw error;
+      }
+    }),
+  );
+
+  router.get(
+    '/patients/:patientId',
+    handle(async (request, response) => {
+      const therapist = requireUser(request);
+      const patient = await getLinkedPatient(therapist.id, param(request, 'patientId'));
+      const snapshot = await patientSnapshot(therapist.id, patient);
+
+      const [plans, completions] = await Promise.all([
+        prisma.rehabPlan.findMany({
+          where: { patientId: patient.id, therapistId: therapist.id },
+          orderBy: { createdAt: 'desc' },
+          select: { id: true, title: true, condition: true, status: true, startDate: true, endDate: true, createdAt: true, _count: { select: { versions: { where: { status: VersionStatus.PUBLISHED } } } } },
+        }),
+        prisma.taskCompletion.findMany({
+          where: { patientId: patient.id, task: { plan: { therapistId: therapist.id } } },
+          orderBy: [{ sessionDate: 'desc' }, { completedAt: 'desc' }],
+          take: 100,
+          include: { task: { select: { exercise: { select: { id: true, title: true } } } } },
+        }),
+      ]);
+
+      const currentPlan = snapshot.plan ? await loadPlan(prisma, { id: snapshot.plan.id }) : null;
+
+      response.json({
+        patient: { id: patient.id, name: patient.name, email: patient.email, timezone: patient.timezone, linkedAt: patient.linkedAt },
+        snapshot,
+        currentPlan: currentPlan && currentPlan.versions.length ? serializePlan(currentPlan, snapshot.today) : null,
+        plans: plans.map(({ _count, ...plan }) => ({ ...plan, publishedVersions: _count.versions, startDate: fromDbDate(plan.startDate), endDate: fromDbDate(plan.endDate) })),
+        completions: completions.map((completion) => ({ ...serializeCompletion(completion), reviewReasons: reviewReasons(completion) })),
+      });
+    }),
+  );
+
+  router.post(
+    '/patients/:patientId/end-care',
+    handle(async (request, response) => {
+      const therapist = requireUser(request);
+      const patient = await getLinkedPatient(therapist.id, param(request, 'patientId'));
+      response.json(await endCareRelationship(therapist, { therapistId: therapist.id, patientId: patient.id }));
+    }),
+  );
+
+  // ----------------------------------------------------------------- summary
+  router.post(
+    '/patients/:patientId/summary',
+    handle(async (request, response) => {
+      const therapist = requireUser(request);
+      const patient = await getLinkedPatient(therapist.id, param(request, 'patientId'));
+      const { days } = parse(summarySchema, request.body ?? {});
+      const summary = await createProgressSummary({ therapistId: therapist.id, patient, days, model: deps.summaryModel });
+      response.json({ summary });
+    }),
+  );
+
+  // --------------------------------------------------------------- exercises
+  router.get(
+    '/exercises',
+    handle(async (request, response) => {
+      const therapist = requireUser(request);
+      const exercises = await prisma.exercise.findMany({ where: { createdById: therapist.id }, orderBy: { title: 'asc' }, select: exerciseSelect });
+      response.json({ exercises: exercises.map(serializeExercise) });
+    }),
+  );
+
+  router.post(
+    '/exercises',
+    handle(async (request, response) => {
+      const therapist = requireUser(request);
+      const input = parse(exerciseSchema, request.body);
+      const exercise = await prisma.exercise.create({ data: { ...input, createdById: therapist.id }, select: exerciseSelect });
+      response.status(201).json({ exercise: serializeExercise(exercise) });
+    }),
+  );
+
+  /** Edits the library entry only. Published plan versions keep the text they were published with. */
+  router.put(
+    '/exercises/:exerciseId',
+    handle(async (request, response) => {
+      const therapist = requireUser(request);
+      const input = parse(exerciseSchema, request.body);
+      const result = await prisma.exercise.updateMany({ where: { id: param(request, 'exerciseId'), createdById: therapist.id }, data: input });
+      if (result.count === 0) throw notFound('Exercise not found');
+      response.json({ exercise: serializeExercise(await prisma.exercise.findUniqueOrThrow({ where: { id: param(request, 'exerciseId') }, select: exerciseSelect })) });
+    }),
+  );
+
+  router.delete(
+    '/exercises/:exerciseId',
+    handle(async (request, response) => {
+      const therapist = requireUser(request);
+      const exercise = await prisma.exercise.findFirst({ where: { id: param(request, 'exerciseId'), createdById: therapist.id }, select: exerciseSelect });
+      if (!exercise) throw notFound('Exercise not found');
+      const usage = serializeExercise(exercise);
+      if (usage.usedInPlans > 0 || usage.usedInTemplates > 0) throw conflict('This exercise is used in a plan or template and cannot be deleted', 'exercise_in_use');
+      await prisma.exercise.delete({ where: { id: exercise.id } });
+      response.status(204).send();
+    }),
+  );
+
+  // ----------------------------------------------------- starter catalog
+  /** The shared read-only catalog, with a flag for entries already copied into this therapist's library. */
+  router.get(
+    '/exercise-catalog',
+    handle(async (request, response) => {
+      const therapist = requireUser(request);
+      const copied = await prisma.exercise.findMany({ where: { createdById: therapist.id, catalogKey: { not: null } }, select: { catalogKey: true } });
+      const inLibrary = new Set(copied.map((exercise) => exercise.catalogKey));
+      response.json({ exercises: EXERCISE_CATALOG.map((exercise) => ({ ...exercise, inLibrary: inLibrary.has(exercise.key) })) });
+    }),
+  );
+
+  /** Copies catalog entries into the therapist's library. Entries already copied are skipped, so retries are safe. */
+  router.post(
+    '/exercise-catalog/import',
+    handle(async (request, response) => {
+      const therapist = requireUser(request);
+      const { keys } = parse(catalogImportSchema, request.body);
+      const result = await prisma.exercise.createMany({
+        data: keys.map((key) => {
+          const { key: catalogKey, ...exercise } = CATALOG_BY_KEY.get(key)!;
+          return { ...exercise, catalogKey, createdById: therapist.id };
+        }),
+        skipDuplicates: true,
+      });
+      response.status(201).json({ added: result.count, alreadyInLibrary: keys.length - result.count });
+    }),
+  );
+
+  return router;
 }
-
-function parseExerciseNumbers(sets: unknown, reps: unknown, durationSeconds: unknown) {
-  if (!isPositiveInteger(sets)) {
-    return { error: 'sets must be a positive number' };
-  }
-
-  if (!isPositiveInteger(reps)) {
-    return { error: 'reps must be a positive number' };
-  }
-
-  if (!isPositiveInteger(durationSeconds)) {
-    return { error: 'durationSeconds must be a positive number' };
-  }
-
-  return {
-    data: {
-      sets,
-      reps,
-      durationSeconds,
-    },
-  };
-}
-
-function isValidEmail(value: string) {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
-}
-
-function normalizeText(value: unknown) {
-  return typeof value === 'string' ? value.trim() : undefined;
-}
-
-function getRouteParam(value: string | string[] | undefined) {
-  return Array.isArray(value) ? value[0] : value;
-}
-
-function parseOptionalDate(value?: string) {
-  if (!value) {
-    return null;
-  }
-
-  const parsed = new Date(value);
-  return Number.isNaN(parsed.getTime()) ? 'invalid' : parsed;
-}
-
-function findLinkedPatient(therapistId: string, patientId: string) {
-  return prisma.therapistPatient.findUnique({
-    where: {
-      therapistId_patientId: {
-        therapistId,
-        patientId,
-      },
-    },
-    select: {
-      patientId: true,
-    },
-  });
-}
-
-export default router;

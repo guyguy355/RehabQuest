@@ -1,5 +1,6 @@
 import { Clock3, Dumbbell, Loader2, Pencil, PlayCircle, Repeat2, Save, Target, Trash2, X } from 'lucide-react';
 import { FormEvent, useEffect, useState } from 'react';
+import { apiFetch, getAuthHeaders } from '../auth/session';
 import { apiBaseUrl } from '../config/api';
 import { PhysioShell } from '../components/PhysioShell';
 
@@ -59,7 +60,7 @@ export function TherapistExercisesPage() {
     setIsError(false);
 
     try {
-      const response = await fetch(`${apiBaseUrl}/therapist/exercises`, {
+      const response = await apiFetch(`${apiBaseUrl}/therapist/exercises`, {
         headers: getAuthHeaders(),
       });
       const data = await response.json();
@@ -91,7 +92,7 @@ export function TherapistExercisesPage() {
 
     try {
       const isEditing = Boolean(editingExerciseId);
-      const response = await fetch(
+      const response = await apiFetch(
         isEditing
           ? `${apiBaseUrl}/therapist/exercises/${editingExerciseId}`
           : `${apiBaseUrl}/therapist/exercises`,
@@ -140,7 +141,7 @@ export function TherapistExercisesPage() {
     setDeletingExerciseId(exerciseId);
 
     try {
-      const response = await fetch(`${apiBaseUrl}/therapist/exercises/${exerciseId}`, {
+      const response = await apiFetch(`${apiBaseUrl}/therapist/exercises/${exerciseId}`, {
         method: 'DELETE',
         headers: {
           ...getAuthHeaders(),
@@ -443,9 +444,3 @@ function Metric({ icon: Icon, label, value }: { icon: typeof Target; label: stri
   );
 }
 
-function getAuthHeaders(): Record<string, string> {
-  const token =
-    localStorage.getItem('rehabquestToken') ?? localStorage.getItem('authToken') ?? localStorage.getItem('token');
-
-  return token ? { Authorization: `Bearer ${token}` } : {};
-}

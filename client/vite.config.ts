@@ -6,29 +6,32 @@ export default defineConfig({
   plugins: [
     react(),
     VitePWA({
+      // Custom service worker (src/sw.ts): app-shell precache, push and sync hints.
+      strategies: 'injectManifest',
+      srcDir: 'src',
+      filename: 'sw.ts',
       registerType: 'autoUpdate',
-      includeAssets: ['icons/rehabquest-icon.svg'],
+      injectRegister: false,
+      includeAssets: ['icons/rehabquest-icon.svg', 'icons/icon-192.png', 'icons/icon-512.png', 'icons/icon-maskable-512.png'],
+      injectManifest: {
+        globPatterns: ['**/*.{js,css,html,svg,png,ico,webmanifest}'],
+      },
       manifest: {
         name: 'RehabQuest',
         short_name: 'RehabQuest',
-        theme_color: '#0f766e',
-        background_color: '#f8fafc',
+        description: 'Your physiotherapist’s home-exercise plan as a daily path.',
+        theme_color: '#0A8274',
+        background_color: '#F6FAF9',
         display: 'standalone',
         start_url: '/',
         scope: '/',
+        lang: 'en',
         icons: [
-          {
-            src: '/icons/rehabquest-icon.svg',
-            sizes: 'any',
-            type: 'image/svg+xml',
-            purpose: 'any maskable',
-          },
+          { src: '/icons/icon-192.png', sizes: '192x192', type: 'image/png', purpose: 'any' },
+          { src: '/icons/icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'any' },
+          { src: '/icons/icon-maskable-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
+          { src: '/icons/rehabquest-icon.svg', sizes: 'any', type: 'image/svg+xml', purpose: 'any' },
         ],
-      },
-      workbox: {
-        cleanupOutdatedCaches: true,
-        globPatterns: ['**/*.{js,css,html,svg,png,ico}'],
-        navigateFallback: '/index.html',
       },
       devOptions: {
         enabled: false,

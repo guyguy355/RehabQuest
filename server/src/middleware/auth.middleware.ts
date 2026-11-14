@@ -1,56 +1,41 @@
-import { PrismaClient, Role } from '@prisma/client';
+import { Role } from '@prisma/client';
 import type { NextFunction, Request, Response } from 'express';
 import { getAuthenticatedUser } from '../auth.js';
+import { prisma } from '../db.js';
+import { forbidden, handle, unauthorized } from '../http.js';
 
-const prisma = new PrismaClient();
-
-export async function requireAuth(request: Request, response: Response, next: NextFunction) {
-  try {
-    const user = await loadAuthenticatedUser(request);
+async function loadUser(request: Request) {
+  if (!request.user) {
+    const user = await getAuthenticatedUser(prisma, request.headers.authorization);
 
     if (!user) {
-      response.status(401).json({ message: 'Authentication required' });
-      return;
+      throw unauthorized();
     }
 
     request.user = user;
-    next();
-  } catch (error) {
-    next(error);
   }
+
+  return request.user;
 }
 
+/** 401 when the bearer token is missing, invalid, expired or revoked. */
+export const requireAuth = handle(async (request: Request, _response: Response, next: NextFunction) => {
+  await loadUser(request);
+  next();
+});
+
+/** 401 when unauthenticated, 403 when authenticated with a different role. */
 export function requireRole(role: Role) {
-  return async (request: Request, response: Response, next: NextFunction) => {
-    try {
-      const user = await loadAuthenticatedUser(request);
+  return handle(async (request: Request, _response: Response, next: NextFunction) => {
+    const user = await loadUser(request);
 
-      if (!user) {
-        response.status(401).json({ message: 'Authentication required' });
-        return;
-      }
-
-      if (user.role !== role) {
-        response.status(403).json({ message: `Requires ${role} role` });
-        return;
-      }
-
-      request.user = user;
-      next();
-    } catch (error) {
-      next(error);
+    if (user.role !== role) {
+      throw forbidden(`This action requires the ${role.toLowerCase()} role`);
     }
-  };
+
+    next();
+  });
 }
 
 export const requireTherapist = requireRole(Role.THERAPIST);
 export const requirePatient = requireRole(Role.PATIENT);
-export const requireAdmin = requireRole(Role.ADMIN);
-
-function loadAuthenticatedUser(request: Request) {
-  if (request.user) {
-    return request.user;
-  }
-
-  return getAuthenticatedUser(prisma, request.headers.authorization);
-}

@@ -1,5 +1,6 @@
 import { Loader2, MessageSquare, Send } from 'lucide-react';
 import { FormEvent, useEffect, useState } from 'react';
+import { apiFetch, getAuthHeaders } from '../../auth/session';
 import { apiBaseUrl } from '../../config/api';
 
 type ThreadUser = {
@@ -43,7 +44,7 @@ export function MessageThread({ userId, title, subtitle }: MessageThreadProps) {
     setIsError(false);
 
     try {
-      const response = await fetch(`${apiBaseUrl}/messages/${userId}`, {
+      const response = await apiFetch(`${apiBaseUrl}/messages/${userId}`, {
         headers: getAuthHeaders(),
       });
       const data = await response.json();
@@ -74,7 +75,7 @@ export function MessageThread({ userId, title, subtitle }: MessageThreadProps) {
     setIsSending(true);
 
     try {
-      const response = await fetch(`${apiBaseUrl}/messages`, {
+      const response = await apiFetch(`${apiBaseUrl}/messages`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -175,11 +176,4 @@ export function MessageThread({ userId, title, subtitle }: MessageThreadProps) {
       </form>
     </section>
   );
-}
-
-function getAuthHeaders(): Record<string, string> {
-  const token =
-    localStorage.getItem('rehabquestToken') ?? localStorage.getItem('authToken') ?? localStorage.getItem('token');
-
-  return token ? { Authorization: `Bearer ${token}` } : {};
 }

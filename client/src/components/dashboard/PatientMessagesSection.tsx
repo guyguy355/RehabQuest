@@ -1,5 +1,6 @@
 import { Loader2, MessageSquare } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { apiFetch } from '../../auth/session';
 import { apiBaseUrl } from '../../config/api';
 import { MessageThread } from '../messages/MessageThread';
 
@@ -17,9 +18,7 @@ export function PatientMessagesSection() {
   useEffect(() => {
     async function loadTherapistThread() {
       try {
-        const response = await fetch(`${apiBaseUrl}/patient/therapists`, {
-          headers: getAuthHeaders(),
-        });
+        const response = await apiFetch(`${apiBaseUrl}/patient/therapists`);
         const data = await response.json();
 
         if (!response.ok) {
@@ -72,11 +71,4 @@ export function PatientMessagesSection() {
       </div>
     </section>
   );
-}
-
-function getAuthHeaders(): Record<string, string> {
-  const token =
-    localStorage.getItem('rehabquestToken') ?? localStorage.getItem('authToken') ?? localStorage.getItem('token');
-
-  return token ? { Authorization: `Bearer ${token}` } : {};
 }

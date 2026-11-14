@@ -1,5 +1,6 @@
 import { CalendarDays, CheckCircle2, ClipboardList, Dumbbell, HeartPulse, Loader2, Plus, UserRound } from 'lucide-react';
 import { FormEvent, useEffect, useMemo, useState } from 'react';
+import { apiFetch, getAuthHeaders } from '../../auth/session';
 import { apiBaseUrl } from '../../config/api';
 import { MessageThread } from '../messages/MessageThread';
 
@@ -68,8 +69,8 @@ export function ExerciseAssignmentPanel() {
 
     try {
       const [patientsResponse, exercisesResponse] = await Promise.all([
-        fetch(`${apiBaseUrl}/therapist/patients`, { headers: getAuthHeaders() }),
-        fetch(`${apiBaseUrl}/therapist/exercises`, { headers: getAuthHeaders() }),
+        apiFetch(`${apiBaseUrl}/therapist/patients`, { headers: getAuthHeaders() }),
+        apiFetch(`${apiBaseUrl}/therapist/exercises`, { headers: getAuthHeaders() }),
       ]);
       const patientsData = await patientsResponse.json();
       const exercisesData = await exercisesResponse.json();
@@ -113,7 +114,7 @@ export function ExerciseAssignmentPanel() {
     setIsError(false);
 
     try {
-      const response = await fetch(`${apiBaseUrl}/therapist/patients/${patientId}/exercises`, {
+      const response = await apiFetch(`${apiBaseUrl}/therapist/patients/${patientId}/exercises`, {
         headers: getAuthHeaders(),
       });
       const data = await response.json();
@@ -144,7 +145,7 @@ export function ExerciseAssignmentPanel() {
     setIsError(false);
 
     try {
-      const response = await fetch(`${apiBaseUrl}/therapist/patients/${patientId}/progress`, {
+      const response = await apiFetch(`${apiBaseUrl}/therapist/patients/${patientId}/progress`, {
         headers: getAuthHeaders(),
       });
       const data = await response.json();
@@ -180,7 +181,7 @@ export function ExerciseAssignmentPanel() {
     setIsSubmitting(true);
 
     try {
-      const response = await fetch(`${apiBaseUrl}/therapist/patients/${selectedPatientId}/exercises`, {
+      const response = await apiFetch(`${apiBaseUrl}/therapist/patients/${selectedPatientId}/exercises`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -505,9 +506,3 @@ function EmptyState({ title, text, icon: Icon }: { title: string; text: string; 
   );
 }
 
-function getAuthHeaders(): Record<string, string> {
-  const token =
-    localStorage.getItem('rehabquestToken') ?? localStorage.getItem('authToken') ?? localStorage.getItem('token');
-
-  return token ? { Authorization: `Bearer ${token}` } : {};
-}

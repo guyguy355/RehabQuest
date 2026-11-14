@@ -1,5 +1,6 @@
 import { Flame, Loader2, Medal, Target } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { apiFetch, getAuthHeaders } from '../../auth/session';
 import { apiBaseUrl } from '../../config/api';
 
 type DailySummary = {
@@ -17,7 +18,7 @@ export function DailyGoalCard() {
   useEffect(() => {
     async function loadDailySummary() {
       try {
-        const response = await fetch(`${apiBaseUrl}/patient/daily-summary`, {
+        const response = await apiFetch(`${apiBaseUrl}/patient/daily-summary`, {
           headers: getAuthHeaders(),
         });
         const data = await response.json();
@@ -99,9 +100,3 @@ export function DailyGoalCard() {
   );
 }
 
-function getAuthHeaders(): Record<string, string> {
-  const token =
-    localStorage.getItem('rehabquestToken') ?? localStorage.getItem('authToken') ?? localStorage.getItem('token');
-
-  return token ? { Authorization: `Bearer ${token}` } : {};
-}

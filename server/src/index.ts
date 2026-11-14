@@ -1,42 +1,10 @@
-import cors from 'cors';
-import dotenv from 'dotenv';
-import express from 'express';
-import authRoutes from './routes/auth.routes.js';
-import messageRoutes from './routes/messages.routes.js';
-import patientRoutes from './routes/patient.routes.js';
-import therapistRoutes from './routes/therapist.routes.js';
+import { createApp } from './app.js';
+import { config, getJwtSecret } from './config.js';
 
-dotenv.config();
+// Fail fast on a missing or weak secret instead of failing on the first login.
+getJwtSecret();
 
-const app = express();
-const port = process.env.PORT ?? 3000;
-const corsOrigin = process.env.CORS_ORIGIN;
-
-app.use(
-  cors({
-    origin: corsOrigin ?? true,
-  }),
-);
-app.use(express.json());
-
-app.use('/auth', authRoutes);
-app.use('/messages', messageRoutes);
-app.use('/patient', patientRoutes);
-app.use('/therapist', therapistRoutes);
-
-app.get('/', (_request, response) => {
-  response.json({
-    message: 'Welcome to the RehabQuest API',
-  });
-});
-
-app.get('/health', (_request, response) => {
-  response.json({
-    status: 'ok',
-    service: 'RehabQuest API',
-  });
-});
-
-app.listen(port, () => {
-  console.log(`RehabQuest API running on port ${port}`);
+createApp().listen(config.port, () => {
+  console.log(`RehabQuest API running on http://localhost:${config.port}`);
+  console.log(`Summary drafts: ${config.ai.provider === 'anthropic' && process.env.ANTHROPIC_API_KEY ? `model ${config.ai.model}` : 'rule-based only (no AI provider configured)'}`);
 });

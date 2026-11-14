@@ -1,6 +1,7 @@
 import { Loader2, UserPlus } from 'lucide-react';
 import { FormEvent, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { getHomeRouteForRole, saveSession } from '../auth/session';
 import { apiBaseUrl } from '../config/api';
 
 type RegisterRole = 'PATIENT' | 'THERAPIST';
@@ -39,9 +40,8 @@ export function RegisterPage() {
         return;
       }
 
-      localStorage.setItem('rehabquestToken', data.token);
-      localStorage.setItem('rehabquestUserRole', data.user.role);
-      navigate(data.user.role === 'THERAPIST' ? '/physio/dashboard' : '/patient/dashboard');
+      saveSession(data.token, data.user);
+      navigate(getHomeRouteForRole(data.user.role));
     } catch {
       setMessage('Could not reach the RehabQuest API');
     } finally {

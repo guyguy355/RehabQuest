@@ -1,4 +1,5 @@
 import { createBrowserRouter } from 'react-router-dom';
+import { ProtectedRoute } from '../components/ProtectedRoute';
 import { AIProgressSummaryPage } from '../pages/AIProgressSummaryPage';
 import { BadgesPage } from '../pages/BadgesPage';
 import { CreateRehabPlanPage } from '../pages/CreateRehabPlanPage';
@@ -44,87 +45,171 @@ export const router = createBrowserRouter([
   },
   {
     path: '/patient/dashboard',
-    element: <PatientDashboardPage />,
+    element: (
+      <ProtectedRoute allowedRoles={['PATIENT']}>
+        <PatientDashboardPage />
+      </ProtectedRoute>
+    ),
   },
   {
     path: '/patient/daily-quest',
-    element: <DailyQuestPage />,
+    element: (
+      <ProtectedRoute allowedRoles={['PATIENT']}>
+        <DailyQuestPage />
+      </ProtectedRoute>
+    ),
   },
   {
     path: '/patient/quest',
-    element: <DailyQuestPage />,
+    element: (
+      <ProtectedRoute allowedRoles={['PATIENT']}>
+        <DailyQuestPage />
+      </ProtectedRoute>
+    ),
   },
   {
     path: '/patient/exercises/:exerciseId',
-    element: <ExerciseDetailsPage />,
+    element: (
+      <ProtectedRoute allowedRoles={['PATIENT']}>
+        <ExerciseDetailsPage />
+      </ProtectedRoute>
+    ),
   },
   {
     path: '/patient/exercise/:exerciseId',
-    element: <ExerciseDetailsPage />,
+    element: (
+      <ProtectedRoute allowedRoles={['PATIENT']}>
+        <ExerciseDetailsPage />
+      </ProtectedRoute>
+    ),
   },
   {
     path: '/patient/pain-report',
-    element: <PainReportPage />,
+    element: (
+      <ProtectedRoute allowedRoles={['PATIENT']}>
+        <PainReportPage />
+      </ProtectedRoute>
+    ),
   },
   {
     path: '/patient/pain-report/:exerciseId',
-    element: <PainReportPage />,
+    element: (
+      <ProtectedRoute allowedRoles={['PATIENT']}>
+        <PainReportPage />
+      </ProtectedRoute>
+    ),
   },
   {
     path: '/patient/quest-completed',
-    element: <QuestCompletedPage />,
+    element: (
+      <ProtectedRoute allowedRoles={['PATIENT']}>
+        <QuestCompletedPage />
+      </ProtectedRoute>
+    ),
   },
   {
     path: '/patient/progress',
-    element: <ProgressPage />,
+    element: (
+      <ProtectedRoute allowedRoles={['PATIENT']}>
+        <ProgressPage />
+      </ProtectedRoute>
+    ),
   },
   {
     path: '/patient/badges',
-    element: <BadgesPage />,
+    element: (
+      <ProtectedRoute allowedRoles={['PATIENT']}>
+        <BadgesPage />
+      </ProtectedRoute>
+    ),
   },
   {
     path: '/physio/dashboard',
-    element: <PhysioDashboardPage />,
+    element: (
+      <ProtectedRoute allowedRoles={['THERAPIST']}>
+        <PhysioDashboardPage />
+      </ProtectedRoute>
+    ),
   },
   {
     path: '/physio/patients',
-    element: <PatientsListPage />,
+    element: (
+      <ProtectedRoute allowedRoles={['THERAPIST']}>
+        <PatientsListPage />
+      </ProtectedRoute>
+    ),
   },
   {
     path: '/physio/patient-links',
-    element: <TherapistPatientsPage />,
+    element: (
+      <ProtectedRoute allowedRoles={['THERAPIST']}>
+        <TherapistPatientsPage />
+      </ProtectedRoute>
+    ),
   },
   {
     path: '/therapist/patients',
-    element: <TherapistPatientsPage />,
+    element: (
+      <ProtectedRoute allowedRoles={['THERAPIST']}>
+        <TherapistPatientsPage />
+      </ProtectedRoute>
+    ),
   },
   {
     path: '/physio/patients/:patientId',
-    element: <PatientProfilePage />,
+    element: (
+      <ProtectedRoute allowedRoles={['THERAPIST']}>
+        <PatientProfilePage />
+      </ProtectedRoute>
+    ),
   },
   {
     path: '/physio/patients/:patientId/ai-summary',
-    element: <AIProgressSummaryPage />,
+    element: (
+      <ProtectedRoute allowedRoles={['THERAPIST']}>
+        <AIProgressSummaryPage />
+      </ProtectedRoute>
+    ),
   },
   {
     path: '/physio/plans/new',
-    element: <CreateRehabPlanPage />,
+    element: (
+      <ProtectedRoute allowedRoles={['THERAPIST']}>
+        <CreateRehabPlanPage />
+      </ProtectedRoute>
+    ),
   },
   {
     path: '/physio/exercises',
-    element: <ExerciseLibraryPage />,
+    element: (
+      <ProtectedRoute allowedRoles={['THERAPIST']}>
+        <ExerciseLibraryPage />
+      </ProtectedRoute>
+    ),
   },
   {
     path: '/physio/custom-exercises',
-    element: <TherapistExercisesPage />,
+    element: (
+      <ProtectedRoute allowedRoles={['THERAPIST']}>
+        <TherapistExercisesPage />
+      </ProtectedRoute>
+    ),
   },
   {
     path: '/therapist/exercises',
-    element: <TherapistExercisesPage />,
+    element: (
+      <ProtectedRoute allowedRoles={['THERAPIST']}>
+        <TherapistExercisesPage />
+      </ProtectedRoute>
+    ),
   },
   {
     path: '/physio/ai-summary',
-    element: <AIProgressSummaryPage />,
+    element: (
+      <ProtectedRoute allowedRoles={['THERAPIST']}>
+        <AIProgressSummaryPage />
+      </ProtectedRoute>
+    ),
   },
   {
     path: '*',

@@ -1,5 +1,6 @@
 import { Link2, Loader2, RefreshCw, UserPlus, UsersRound } from 'lucide-react';
 import { FormEvent, useEffect, useState } from 'react';
+import { apiFetch, getAuthHeaders } from '../../auth/session';
 import { apiBaseUrl } from '../../config/api';
 
 type LinkedPatient = {
@@ -35,7 +36,7 @@ export function LinkedPatientsPanel({
     setIsError(false);
 
     try {
-      const response = await fetch(`${apiBaseUrl}/therapist/patients`, {
+      const response = await apiFetch(`${apiBaseUrl}/therapist/patients`, {
         headers: getAuthHeaders(),
       });
       const data = await response.json();
@@ -66,7 +67,7 @@ export function LinkedPatientsPanel({
     setIsSubmitting(true);
 
     try {
-      const response = await fetch(`${apiBaseUrl}/therapist/patients/link`, {
+      const response = await apiFetch(`${apiBaseUrl}/therapist/patients/link`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -190,9 +191,3 @@ function LinkedPatientRow({ patient }: { patient: LinkedPatient }) {
   );
 }
 
-function getAuthHeaders(): Record<string, string> {
-  const token =
-    localStorage.getItem('rehabquestToken') ?? localStorage.getItem('authToken') ?? localStorage.getItem('token');
-
-  return token ? { Authorization: `Bearer ${token}` } : {};
-}
