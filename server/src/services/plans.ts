@@ -14,11 +14,13 @@ import {
   planEnd,
   planStart,
   qualifyingBadges,
+  resolveDayState,
   SESSION_BONUS_XP,
   sessionStats,
   TASK_XP,
   versionOn,
 } from './progress.js';
+import { demoSelect, serializeDemo } from './demos.js';
 import { returnAfterBreak, weeklyGoalProgress } from './gamification.js';
 import { awardAfterSession } from './motivation.js';
 import { recordReviewItemsForCompletion } from './reviews.js';
@@ -28,7 +30,9 @@ type Client = Db | Tx;
 export const timelineInclude = {
   versions: {
     where: { status: VersionStatus.PUBLISHED },
-    include: { items: { orderBy: { orderIndex: 'asc' } } },
+    // The demonstration is read live from the exercise (not snapshotted), so a later approval
+    // or rejection applies to plans that are already published.
+    include: { items: { orderBy: { orderIndex: 'asc' }, include: { exercise: { select: demoSelect } } } },
     orderBy: [{ effectiveFrom: 'asc' }, { number: 'asc' }],
   },
   pauses: { orderBy: { startDate: 'asc' } },
@@ -62,6 +66,7 @@ export function serializeItem(item: DbItem) {
       videoUrl: item.videoUrl,
       imageUrl: item.imageUrl,
       mediaAlt: item.mediaAlt,
+      demo: serializeDemo(item.exercise),
     },
   };
 }
@@ -234,6 +239,66 @@ export async function getPatientOverview(db: Client, patient: { id: string; time
     mascotCosmetic: preference?.mascotCosmetic ?? 'classic',
     returnAfterBreak: plan.status === PlanStatus.ACTIVE ? returnAfterBreak(days, today) : null,
     ...totals,
+  };
+}
+
+const sessionDayInclude = { task: { select: { planId: true, exercise: { select: { id: true, title: true } } } } } satisfies Prisma.TaskCompletionInclude;
+
+/**
+ * One past (or today's) session as the patient recorded it: every exercise that was prescribed
+ * for that date, in order, with its saved outcome (or none).
+ *
+ * - Only the patient's own records are read.
+ * - The prescription comes from the plan version that applied on that date, so a later revision
+ *   never changes what an old session shows. A record whose exercise is no longer in that version
+ *   is still listed, using the prescription snapshot stored on the record.
+ * - 404 when the date is in the future or nothing was planned or recorded on it.
+ */
+export async function getPatientSessionDay(db: Client, patient: { id: string; timezone: string }, date: DateKey, now = new Date()) {
+  const today = localDateKey(patient.timezone, now);
+  if (date > today) throw notFound('This session has not happened yet');
+
+  const completions = await db.taskCompletion.findMany({
+    where: { patientId: patient.id, sessionDate: toDbDate(date) },
+    orderBy: { completedAt: 'asc' },
+    include: sessionDayInclude,
+  });
+
+  // Records point at the plan they belong to (it may be an older, completed plan).
+  const planId = completions[0]?.task.planId;
+  const plan = planId ? await loadPlan(db, { id: planId, patientId: patient.id }) : await loadCurrentPlan(db, patient.id);
+  const kind = plan ? dayKind(toTimeline(plan), date) : null;
+  const planned = kind?.kind === 'training' ? kind.items : [];
+
+  const byTask = new Map(completions.map((completion) => [completion.taskId, completion]));
+  const items = planned.map((item) => {
+    const completion = byTask.get(item.taskId);
+    byTask.delete(item.taskId);
+    return {
+      taskId: item.taskId,
+      title: item.exercise.title,
+      prescribed: { sets: item.sets, reps: item.reps, durationSeconds: item.durationSeconds, holdSeconds: item.holdSeconds, restSeconds: item.restSeconds },
+      completion: completion ? serializeCompletion(completion) : null,
+    };
+  });
+  for (const completion of byTask.values()) {
+    const serialized = serializeCompletion(completion);
+    items.push({ taskId: completion.taskId, title: completion.task.exercise.title, prescribed: serialized.prescribed, completion: serialized });
+  }
+
+  if (items.length === 0) throw notFound('No session on this day');
+
+  const outcomes = items.flatMap((item) => (item.completion ? [item.completion.status] : []));
+  const xp = await db.xpEvent.aggregate({ where: { userId: patient.id, sessionDate: toDbDate(date) }, _sum: { amount: true } });
+  const version = plan && kind?.version ? plan.versions.find((candidate) => candidate.id === kind.version!.id) : null;
+
+  return {
+    date,
+    today,
+    state: resolveDayState(date < today, date === today, items.length, outcomes),
+    planTitle: version?.title ?? plan?.title ?? null,
+    xpEarned: xp._sum.amount ?? 0,
+    items,
   };
 }
 

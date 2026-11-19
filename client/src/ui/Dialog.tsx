@@ -1,8 +1,10 @@
 import { X } from 'lucide-react';
 import { type ReactNode, useEffect, useRef } from 'react';
+import { useI18n } from '../i18n';
 
 /** Accessible modal built on the native <dialog> element (focus trap + Escape for free). */
 export function Dialog({ open, onClose, title, children, wide = false }: { open: boolean; onClose: () => void; title: string; children: ReactNode; wide?: boolean }) {
+  const { t } = useI18n();
   const ref = useRef<HTMLDialogElement>(null);
 
   useEffect(() => {
@@ -29,7 +31,7 @@ export function Dialog({ open, onClose, title, children, wide = false }: { open:
             <h2 id="dialog-title" className="font-display text-2xl font-bold leading-tight">
               {title}
             </h2>
-            <button type="button" onClick={onClose} className="grid h-10 w-10 shrink-0 place-items-center rounded-xl text-ink-500 hover:bg-ink-100" aria-label="Close">
+            <button type="button" onClick={onClose} className="grid h-10 w-10 shrink-0 place-items-center rounded-xl text-ink-500 hover:bg-ink-100" aria-label={t('Close')}>
               <X className="h-5 w-5" aria-hidden="true" />
             </button>
           </div>

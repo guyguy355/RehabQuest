@@ -9,7 +9,8 @@ type Db = Tx | typeof prisma;
  * queues a push job. Notification text must stay short and must not quote message bodies
  * or health details (titles are shown in the app; push text is always generic).
  */
-export async function notify(db: Db, input: { userId: string; kind: NotificationKind; title: string; body: string; link?: string | null; dedupeKey: string }) {
+/** `now` is the caller's clock (the worker passes its own) so queued pushes are due immediately. */
+export async function notify(db: Db, input: { userId: string; kind: NotificationKind; title: string; body: string; link?: string | null; dedupeKey: string }, now = new Date()) {
   const created = await db.notification.createMany({
     data: [{ userId: input.userId, kind: input.kind, title: input.title, body: input.body, link: input.link ?? null, dedupeKey: input.dedupeKey }],
     skipDuplicates: true,
@@ -24,7 +25,7 @@ export async function notify(db: Db, input: { userId: string; kind: Notification
   // Patients opt in with their preference; for therapists, registering a subscription is the opt-in.
   const wantsPush = preference ? preference.pushEnabled : true;
   if (wantsPush && subscriptions > 0) {
-    await enqueue(db, { kind: 'PUSH', userId: input.userId, dedupeKey: `push:${input.dedupeKey}`, runAt: new Date(), payload: { notificationId: notification.id } });
+    await enqueue(db, { kind: 'PUSH', userId: input.userId, dedupeKey: `push:${input.dedupeKey}`, runAt: now, payload: { notificationId: notification.id } });
   }
   return notification;
 }

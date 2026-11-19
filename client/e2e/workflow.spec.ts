@@ -38,7 +38,7 @@ test.describe.serial('core workflow', () => {
     await page.getByRole('button', { name: 'Mark set done' }).first().click();
     await expect(page.getByRole('button', { name: 'Set done' })).toHaveCount(2);
     await page.clock.fastForward(30_000);
-    await page.getByRole('button', { name: 'Pause' }).click();
+    await page.getByRole('button', { name: 'Pause', exact: true }).click(); // not "Pause demonstration" (3D player)
     await expect(page.getByText('Session paused. Paused time is not counted.')).toBeVisible();
     const activeAtPause = await page.getByTitle('Active time, pauses not counted').innerText();
     await page.clock.fastForward(120_000); // paused time must not be counted
@@ -102,6 +102,27 @@ test.describe.serial('core workflow', () => {
     await expect(page.getByRole('heading', { name: /session is done/i })).toBeVisible();
     const xpAfter = Number(await page.getByTitle('XP earned for planned exercises').locator('.tabular').innerText());
     expect(xpAfter - xpBefore).toBe(35);
+
+    // The finished session on the path opens a read-only record of what was saved.
+    await page.getByRole('list', { name: /Week \d+ sessions/ }).getByRole('link', { name: /Today: session finished.*See what you did/ }).click();
+    await expect(page).toHaveURL(/\/patient\/sessions\/\d{4}-\d{2}-\d{2}$/);
+    const exercises = page.getByRole('list', { name: 'Exercises in this session' }).getByRole('listitem');
+    await expect(exercises).toHaveCount(4);
+    await expect(exercises.nth(0)).toContainText('Heel slides');
+    await expect(exercises.nth(0)).toContainText('Completed');
+    await expect(exercises.nth(1)).toContainText('Partly done');
+    await expect(exercises.nth(2)).toContainText('Skipped');
+    await expect(exercises.nth(2)).toContainText('No time');
+    await expect(exercises.nth(3)).toContainText('Stopped (discomfort)');
+    await expect(exercises.nth(3)).toContainText('Knee felt unstable on the last set.');
+    await expect(page.getByText('4 of 4 exercises saved')).toBeVisible();
+    await expect(page.getByText('35 XP earned')).toBeVisible();
+    await noHorizontalOverflow(page);
+    await page.screenshot({ path: `${SHOTS}/desktop-session-day.png`, fullPage: true });
+
+    await page.getByRole('link', { name: 'Back to my path' }).click();
+    await page.getByRole('link', { name: 'See what you did', exact: true }).click();
+    await expect(exercises).toHaveCount(4);
   });
 
   test('therapist creates a plan from a template, previews it as the patient, and publishes it', async ({ page }) => {

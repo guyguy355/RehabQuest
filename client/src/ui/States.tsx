@@ -1,5 +1,6 @@
 import { Loader2 } from 'lucide-react';
 import type { ReactNode } from 'react';
+import { useI18n } from '../i18n';
 import { Mascot } from './Mascot';
 
 export function Spinner({ className = 'h-5 w-5' }: { className?: string }) {
@@ -17,10 +18,11 @@ export function FullPageLoader({ label }: { label: string }) {
   );
 }
 
-export function LoadingBlock({ label = 'Loading…', rows = 3 }: { label?: string; rows?: number }) {
+export function LoadingBlock({ label, rows = 3 }: { label?: string; rows?: number }) {
+  const { t } = useI18n();
   return (
     <div role="status" aria-live="polite" className="grid gap-3">
-      <span className="sr-only">{label}</span>
+      <span className="sr-only">{label ?? t('Loading…')}</span>
       {Array.from({ length: rows }, (_, index) => (
         <div key={index} className="h-20 animate-pulse rounded-3xl bg-ink-100" style={{ opacity: 1 - index * 0.2 }} />
       ))}
@@ -28,16 +30,17 @@ export function LoadingBlock({ label = 'Loading…', rows = 3 }: { label?: strin
   );
 }
 
-export function ErrorState({ title = 'This did not load', message, onRetry }: { title?: string; message: string; onRetry?: () => void }) {
+export function ErrorState({ title, message, onRetry }: { title?: string; message: string; onRetry?: () => void }) {
+  const { t } = useI18n();
   return (
     <div role="alert" className="card flex flex-col items-start gap-3 border-rose-200 bg-rose-50 p-5">
       <div>
-        <p className="font-display text-xl font-bold text-rose-700">{title}</p>
+        <p className="font-display text-xl font-bold text-rose-700">{title ?? t('This did not load')}</p>
         <p className="mt-1 text-ink-700">{message}</p>
       </div>
       {onRetry ? (
         <button type="button" className="btn btn-secondary btn-sm" onClick={onRetry}>
-          Try again
+          {t('Try again')}
         </button>
       ) : null}
     </div>

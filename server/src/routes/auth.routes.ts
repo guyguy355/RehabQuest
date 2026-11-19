@@ -10,6 +10,7 @@ import { badRequest, conflict, handle, HttpError, parse, requireUser } from '../
 import { isValidTimezone } from '../lib/dates.js';
 import { requireAuth } from '../middleware/auth.middleware.js';
 import { rateLimit } from '../middleware/rateLimit.js';
+import { emailAdapter, passwordResetEmail } from '../services/email.js';
 
 const BCRYPT_ROUNDS = 10;
 const RESET_TOKEN_TTL_MS = 60 * 60 * 1000;
@@ -111,9 +112,9 @@ export function createAuthRouter() {
     limiter,
     handle(async (request, response) => {
       const input = parse(forgotSchema, request.body);
-      const user = await prisma.user.findUnique({ where: { email: input.email }, select: { id: true } });
+      const user = await prisma.user.findUnique({ where: { email: input.email }, select: { id: true, name: true, email: true } });
       const result: { message: string; devResetToken?: string } = {
-        message: 'If an account exists for that email, a reset link has been created.',
+        message: 'If an account exists for that email, a reset link has been sent.',
       };
 
       if (user) {
@@ -122,8 +123,16 @@ export function createAuthRouter() {
           data: { userId: user.id, tokenHash: hashToken(token), expiresAt: new Date(Date.now() + RESET_TOKEN_TTL_MS) },
         });
 
-        // No email service is integrated. For local development only, the token can be
-        // returned in the response when DEV_EXPOSE_RESET_TOKENS=true (never in production).
+        // The link is sent by email. The response never reveals whether the account exists
+        // or whether sending worked; delivery problems are logged for the operator.
+        const link = `${config.appBaseUrl}/reset-password?token=${token}`;
+        const sent = await emailAdapter().send(passwordResetEmail({ to: user.email, name: user.name, link }));
+        if (!sent.ok) {
+          console.error(`[auth] password reset email to user ${user.id} was not sent (${emailAdapter().provider}): ${sent.error}`);
+        }
+
+        // Local development only: the token can also be returned in the response when
+        // DEV_EXPOSE_RESET_TOKENS=true (ignored in production).
         if (config.exposeDevResetTokens) {
           result.devResetToken = token;
         }

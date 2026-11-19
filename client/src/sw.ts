@@ -15,7 +15,8 @@ declare const self: ServiceWorkerGlobalScope & { __WB_MANIFEST: (string | { url:
 
 precacheAndRoute(self.__WB_MANIFEST);
 cleanupOutdatedCaches();
-registerRoute(new NavigationRoute(createHandlerBoundToURL('/index.html')));
+// Navigations get the app shell, except API URLs (e.g. a data export opened as a download).
+registerRoute(new NavigationRoute(createHandlerBoundToURL('/index.html'), { denylist: [/^\/api\//] }));
 
 self.addEventListener('message', (event) => {
   if (event.data === 'SKIP_WAITING') void self.skipWaiting();

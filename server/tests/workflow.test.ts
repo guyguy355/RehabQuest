@@ -106,6 +106,36 @@ describe('therapist assigns a plan → patient completes → therapist reviews',
     assert.equal(skipped.body.xpAwarded, SESSION_BONUS_XP);
   });
 
+  test('a patient can open a session day and see what was recorded; nobody else can', async () => {
+    const { therapist, patient, plan, today } = await setup(3);
+    const [a, b] = plan.tasks;
+    const post = (taskId: string, body: object) => request(app).post(`/patient/tasks/${taskId}/completion`).set(auth(patient.id)).send(body);
+    await post(a.id, { status: 'COMPLETED', painLevel: 3, difficulty: 'JUST_RIGHT', notes: 'Felt fine', repsPerSet: [8, 8], activeSeconds: 95 }).expect(201);
+    await post(b.id, { status: 'SKIPPED', reason: 'NO_TIME' }).expect(201);
+
+    const day = await request(app).get(`/patient/sessions/${today}`).set(auth(patient.id)).expect(200);
+    assert.equal(day.body.date, today);
+    assert.equal(day.body.state, 'today', 'one exercise has no result yet');
+    assert.equal(day.body.planTitle, 'Knee phase 1');
+    assert.equal(day.body.xpEarned, TASK_XP.COMPLETED);
+    assert.deepEqual(day.body.items.map((item: { title: string }) => item.title), ['Exercise 1', 'Exercise 2', 'Exercise 3']);
+    assert.equal(day.body.items[0].completion.notes, 'Felt fine');
+    assert.deepEqual(day.body.items[0].completion.repsPerSet, [8, 8]);
+    assert.deepEqual(day.body.items[0].prescribed, { sets: 2, reps: 8, durationSeconds: 45, holdSeconds: 5, restSeconds: 30 });
+    assert.equal(day.body.items[1].completion.status, 'SKIPPED');
+    assert.equal(day.body.items[2].completion, null);
+
+    // Another patient asking for the same date sees nothing of this patient's records.
+    const other = await createUser('PATIENT');
+    await request(app).get(`/patient/sessions/${today}`).set(auth(other.id)).expect(404);
+    await request(app).get(`/patient/sessions/${today}`).set(auth(therapist.id)).expect(403);
+    await request(app).get(`/patient/sessions/${today}`).expect(401);
+
+    await request(app).get(`/patient/sessions/${addDays(today, 1)}`).set(auth(patient.id)).expect(404);
+    await request(app).get(`/patient/sessions/${addDays(today, -1)}`).set(auth(patient.id)).expect(404);
+    await request(app).get('/patient/sessions/not-a-date').set(auth(patient.id)).expect(400);
+  });
+
   test('validates outcome input', async () => {
     const { patient, plan } = await setup(1);
     const url = `/patient/tasks/${plan.tasks[0].id}/completion`;

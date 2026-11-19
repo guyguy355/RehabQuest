@@ -1,5 +1,6 @@
 import { Flame, Gem, HandHeart } from 'lucide-react';
 import { type FormEvent, useId, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { api, errorMessage } from '../../app/api';
 import { PageHeader } from '../../app/Shells';
 import type { Analytics, Badge, Completion, GoalsResponse, MeasurementDefinition, Motivation, SessionStats } from '../../app/types';
@@ -183,7 +184,12 @@ function ActivityTab({ history }: { history: Completion[] }) {
     <ul className="grid gap-3">
       {[...byDate.entries()].map(([date, items]) => (
         <li key={date} className="card p-4">
-          <p className="eyebrow">{formatDay(date)}</p>
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <p className="eyebrow">{formatDay(date)}</p>
+            <Link to={`/patient/sessions/${date}`} className="text-sm font-extrabold text-brand-700 underline-offset-2 hover:underline" aria-label={t('See the session on {date}', { date: formatDay(date) })}>
+              {t('See session')}
+            </Link>
+          </div>
           <ul className="mt-2 grid gap-2">
             {items.map((item) => (
               <li key={item.id} className="flex flex-wrap items-center justify-between gap-2">

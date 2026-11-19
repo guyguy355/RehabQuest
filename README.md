@@ -170,6 +170,14 @@ npm run therapist:create -- --name "Full Name" --email person@clinic.example
 In `server/.env`: `AI_SUMMARY_PROVIDER="anthropic"` and `ANTHROPIC_API_KEY="..."`. Without them the app works
 fully with the rule-based summary.
 
+## Deploying
+
+One container runs everything: the API serves the built web app on the same origin (API under `/api`),
+runs the reminder worker in-process and applies migrations on start. `render.yaml` describes a Render
+setup with Postgres in Frankfurt; the `Dockerfile` works on any Docker host. Password-reset emails go
+through Resend. Step by step, required variables and the operations checklist: **docs/DEPLOYMENT.md**.
+What the owner has to set up outside the code: **docs/GO_LIVE_CHECKLIST.md**.
+
 ## Tests
 
 | Command (folder) | What it runs |
@@ -188,12 +196,12 @@ A URL that merely contains "test" is refused. See [VALIDATION.md](VALIDATION.md)
 
 - Bearer token in `localStorage` (works with the Capacitor app; an httpOnly cookie would resist XSS better).
   Logout is client-side; tokens are revoked server-side only by a password reset.
-- No email delivery: password reset tokens are only shown when `DEV_EXPOSE_RESET_TOKENS=true` in development.
-- Rate limiting is in memory (per process).
+- Email is used only for password resets (Resend). There is no email verification at registration yet.
+- Rate limiting is in memory (per process): run a single API instance.
 - One active plan per patient. A therapist only sees plans they created, even for a shared patient.
 - Changing a plan's training weekdays applies to the whole plan, including past days.
 - Reminders are local notifications in the Android build only.
-- English only (no RTL UI).
+- Hebrew and English UI (RTL for Hebrew); emails are bilingual because the server does not store a language.
 - The live Claude call path is covered with injected fakes in tests; it has not been exercised against the real API here.
 - Legacy mock-data screens from the earlier version remain in `client/src/{components,pages,services,types,routes,auth,config}`.
   They are excluded from the build and lint and can be deleted.

@@ -31,9 +31,14 @@ function TodayCard({ overview }: { overview: PatientOverview }) {
         title = t('Today’s session is done');
         body = next ? t('Nice work. Your next session: {when}.', { when: next }) : t('Nice work. That was the last planned session.');
         action = (
-          <Link to="/patient/progress" className="btn btn-secondary btn-lg w-full sm:w-auto">
-            {t('See your progress')}
-          </Link>
+          <div className="flex flex-col gap-2 sm:flex-row">
+            <Link to={`/patient/sessions/${overview.today}`} className="btn btn-primary btn-lg w-full sm:w-auto">
+              {t('See what you did')}
+            </Link>
+            <Link to="/patient/progress" className="btn btn-secondary btn-lg w-full sm:w-auto">
+              {t('See your progress')}
+            </Link>
+          </div>
         );
       } else {
         title = done === 0 ? t('Today’s session is ready') : t('Pick up where you left off');
@@ -152,6 +157,8 @@ function Station({ day, today, index }: { day: Day; today: string; index: number
   const offset = ZIGZAG[index % ZIGZAG.length];
   const label = stationLabel(day, today);
   const isToday = day.date === today;
+  // Any day with a saved result opens its record (finished, skipped, or missed with some exercises saved).
+  const hasRecords = day.completedCount + day.partialCount + day.skippedCount + day.stoppedCount > 0;
   const base = 'relative grid h-[4.5rem] w-[4.5rem] place-items-center rounded-full transition-transform';
   const visual =
     day.state === 'done'
@@ -180,6 +187,10 @@ function Station({ day, today, index }: { day: Day; today: string; index: number
       ) : null}
       {day.state === 'today' ? (
         <Link to="/patient/session" aria-label={label} className="rounded-full">
+          {circle}
+        </Link>
+      ) : hasRecords ? (
+        <Link to={`/patient/sessions/${day.date}`} aria-label={t('{label}. See what you did', { label })} className="rounded-full transition-transform hover:scale-105">
           {circle}
         </Link>
       ) : (

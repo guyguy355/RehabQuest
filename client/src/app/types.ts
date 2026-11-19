@@ -19,6 +19,20 @@ export type Exercise = {
   videoUrl: string | null;
   imageUrl: string | null;
   mediaAlt: string | null;
+  /** Animated 3D demonstration. Sent on patient screens only; null/absent when there is none to show. */
+  demo?: ExerciseDemo | null;
+};
+
+/**
+ * Which predefined animation demonstrates an exercise (see features/demo and docs/EXERCISE_DEMOS.md).
+ * The server sends it only when a physiotherapist approved it, or (preview mode) while UNREVIEWED.
+ */
+export type ExerciseDemo = {
+  type: 'PROCEDURAL' | 'GLB';
+  key: string;
+  reviewStatus: 'UNREVIEWED' | 'APPROVED';
+  modelUrl: string | null;
+  clipName: string | null;
 };
 
 export type LibraryExercise = Exercise & { sets: number; reps: number; durationSeconds: number; usedInPlans: number; usedInTemplates: number };
@@ -111,6 +125,17 @@ export type Day = {
   partialCount: number;
   skippedCount: number;
   stoppedCount: number;
+};
+
+/** One session day as the patient recorded it (GET /patient/sessions/:date). */
+export type SessionDay = {
+  date: string;
+  today: string;
+  state: DayState;
+  planTitle: string | null;
+  /** All XP confirmed for that day, including the session bonus. */
+  xpEarned: number;
+  items: { taskId: string; title: string; prescribed: Completion['prescribed']; completion: Completion | null }[];
 };
 
 export type SessionStats = {

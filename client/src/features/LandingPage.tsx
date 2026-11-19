@@ -1,6 +1,7 @@
 import { Check, ClipboardCheck, HeartPulse, Moon, Route as RouteIcon } from 'lucide-react';
 import { Link, Navigate } from 'react-router-dom';
 import { homePathFor, useAuth } from '../app/AuthProvider';
+import { LanguageSwitch, useI18n } from '../i18n';
 import { Logo } from '../ui/Logo';
 import { Mascot } from '../ui/Mascot';
 
@@ -36,39 +37,47 @@ function PathPreview() {
 }
 
 export function LandingPage() {
+  const { t } = useI18n();
   const auth = useAuth();
   if (auth.status === 'authenticated') return <Navigate to={homePathFor(auth.user)} replace />;
 
+  const steps = [
+    { icon: ClipboardCheck, title: t('Your therapist plans'), text: t('Exercises, sets, reps and training days are chosen by your physiotherapist. Rest days are part of the plan.') },
+    { icon: RouteIcon, title: t('You follow the path'), text: t('Each planned day is a stop on your path. Finish the exercises, then say how it felt on a 0–10 pain scale.') },
+    { icon: HeartPulse, title: t('Your therapist reviews'), text: t('High pain, "too hard" and stopped exercises are flagged so your therapist can follow up.') },
+  ];
+
   return (
     <div className="min-h-screen bg-canvas">
-      <header className="mx-auto flex max-w-5xl items-center justify-between px-4 py-4">
+      <header className="mx-auto flex max-w-5xl items-center justify-between gap-3 px-4 py-4">
         <Logo />
-        <Link to="/login" className="btn btn-secondary btn-sm">
-          Sign in
-        </Link>
+        <div className="flex items-center gap-2">
+          <LanguageSwitch />
+          <Link to="/login" className="btn btn-secondary btn-sm">
+            {t('Sign in')}
+          </Link>
+        </div>
       </header>
 
       <main className="mx-auto max-w-5xl px-4 pb-16">
         <section className="grid items-center gap-10 py-8 md:grid-cols-[1.2fr_1fr] md:py-14">
           <div>
-            <p className="eyebrow text-brand-700">Home exercise, made friendly</p>
-            <h1 className="mt-2 font-display text-5xl font-extrabold leading-[1.02] text-ink-900 sm:text-6xl">
-              Your physio plan, one small step a day.
-            </h1>
+            <p className="eyebrow text-brand-700">{t('Home exercise, made friendly')}</p>
+            <h1 className="mt-2 font-display text-5xl font-extrabold leading-[1.02] text-ink-900 sm:text-6xl">{t('Your physio plan, one small step a day.')}</h1>
             <p className="mt-4 max-w-xl text-lg text-ink-700">
-              Your therapist sets the exercises. RehabQuest turns them into a daily path, records how each one felt, and sends the results back to your therapist.
+              {t('Your therapist sets the exercises. RehabQuest turns them into a daily path, records how each one felt, and sends the results back to your therapist.')}
             </p>
             <div className="mt-6 flex flex-wrap gap-3">
               <Link to="/register" className="btn btn-primary btn-lg">
-                Start as a patient
+                {t('Start as a patient')}
               </Link>
               <Link to="/login" className="btn btn-secondary btn-lg">
-                I already have an account
+                {t('I already have an account')}
               </Link>
             </div>
           </div>
           <div className="card relative overflow-hidden bg-brand-50 p-6">
-            <div className="absolute -right-2 bottom-2">
+            <div className="absolute -end-2 bottom-2">
               <Mascot mood="cheer" size={110} />
             </div>
             <PathPreview />
@@ -76,19 +85,17 @@ export function LandingPage() {
         </section>
 
         <section aria-labelledby="how" className="grid gap-4">
-          <h2 id="how" className="font-display text-2xl font-bold">How it works</h2>
+          <h2 id="how" className="font-display text-2xl font-bold">
+            {t('How it works')}
+          </h2>
           <ol className="grid gap-4 md:grid-cols-3">
-            {[
-              { icon: ClipboardCheck, title: 'Your therapist plans', text: 'Exercises, sets, reps and training days are chosen by your physiotherapist. Rest days are part of the plan.' },
-              { icon: RouteIcon, title: 'You follow the path', text: 'Each planned day is a stop on your path. Finish the exercises, then say how it felt on a 0–10 pain scale.' },
-              { icon: HeartPulse, title: 'Your therapist reviews', text: 'High pain, "too hard" and stopped exercises are flagged so your therapist can follow up.' },
-            ].map((step, index) => (
-              <li key={step.title} className="card p-5">
+            {steps.map((step, index) => (
+              <li key={index} className="card p-5">
                 <div className="flex items-center gap-3">
                   <span className="grid h-10 w-10 place-items-center rounded-2xl bg-brand-100 text-brand-700">
                     <step.icon className="h-5 w-5" aria-hidden="true" />
                   </span>
-                  <span className="eyebrow">Step {index + 1}</span>
+                  <span className="eyebrow">{t('Step {n}', { n: index + 1 })}</span>
                 </div>
                 <h3 className="mt-3 font-display text-xl font-bold">{step.title}</h3>
                 <p className="mt-1 text-ink-500">{step.text}</p>
@@ -96,7 +103,7 @@ export function LandingPage() {
             ))}
           </ol>
           <p className="text-sm text-ink-500">
-            RehabQuest supports a plan from your therapist. It does not diagnose or change your treatment. If something hurts, stop and contact your therapist.
+            {t('RehabQuest supports a plan from your therapist. It does not diagnose or change your treatment. If something hurts, stop and contact your therapist.')}
           </p>
         </section>
       </main>
@@ -105,15 +112,16 @@ export function LandingPage() {
 }
 
 export function NotFoundPage() {
+  const { t } = useI18n();
   const auth = useAuth();
   return (
     <div className="grid min-h-screen place-items-center bg-canvas px-4">
       <div className="card flex max-w-md flex-col items-center gap-3 p-8 text-center">
         <Mascot mood="think" size={96} />
-        <h1 className="font-display text-3xl font-bold">This page is not on the path</h1>
-        <p className="text-ink-500">The link may be old, or the page may have moved.</p>
+        <h1 className="font-display text-3xl font-bold">{t('This page is not on the path')}</h1>
+        <p className="text-ink-500">{t('The link may be old, or the page may have moved.')}</p>
         <Link to={auth.status === 'authenticated' ? homePathFor(auth.user) : '/'} className="btn btn-primary">
-          Go home
+          {t('Go home')}
         </Link>
       </div>
     </div>

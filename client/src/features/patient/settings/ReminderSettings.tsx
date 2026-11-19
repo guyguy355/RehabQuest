@@ -4,7 +4,7 @@ import { BellOff, BellRing, Clock } from 'lucide-react';
 import { type FormEvent, useEffect, useState } from 'react';
 import { api, errorMessage } from '../../../app/api';
 import { useApi } from '../../../app/useApi';
-import { useI18n } from '../../../i18n';
+import { translate, useI18n } from '../../../i18n';
 import { serviceWorkerRegistration } from '../../../pwa';
 import { TextField } from '../../../ui/Field';
 import { formatDateTime } from '../../../ui/format';
@@ -31,7 +31,7 @@ async function syncNativeReminder(preference: Preference) {
   const permission = await LocalNotifications.requestPermissions();
   if (permission.display !== 'granted') return;
   const [hour, minute] = preference.reminderTime.split(':').map(Number);
-  await LocalNotifications.schedule({ notifications: [{ id: REMINDER_ID, title: 'RehabQuest', body: 'You have a planned session today.', schedule: { on: { hour, minute }, repeats: true } }] });
+  await LocalNotifications.schedule({ notifications: [{ id: REMINDER_ID, title: 'RehabQuest', body: translate('You have a planned session today.'), schedule: { on: { hour, minute }, repeats: true } }] });
 }
 
 function urlBase64ToBytes(value: string) {

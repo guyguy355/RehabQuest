@@ -4,6 +4,7 @@ import type { CardAssignment, PlanTask } from '../../../app/types';
 import { useI18n } from '../../../i18n';
 import { exerciseDifficultyLabel, formatDuration } from '../../../ui/format';
 import { Chip } from '../../../ui/Pills';
+import { ExerciseDemo } from '../../demo/ExerciseDemo';
 import type { TaskProgress } from './sessionState';
 
 const DIRECT_VIDEO = /\.(mp4|webm|ogg)(\?|$)/i;
@@ -102,6 +103,9 @@ export function ExerciseView({
           {task.notes}
         </p>
       ) : null}
+
+      {/* Shown only for exercises with their own approved (or preview) animation; others keep the media below as before. */}
+      <ExerciseDemo key={task.id} demo={task.exercise.demo} title={task.exercise.title} />
 
       <Media task={task} />
 

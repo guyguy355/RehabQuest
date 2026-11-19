@@ -1,19 +1,22 @@
 import { Flame, Gem } from 'lucide-react';
 import type { ReactNode } from 'react';
+import { useI18n } from '../i18n';
 
 export function StreakPill({ days }: { days: number }) {
+  const { t } = useI18n();
   return (
-    <span className="inline-flex items-center gap-1.5 rounded-2xl border-2 border-coral-100 bg-coral-50 px-3 py-1.5 font-extrabold text-coral-700" title="Planned sessions finished in a row. Rest days never break it.">
+    <span className="inline-flex items-center gap-1.5 rounded-2xl border-2 border-coral-100 bg-coral-50 px-3 py-1.5 font-extrabold text-coral-700" title={t('Planned sessions finished in a row. Rest days never break it.')}>
       <Flame className="h-5 w-5 fill-coral-400 text-coral-500" aria-hidden="true" />
       <span className="tabular">{days}</span>
-      <span className="sr-only sm:not-sr-only sm:text-sm sm:font-bold">session streak</span>
+      <span className="sr-only sm:not-sr-only sm:text-sm sm:font-bold">{t('session streak')}</span>
     </span>
   );
 }
 
 export function XpPill({ xp }: { xp: number }) {
+  const { t } = useI18n();
   return (
-    <span className="inline-flex items-center gap-1.5 rounded-2xl border-2 border-sun-100 bg-sun-50 px-3 py-1.5 font-extrabold text-sun-700" title="XP earned for planned exercises">
+    <span className="inline-flex items-center gap-1.5 rounded-2xl border-2 border-sun-100 bg-sun-50 px-3 py-1.5 font-extrabold text-sun-700" title={t('XP earned for planned exercises')}>
       <Gem className="h-5 w-5 fill-sun-300 text-sun-600" aria-hidden="true" />
       <span className="tabular">{xp}</span>
       <span className="text-sm font-bold">XP</span>

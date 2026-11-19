@@ -1,6 +1,9 @@
+import { translate } from '../i18n';
 import { clearToken, getToken } from './session';
 
-export const API_BASE_URL = (import.meta.env.VITE_API_URL as string | undefined) ?? 'http://localhost:3000';
+// Development talks to the API on its own port. Production builds default to the same
+// origin under /api (the server serves the built app). VITE_API_URL overrides both.
+export const API_BASE_URL = (import.meta.env.VITE_API_URL as string | undefined) ?? (import.meta.env.DEV ? 'http://localhost:3000' : '/api');
 export const SESSION_EXPIRED_EVENT = 'rehabquest:session-expired';
 
 export class ApiError extends Error {
@@ -47,7 +50,7 @@ export async function api<T>(path: string, options: RequestOptions = {}): Promis
     });
   } catch (error) {
     if (error instanceof DOMException && error.name === 'AbortError') throw error;
-    throw new ApiError(0, 'Could not reach RehabQuest. Check your connection and try again.', 'network_error');
+    throw new ApiError(0, translate('Could not reach RehabQuest. Check your connection and try again.'), 'network_error');
   }
 
   if (response.status === 204) return undefined as T;
@@ -62,8 +65,8 @@ export async function api<T>(path: string, options: RequestOptions = {}): Promis
 
     const message =
       response.status === 403 && !data.message
-        ? 'You do not have access to this page.'
-        : (data.message as string | undefined) ?? 'Something went wrong. Please try again.';
+        ? translate('You do not have access to this page.')
+        : (data.message as string | undefined) ?? translate('Something went wrong. Please try again.');
 
     throw new ApiError(response.status, message, data.code, data.details?.fields ?? {});
   }
@@ -73,5 +76,5 @@ export async function api<T>(path: string, options: RequestOptions = {}): Promis
 
 export function errorMessage(error: unknown) {
   if (error instanceof ApiError) return error.message;
-  return 'Something went wrong. Please try again.';
+  return translate('Something went wrong. Please try again.');
 }

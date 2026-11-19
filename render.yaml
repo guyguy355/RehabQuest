@@ -1,0 +1,54 @@
+# Render Blueprint: one web service (API + web app in a single container) and one Postgres.
+# Region Frankfurt keeps patient data inside the EU. See docs/DEPLOYMENT.md.
+#
+# After "New > Blueprint" in the Render dashboard, fill in the values marked sync: false
+# (APP_BASE_URL, RESEND_API_KEY, EMAIL_FROM, EMAIL_REPLY_TO). Everything else is generated.
+services:
+  - type: web
+    name: rehabquest
+    runtime: docker
+    region: frankfurt
+    plan: starter
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        fromDatabase:
+          name: rehabquest-db
+          property: connectionString
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_EXPIRES_IN
+        value: 8h
+      - key: APP_BASE_URL
+        sync: false # e.g. https://rehabquest.onrender.com or https://app.your-clinic.co.il
+      - key: EMAIL_PROVIDER
+        value: resend
+      - key: RESEND_API_KEY
+        sync: false
+      - key: EMAIL_FROM
+        sync: false # e.g. RehabQuest <no-reply@your-domain.co.il>
+      - key: EMAIL_REPLY_TO
+        sync: false
+      - key: DEFAULT_TIMEZONE
+        value: Asia/Jerusalem
+      - key: WORKER_IN_PROCESS
+        value: "true"
+      - key: TRUST_PROXY
+        value: "true"
+      - key: AUTH_RATE_LIMIT_MAX
+        value: "30"
+      - key: AI_SUMMARY_PROVIDER
+        value: none
+      - key: EXERCISE_DEMO_PREVIEW
+        value: "false"
+
+databases:
+  - name: rehabquest-db
+    region: frankfurt
+    plan: basic-256mb
+    postgresMajorVersion: "16"

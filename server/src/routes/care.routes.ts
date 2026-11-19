@@ -12,6 +12,7 @@ import { isDateKey, localDateKey } from '../lib/dates.js';
 import { requirePatient, requireTherapist } from '../middleware/auth.middleware.js';
 import { getLinkedPatient } from '../services/access.js';
 import { listCheckIns, openWeeks, submitCheckIn } from '../services/checkins.js';
+import { exportOwnData } from '../services/dataExport.js';
 import { acknowledge, assignCard, createCard, getCard, listAssignments, listCards, setCardArchived, unassignCard, updateCard } from '../services/education.js';
 import { isCosmeticUnlocked } from '../services/gamification.js';
 import { addMilestone, createDefinition, createGoal, recordMeasurement, serializeDefinition, setMilestone, updateDefinition, updateGoal } from '../services/goals.js';
@@ -85,6 +86,19 @@ const preferencesSchema = z.object({
 /** Comfort settings for every signed-in user; motivation settings for patients. */
 export function createPreferencesRouter() {
   const router = Router();
+
+  /** A copy of everything stored about the signed-in person, as a downloadable JSON file. */
+  router.get(
+    '/export',
+    handle(async (request, response) => {
+      const user = requireUser(request);
+      const data = await exportOwnData(prisma, user.id);
+      const stamp = new Date().toISOString().slice(0, 10);
+      response.setHeader('Content-Disposition', `attachment; filename="rehabquest-export-${stamp}.json"`);
+      response.setHeader('Cache-Control', 'no-store');
+      response.json(data);
+    }),
+  );
 
   router.get(
     '/preferences',

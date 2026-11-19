@@ -1,7 +1,8 @@
-import { Copy, LogOut, RefreshCw } from 'lucide-react';
+import { Copy, Download, LogOut, RefreshCw } from 'lucide-react';
 import { type FormEvent, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { api, errorMessage } from '../../app/api';
+import { api, API_BASE_URL, errorMessage } from '../../app/api';
+import { getToken } from '../../app/session';
 import { useAuth, useCurrentUser } from '../../app/AuthProvider';
 import { usePreferences } from '../../app/preferences';
 import { PageHeader } from '../../app/Shells';
@@ -12,7 +13,7 @@ import { Dialog } from '../../ui/Dialog';
 import { SelectField } from '../../ui/Field';
 import { formatShort } from '../../ui/format';
 import { Chip } from '../../ui/Pills';
-import { ErrorState, LoadingBlock, Spinner } from '../../ui/States';
+import { ErrorState, InlineMessage, LoadingBlock, Spinner } from '../../ui/States';
 import { useToast } from '../../ui/Toast';
 import { type MessageContext, MessageThread } from '../shared/MessageThread';
 import { ReminderSettings } from './settings/ReminderSettings';
@@ -46,6 +47,49 @@ function ComfortSettings() {
         <input type="checkbox" className="h-6 w-6 shrink-0 accent-brand-600" checked={preferences.soundEnabled} onChange={(event) => preferences.update({ soundEnabled: event.target.checked })} />
       </label>
     </div>
+  );
+}
+
+/** "Give me a copy of my data": downloads GET /me/export as a JSON file (needs the bearer token, so not a plain link). */
+function DataExportSection() {
+  const { t } = useI18n();
+  const [exporting, setExporting] = useState(false);
+  const [error, setError] = useState('');
+
+  async function download() {
+    if (exporting) return;
+    setExporting(true);
+    setError('');
+    try {
+      const response = await fetch(`${API_BASE_URL}/me/export`, { headers: { Authorization: `Bearer ${getToken() ?? ''}`, Accept: 'application/json' } });
+      if (!response.ok) throw new Error(`export failed (${response.status})`);
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const anchor = document.createElement('a');
+      anchor.href = url;
+      anchor.download = `rehabquest-export-${new Date().toISOString().slice(0, 10)}.json`;
+      document.body.appendChild(anchor);
+      anchor.click();
+      anchor.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 10_000);
+    } catch {
+      setError(t('The download did not work. Please try again.'));
+    } finally {
+      setExporting(false);
+    }
+  }
+
+  return (
+    <section className="card grid gap-3 p-5" aria-labelledby="your-data">
+      <h2 id="your-data" className="font-display text-xl font-bold">
+        {t('Your data')}
+      </h2>
+      <p className="text-sm text-ink-500">{t('Download a copy of everything RehabQuest stores about you, as a file you can keep or give to another clinic.')}</p>
+      {error ? <InlineMessage tone="error">{error}</InlineMessage> : null}
+      <button type="button" className="btn btn-secondary justify-self-start" onClick={download} disabled={exporting}>
+        {exporting ? <Spinner /> : <Download className="h-5 w-5" aria-hidden="true" />} {exporting ? t('Preparing your file…') : t('Download my data')}
+      </button>
+    </section>
   );
 }
 
@@ -211,6 +255,7 @@ export function ProfilePage() {
               </button>
             </form>
           </section>
+          <DataExportSection />
         </div>
       </div>
 

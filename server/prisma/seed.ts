@@ -13,6 +13,7 @@
 import { PrismaClient, type Difficulty } from '@prisma/client';
 import bcrypt from 'bcrypt';
 import { addDays, localDateKey, toDbDate, weekday } from '../src/lib/dates.js';
+import { CATALOG_DEMOS } from '../src/services/demos.js';
 import { countAchievements, isCosmeticUnlocked, weekStartOf } from '../src/services/gamification.js';
 import { createVersionedPlan, type LibraryEntry } from './demo-plan.js';
 
@@ -142,7 +143,7 @@ async function main() {
   const library = async (therapistId: string) => {
     const map = new Map<string, LibraryEntry>();
     for (const { key, ...exercise } of LIBRARY) {
-      const created = await prisma.exercise.create({ data: { ...exercise, catalogKey: CATALOG_KEYS[key], createdById: therapistId } });
+      const created = await prisma.exercise.create({ data: { ...exercise, ...CATALOG_DEMOS[CATALOG_KEYS[key]], catalogKey: CATALOG_KEYS[key], createdById: therapistId } });
       map.set(key, created);
     }
     return map;

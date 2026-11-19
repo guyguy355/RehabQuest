@@ -85,3 +85,20 @@ reviewed manually.
 - **Production deployment:** not attempted (out of scope).
 - Legacy mock-data source files are still in the repository (excluded from build/lint); deleting them needs a
   manual step.
+
+## Run on 2026-11-19 (production readiness + Hebrew)
+
+Environment: Windows 11, Node.js 24.14, npm 11.9, PostgreSQL 16 (Docker Engine inside WSL 2), Chromium via Playwright 1.55.
+
+| Check | Command (folder) | Result |
+|---|---|---|
+| Server type check | `npm run typecheck` (server) | pass |
+| Server tests | `npm test` (server) | **174 tests, 173 pass, 0 fail, 1 skipped** (incl. new email.test.ts, serving.test.ts, data-export.test.ts) |
+| Hebrew coverage | `npm run i18n:check` (client) | 1012 keys used, 1012 Hebrew entries, 0 missing, 0 unused |
+| Client type check | `npx tsc -b` (client) | pass |
+| Client lint | `npm run lint` (client) | 0 errors, 24 warnings (react-refresh only-export-components) |
+| Client production build | `VITE_API_URL=/api npm run build` (client) | pass, PWA precache generated |
+| Browser tests | `npx playwright test` (client) | 23 tests: 22 pass, 1 fail on first run (`demo.spec.ts` "failures fall back to the text", timing under load); passes when re-run alone |
+
+Fixed during this run: `notify()` queued Web Push jobs with the real clock instead of the caller's clock, so the
+worker never picked them up when its clock differed (two reminder tests had been failing since mid-October).

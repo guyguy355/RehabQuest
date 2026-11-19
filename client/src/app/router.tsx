@@ -6,6 +6,7 @@ import { PatientHome } from '../features/patient/PatientHome';
 import { PatientMessagesPage, ProfilePage } from '../features/patient/ProfilePage';
 import { ProgressPage } from '../features/patient/ProgressPage';
 import { SessionCompletePage } from '../features/patient/SessionCompletePage';
+import { SessionDayPage } from '../features/patient/SessionDayPage';
 import { SessionPage } from '../features/patient/SessionPage';
 import { EducationPage } from '../features/therapist/EducationPage';
 import { ExerciseLibraryPage } from '../features/therapist/ExerciseLibraryPage';
@@ -63,6 +64,7 @@ export const router = createBrowserRouter([
           { index: true, element: <PatientHome /> },
           { path: 'session', element: <SessionPage /> },
           { path: 'session/complete', element: <SessionCompletePage /> },
+          { path: 'sessions/:date', element: <SessionDayPage /> },
           { path: 'progress', element: <ProgressPage /> },
           { path: 'messages', element: <PatientMessagesPage /> },
           { path: 'learn', element: <LearnPage /> },

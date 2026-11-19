@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
+import { useI18n } from '../i18n';
 import { FullPageLoader } from '../ui/States';
 import { homePathFor, useAuth } from './AuthProvider';
 import type { Role } from './types';
@@ -10,11 +11,12 @@ import type { Role } from './types';
  * the user cannot use.
  */
 export function ProtectedRoute({ role, children }: { role: Role; children: ReactNode }) {
+  const { t } = useI18n();
   const auth = useAuth();
   const location = useLocation();
 
   if (auth.status === 'loading') {
-    return <FullPageLoader label="Restoring your session…" />;
+    return <FullPageLoader label={t('Restoring your session…')} />;
   }
 
   if (auth.status === 'anonymous') {

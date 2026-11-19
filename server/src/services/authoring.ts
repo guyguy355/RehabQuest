@@ -309,7 +309,8 @@ export async function previewDraft(therapistId: string, versionId: string) {
     restSeconds: item.restSeconds,
     durationSeconds: item.durationSeconds,
     notes: item.notes,
-    exercise: serializeVersion(version).items[index].exercise,
+    // The therapist's draft preview lists the session; it does not play 3D demonstrations.
+    exercise: { ...serializeVersion(version).items[index].exercise, demo: null },
   }));
 
   const nextNumber = Math.max(0, ...base.versions.map((entry) => entry.number)) + 1;

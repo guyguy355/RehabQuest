@@ -74,6 +74,20 @@ enum TemplateStatus {
   ARCHIVED
 }
 
+// How an exercise demonstration is rendered: a predefined animation of the built-in
+// articulated figure, or an authored clip inside a rigged GLB model.
+enum DemoAnimationType {
+  PROCEDURAL
+  GLB
+}
+
+// A demonstration is shown on normal patient screens only when APPROVED by a physiotherapist.
+enum DemoReviewStatus {
+  UNREVIEWED
+  APPROVED
+  REJECTED
+}
+
 enum DifficultyRating {
   TOO_EASY
   JUST_RIGHT
@@ -247,6 +261,14 @@ model Exercise {
   mediaAlt        String?
   // Set when the exercise was copied from the built-in starter catalog (src/data/exercise-catalog.ts).
   catalogKey      String?
+  // Optional animated 3D demonstration (docs/EXERCISE_DEMOS.md). demoKey names a predefined
+  // animation in the client registry (PROCEDURAL) or labels a GLB asset (GLB: demoModelUrl +
+  // demoClipName). Patients only see it once demoReviewStatus is APPROVED.
+  demoType         DemoAnimationType?
+  demoKey          String?
+  demoReviewStatus DemoReviewStatus   @default(UNREVIEWED)
+  demoModelUrl     String?
+  demoClipName     String?
   createdById     String
   createdAt       DateTime   @default(now())
   updatedAt       DateTime   @updatedAt

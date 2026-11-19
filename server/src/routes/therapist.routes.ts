@@ -1,4 +1,4 @@
-import { Difficulty, PlanStatus, Prisma, Role, VersionStatus } from '@prisma/client';
+import { DemoReviewStatus, Difficulty, PlanStatus, Prisma, Role, VersionStatus } from '@prisma/client';
 import { Router } from 'express';
 import { z } from 'zod';
 import { config } from '../config.js';
@@ -10,6 +10,7 @@ import { requireTherapist } from '../middleware/auth.middleware.js';
 import { rateLimit } from '../middleware/rateLimit.js';
 import { activeLinkWhere, getLinkedPatient } from '../services/access.js';
 import { audit } from '../services/audit.js';
+import { CATALOG_DEMOS } from '../services/demos.js';
 import { endCareRelationship } from '../services/messaging.js';
 import { activeReviewCount } from '../services/reviews.js';
 import { loadCompletions, loadPlan, serializeCompletion, serializePlan, toLite, toTimeline } from '../services/plans.js';
@@ -245,7 +246,14 @@ export function createTherapistRouter(deps: { summaryModel?: SummaryModel | null
     handle(async (request, response) => {
       const therapist = requireUser(request);
       const input = parse(exerciseSchema, request.body);
-      const result = await prisma.exercise.updateMany({ where: { id: param(request, 'exerciseId'), createdById: therapist.id }, data: input });
+      const where = { id: param(request, 'exerciseId'), createdById: therapist.id };
+      const before = await prisma.exercise.findFirst({ where, select: { title: true, instructions: true, demoReviewStatus: true } });
+      if (!before) throw notFound('Exercise not found');
+      // An approval covers the movement as it was described. If the description changes,
+      // the 3D demonstration has to be reviewed again before patients see it.
+      const textChanged = before.title !== input.title || before.instructions !== input.instructions;
+      const demoReview = textChanged && before.demoReviewStatus === DemoReviewStatus.APPROVED ? { demoReviewStatus: DemoReviewStatus.UNREVIEWED } : {};
+      const result = await prisma.exercise.updateMany({ where, data: { ...input, ...demoReview } });
       if (result.count === 0) throw notFound('Exercise not found');
       response.json({ exercise: serializeExercise(await prisma.exercise.findUniqueOrThrow({ where: { id: param(request, 'exerciseId') }, select: exerciseSelect })) });
     }),
@@ -285,7 +293,7 @@ export function createTherapistRouter(deps: { summaryModel?: SummaryModel | null
       const result = await prisma.exercise.createMany({
         data: keys.map((key) => {
           const { key: catalogKey, ...exercise } = CATALOG_BY_KEY.get(key)!;
-          return { ...exercise, catalogKey, createdById: therapist.id };
+          return { ...exercise, ...CATALOG_DEMOS[catalogKey], catalogKey, createdById: therapist.id };
         }),
         skipDuplicates: true,
       });

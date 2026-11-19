@@ -1,0 +1,17 @@
+**/node_modules
+**/dist
+**/dev-dist
+**/.env
+**/.env.*
+!**/.env.example
+**/test-results
+**/playwright-report
+**/coverage
+**/*.log
+.git
+.github
+design
+docs
+*.md
+client/android
+client/e2e

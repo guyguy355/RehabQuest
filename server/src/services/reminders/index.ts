@@ -87,7 +87,7 @@ export async function processReminder(job: OutboxJob, now = new Date()): Promise
   if (!preference.inAppEnabled && !preference.pushEnabled) return { status: 'SUPPRESSED', result: 'no_channel' };
 
   const notification = preference.inAppEnabled
-    ? await notify(prisma, { userId, kind: 'REMINDER', title: 'Your planned session is ready', body: 'Open RehabQuest when it suits you.', link: '/patient', dedupeKey: `reminder:${userId}:${date}` })
+    ? await notify(prisma, { userId, kind: 'REMINDER', title: 'Your planned session is ready', body: 'Open RehabQuest when it suits you.', link: '/patient', dedupeKey: `reminder:${userId}:${date}` }, now)
     : null;
   if (!preference.inAppEnabled && preference.pushEnabled) {
     // Push-only users: queue the push directly, still deduplicated per day.

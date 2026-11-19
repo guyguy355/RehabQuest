@@ -5,7 +5,7 @@ import { handle, HttpError, param, parse, requireUser } from '../http.js';
 import { addDays, fromDbDate, isDateKey, localDateKey, toDbDate } from '../lib/dates.js';
 import { requirePatient } from '../middleware/auth.middleware.js';
 import { endCareRelationship } from '../services/messaging.js';
-import { completeTask, getPatientOverview, getPatientTotals, listBadges, serializeCompletion } from '../services/plans.js';
+import { completeTask, getPatientOverview, getPatientSessionDay, getPatientTotals, listBadges, serializeCompletion } from '../services/plans.js';
 import { rescheduleForUser } from '../services/reminders/index.js';
 import { zonedTimeToUtc } from '../services/reminders/time.js';
 import { createCareCode } from './auth.routes.js';
@@ -73,6 +73,17 @@ export function createPatientRouter() {
     handle(async (request, response) => {
       const patient = requireUser(request);
       response.json(await getPatientOverview(prisma, patient));
+    }),
+  );
+
+  /** One session day as the patient recorded it (tapping a finished session on the path). */
+  router.get(
+    '/sessions/:date',
+    handle(async (request, response) => {
+      const patient = requireUser(request);
+      const date = param(request, 'date');
+      if (!isDateKey(date)) throw new HttpError(400, 'Use a valid date (YYYY-MM-DD)', 'bad_request');
+      response.json(await getPatientSessionDay(prisma, patient, date));
     }),
   );
 
