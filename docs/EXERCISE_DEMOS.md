@@ -33,13 +33,18 @@ The demonstration is read live from the exercise when a plan is serialized (`ser
 `server/src/services/demos.ts`), not snapshotted into plan versions, so an approval or rejection
 applies to plans that are already published. Patient responses carry it as `exercise.demo`.
 
-There is no approval screen yet. To approve after a physiotherapist's review:
+Reviewing happens in the therapist's **Exercise library**: every exercise with a demonstration shows
+its status (waiting for review / approved / rejected) and a "Watch and review" button that opens the same
+player patients see, with Approve, Reject and "Back to not reviewed". A banner counts the demonstrations
+still waiting. Each decision is written to the audit trail as `DEMO_REVIEWED` (`PATCH /therapist/exercises/:id/demo-review`). The starter-catalog dialog lets a therapist watch a demonstration
+before copying the exercise; the decision is made on the library copy.
 
-```sql
-UPDATE "Exercise" SET "demoReviewStatus" = 'APPROVED' WHERE "demoKey" = 'heel-slides' AND "createdById" = '<therapist id>';
-```
+Review one movement at a time, after watching the whole loop from both views. Do not approve in bulk.
 
-Approve one movement at a time, after it has been looked at. Do not approve in bulk.
+Library exercises get their demonstration in three ways: copying a starter exercise (the copy carries
+it), migration `20261119090000_exercise_demo_catalog` (copies that existed before the feature), and
+migration `20261119120000_link_demos_by_title` (hand-made exercises whose title matches a catalog entry
+with a demonstration; such a link is only a guess until the therapist watches and approves it).
 
 ## Client (`client/src/features/demo`)
 

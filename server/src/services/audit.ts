@@ -30,7 +30,8 @@ export type AuditAction =
   | 'CARD_PUBLISHED'
   | 'BRIEF_APPROVED'
   | 'BRIEF_SHARED'
-  | 'EXPORT_CREATED';
+  | 'EXPORT_CREATED'
+  | 'DEMO_REVIEWED';
 
 /**
  * Writes an audit event. Metadata must never contain message bodies, free-text health

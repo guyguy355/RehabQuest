@@ -10,7 +10,7 @@ import { requireTherapist } from '../middleware/auth.middleware.js';
 import { rateLimit } from '../middleware/rateLimit.js';
 import { activeLinkWhere, getLinkedPatient } from '../services/access.js';
 import { audit } from '../services/audit.js';
-import { CATALOG_DEMOS } from '../services/demos.js';
+import { CATALOG_DEMOS, demoSelect, serializeDemoForReview } from '../services/demos.js';
 import { endCareRelationship } from '../services/messaging.js';
 import { activeReviewCount } from '../services/reviews.js';
 import { loadCompletions, loadPlan, serializeCompletion, serializePlan, toLite, toTimeline } from '../services/plans.js';
@@ -76,13 +76,22 @@ const exerciseSelect = {
   videoUrl: true,
   imageUrl: true,
   mediaAlt: true,
+  catalogKey: true,
+  ...demoSelect,
   createdAt: true,
   updatedAt: true,
   _count: { select: { tasks: true, versionItems: true, templateItems: true } },
 } as const;
 
 type ExerciseRow = Prisma.ExerciseGetPayload<{ select: typeof exerciseSelect }>;
-const serializeExercise = ({ _count, ...exercise }: ExerciseRow) => ({ ...exercise, usedInPlans: _count.tasks + _count.versionItems, usedInTemplates: _count.templateItems });
+const serializeExercise = ({ _count, demoType, demoKey, demoReviewStatus, demoModelUrl, demoClipName, ...exercise }: ExerciseRow) => ({
+  ...exercise,
+  demo: serializeDemoForReview({ demoType, demoKey, demoReviewStatus, demoModelUrl, demoClipName }),
+  usedInPlans: _count.tasks + _count.versionItems,
+  usedInTemplates: _count.templateItems,
+});
+
+const demoReviewSchema = z.object({ status: z.nativeEnum(DemoReviewStatus) });
 
 /** Snapshot used by the patient list and the patient detail header. */
 export async function patientSnapshot(therapistId: string, patient: { id: string; timezone: string }) {
@@ -259,6 +268,28 @@ export function createTherapistRouter(deps: { summaryModel?: SummaryModel | null
     }),
   );
 
+  /**
+   * A physiotherapist's decision about an exercise's 3D demonstration. Only APPROVED
+   * demonstrations reach patients (docs/EXERCISE_DEMOS.md). Every decision is audited.
+   */
+  router.patch(
+    '/exercises/:exerciseId/demo-review',
+    handle(async (request, response) => {
+      const therapist = requireUser(request);
+      const { status } = parse(demoReviewSchema, request.body);
+      const where = { id: param(request, 'exerciseId'), createdById: therapist.id };
+      const exercise = await prisma.exercise.findFirst({ where, select: { id: true, demoType: true, demoKey: true, demoReviewStatus: true } });
+      if (!exercise) throw notFound('Exercise not found');
+      if (!exercise.demoType || !exercise.demoKey) throw conflict('This exercise has no demonstration to review', 'no_demo');
+      const updated = await prisma.$transaction(async (tx) => {
+        const row = await tx.exercise.update({ where: { id: exercise.id }, data: { demoReviewStatus: status }, select: exerciseSelect });
+        await audit(tx, { actorId: therapist.id, action: 'DEMO_REVIEWED', subjectType: 'Exercise', subjectId: exercise.id, metadata: { demoKey: exercise.demoKey, from: exercise.demoReviewStatus, to: status } });
+        return row;
+      });
+      response.json({ exercise: serializeExercise(updated) });
+    }),
+  );
+
   router.delete(
     '/exercises/:exerciseId',
     handle(async (request, response) => {
@@ -280,7 +311,14 @@ export function createTherapistRouter(deps: { summaryModel?: SummaryModel | null
       const therapist = requireUser(request);
       const copied = await prisma.exercise.findMany({ where: { createdById: therapist.id, catalogKey: { not: null } }, select: { catalogKey: true } });
       const inLibrary = new Set(copied.map((exercise) => exercise.catalogKey));
-      response.json({ exercises: EXERCISE_CATALOG.map((exercise) => ({ ...exercise, inLibrary: inLibrary.has(exercise.key) })) });
+      response.json({
+        exercises: EXERCISE_CATALOG.map((exercise) => ({
+          ...exercise,
+          inLibrary: inLibrary.has(exercise.key),
+          // Built-in demonstration the copy will carry (unreviewed until the therapist approves it).
+          demo: CATALOG_DEMOS[exercise.key] ? { type: CATALOG_DEMOS[exercise.key].demoType, key: CATALOG_DEMOS[exercise.key].demoKey, reviewStatus: DemoReviewStatus.UNREVIEWED, modelUrl: null, clipName: null } : null,
+        })),
+      });
     }),
   );
 

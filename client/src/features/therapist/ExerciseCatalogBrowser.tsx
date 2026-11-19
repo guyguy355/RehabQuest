@@ -1,4 +1,4 @@
-import { Check } from 'lucide-react';
+import { Check, Clapperboard } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { api, errorMessage } from '../../app/api';
 import type { CatalogExercise } from '../../app/types';
@@ -9,6 +9,7 @@ import { exerciseDifficultyLabel, formatDuration } from '../../ui/format';
 import { Chip } from '../../ui/Pills';
 import { ErrorState, InlineMessage, LoadingBlock, Spinner } from '../../ui/States';
 import { useToast } from '../../ui/Toast';
+import { DemoReviewDialog } from './DemoReviewDialog';
 
 const ALL = '';
 
@@ -22,6 +23,8 @@ export function ExerciseCatalogBrowser({ onAdded, onCancel }: { onAdded: () => v
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState('');
+  const [previewing, setPreviewing] = useState<CatalogExercise | null>(null);
+  const withDemo = (data?.exercises ?? []).filter((exercise) => exercise.demo).length;
 
   const bodyParts = useMemo(() => [...new Set((data?.exercises ?? []).map((exercise) => exercise.bodyPart))], [data]);
   const visible = useMemo(() => {
@@ -75,6 +78,7 @@ export function ExerciseCatalogBrowser({ onAdded, onCancel }: { onAdded: () => v
   return (
     <div className="grid gap-4">
       <p className="text-sm text-ink-500">{t('General starting points, not a diagnosis. Copies go into your library, where you can edit them before using them in a plan.')}</p>
+      {withDemo > 0 ? <p className="text-sm text-ink-500">{t('{count} of them come with a 3D demonstration that you can approve for your patients after adding.', { count: withDemo })}</p> : null}
 
       <div className="grid gap-3 sm:grid-cols-2">
         <SelectField id="catalog-body" label={t('Body area')} value={bodyPart} onChange={(event) => setBodyPart(event.target.value)}>
@@ -123,12 +127,19 @@ export function ExerciseCatalogBrowser({ onAdded, onCancel }: { onAdded: () => v
                     · {formatDuration(exercise.durationSeconds)}
                   </Chip>
                   {exercise.inLibrary ? <Chip tone="grape" icon={<Check className="h-3.5 w-3.5" aria-hidden="true" />}>{t('In your library')}</Chip> : null}
+                  {exercise.demo ? (
+                    <button type="button" className="inline-flex items-center gap-1 rounded-full bg-sky-100 px-2.5 py-0.5 text-xs font-extrabold text-sky-800 hover:bg-sky-200" onClick={(event) => { event.preventDefault(); setPreviewing(exercise); }}>
+                      <Clapperboard className="h-3.5 w-3.5" aria-hidden="true" /> {t('Watch the 3D demonstration')}
+                    </button>
+                  ) : null}
                 </span>
               </span>
             </label>
           </li>
         ))}
       </ul>
+
+      <DemoReviewDialog target={previewing?.demo ? { title: previewing.title, demo: previewing.demo } : null} onClose={() => setPreviewing(null)} />
 
       {saveError ? <InlineMessage tone="error">{saveError}</InlineMessage> : null}
       <div className="sticky bottom-0 -mx-5 -mb-5 flex justify-end gap-2 border-t-2 border-ink-100 bg-white p-4 sm:-mx-6 sm:-mb-6 sm:px-6">

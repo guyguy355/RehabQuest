@@ -42,3 +42,13 @@ export function serializeDemo(exercise: DemoFields | null | undefined, preview =
 }
 
 export type DemoView = ReturnType<typeof serializeDemo>;
+
+/**
+ * The demonstration as the therapist's library sees it: always present when the exercise points
+ * at one, whatever its review status (therapists are the ones who review). Null when there is none.
+ */
+export function serializeDemoForReview(exercise: DemoFields | null | undefined) {
+  if (!exercise?.demoType || !exercise.demoKey) return null;
+  if (exercise.demoType === DemoAnimationType.GLB && !exercise.demoModelUrl) return null;
+  return { type: exercise.demoType, key: exercise.demoKey, reviewStatus: exercise.demoReviewStatus, modelUrl: exercise.demoModelUrl, clipName: exercise.demoClipName };
+}

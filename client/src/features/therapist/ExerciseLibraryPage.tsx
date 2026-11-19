@@ -1,4 +1,4 @@
-import { BookOpen, Image, Pencil, Plus, Trash2, Video } from 'lucide-react';
+import { BookOpen, Clapperboard, Image, Pencil, Plus, Trash2, Video } from 'lucide-react';
 import { type FormEvent, useState } from 'react';
 import { api, ApiError, errorMessage } from '../../app/api';
 import { PageHeader } from '../../app/Shells';
@@ -11,6 +11,7 @@ import { exerciseDifficultyLabel, formatDuration } from '../../ui/format';
 import { Chip } from '../../ui/Pills';
 import { EmptyState, ErrorState, InlineMessage, LoadingBlock, Spinner } from '../../ui/States';
 import { useToast } from '../../ui/Toast';
+import { DemoReviewDialog, demoStatusLabel, demoStatusTone } from './DemoReviewDialog';
 import { ExerciseCatalogBrowser } from './ExerciseCatalogBrowser';
 
 type Form = {
@@ -112,7 +113,9 @@ export function ExerciseLibraryPage() {
   const [editing, setEditing] = useState<LibraryExercise | 'new' | null>(null);
   const [deleting, setDeleting] = useState<LibraryExercise | null>(null);
   const [browsing, setBrowsing] = useState(false);
+  const [reviewing, setReviewing] = useState<LibraryExercise | null>(null);
   const [busy, setBusy] = useState(false);
+  const pendingDemos = (data?.exercises ?? []).filter((exercise) => exercise.demo?.reviewStatus === 'UNREVIEWED');
 
   async function confirmDelete() {
     if (!deleting) return;
@@ -164,6 +167,18 @@ export function ExerciseLibraryPage() {
         {t('Your own exercises. Editing an exercise here does not change plans that were already published.')}
       </PageHeader>
 
+      {pendingDemos.length > 0 ? (
+        <div className="card flex flex-wrap items-center justify-between gap-3 border-sun-200 bg-sun-50 p-4" role="status">
+          <p className="text-ink-700">
+            <Clapperboard className="me-2 inline h-5 w-5 align-text-bottom text-ink-500" aria-hidden="true" />
+            {t('{count} demonstrations are waiting for your review. Patients only see a demonstration after you approve it.', { count: pendingDemos.length })}
+          </p>
+          <button type="button" className="btn btn-secondary" onClick={() => setReviewing(pendingDemos[0])}>
+            {t('Review the next one')}
+          </button>
+        </div>
+      ) : null}
+
       {loading && !data ? <LoadingBlock rows={3} label={t('Loading exercises')} /> : null}
       {error && !data ? <ErrorState message={errorMessage(error)} onRetry={reload} /> : null}
       {data && data.exercises.length === 0 ? (
@@ -211,6 +226,18 @@ export function ExerciseLibraryPage() {
                 {exercise.imageUrl ? <Chip tone="sky" icon={<Image className="h-3.5 w-3.5" aria-hidden="true" />}>{t('Image')}</Chip> : null}
                 {inUse(exercise) ? <Chip tone="grape">{t('In use')}</Chip> : null}
               </div>
+              {exercise.demo ? (
+                <div className="flex flex-wrap items-center justify-between gap-2 rounded-2xl border-2 border-ink-100 p-2.5 ps-3">
+                  <span className="flex flex-wrap items-center gap-2 text-sm">
+                    <Clapperboard className="h-4 w-4 text-ink-500" aria-hidden="true" />
+                    <span className="font-extrabold">{t('3D demonstration')}</span>
+                    <Chip tone={demoStatusTone(exercise.demo.reviewStatus)}>{demoStatusLabel(exercise.demo.reviewStatus, t)}</Chip>
+                  </span>
+                  <button type="button" className="btn btn-secondary btn-sm" onClick={() => setReviewing(exercise)}>
+                    {exercise.demo.reviewStatus === 'UNREVIEWED' ? t('Watch and review') : t('Watch')}
+                  </button>
+                </div>
+              ) : null}
             </li>
           ))}
         </ul>
@@ -230,6 +257,12 @@ export function ExerciseLibraryPage() {
           />
         ) : null}
       </Dialog>
+
+      <DemoReviewDialog
+        target={reviewing?.demo ? { title: reviewing.title, demo: reviewing.demo, exerciseId: reviewing.id } : null}
+        onClose={() => setReviewing(null)}
+        onReviewed={() => void reload()}
+      />
 
       <Dialog open={browsing} onClose={() => setBrowsing(false)} title={t('Starter exercises')} wide>
         {browsing ? (

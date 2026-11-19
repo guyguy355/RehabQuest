@@ -30,16 +30,28 @@ export type Exercise = {
 export type ExerciseDemo = {
   type: 'PROCEDURAL' | 'GLB';
   key: string;
-  reviewStatus: 'UNREVIEWED' | 'APPROVED';
+  reviewStatus: 'UNREVIEWED' | 'APPROVED' | 'REJECTED';
   modelUrl: string | null;
   clipName: string | null;
 };
 
-export type LibraryExercise = Exercise & { sets: number; reps: number; durationSeconds: number; usedInPlans: number; usedInTemplates: number };
+export type LibraryExercise = Exercise & {
+  sets: number;
+  reps: number;
+  durationSeconds: number;
+  usedInPlans: number;
+  usedInTemplates: number;
+  /** Starter-catalog entry this exercise was copied from, if any. */
+  catalogKey: string | null;
+  /** Therapist view: present whatever the review status (therapists do the reviewing). */
+  demo: ExerciseDemo | null;
+};
 
 /** An entry in the built-in starter catalog (shared, read-only). `inLibrary`: already copied into my library. */
 export type CatalogExercise = Pick<Exercise, 'title' | 'description' | 'bodyPart' | 'difficulty'> & {
   key: string;
+  /** Built-in demonstration the library copy will carry (unreviewed until approved). */
+  demo: ExerciseDemo | null;
   instructions: string;
   safetyNotes: string;
   sets: number;
