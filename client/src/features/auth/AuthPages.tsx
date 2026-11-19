@@ -3,7 +3,7 @@ import { type FormEvent, type ReactNode, useState } from 'react';
 import { Link, Navigate, useNavigate, useSearchParams } from 'react-router-dom';
 import { api, ApiError, errorMessage } from '../../app/api';
 import { homePathFor, useAuth } from '../../app/AuthProvider';
-import { LanguageSwitch, useI18n } from '../../i18n';
+import { LanguageSwitch, translateServerMessage, useI18n } from '../../i18n';
 import { TextField } from '../../ui/Field';
 import { Logo } from '../../ui/Logo';
 import { Mascot } from '../../ui/Mascot';
@@ -181,7 +181,7 @@ export function ForgotPasswordPage() {
         {error ? <InlineMessage tone="error">{error}</InlineMessage> : null}
         {result ? (
           <InlineMessage tone="success">
-            {result.message}
+            {translateServerMessage(result.message)}
             {result.devResetToken ? (
               <>
                 {' '}
