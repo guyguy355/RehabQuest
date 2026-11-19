@@ -79,11 +79,12 @@ describe('exercise demonstrations: review gate', () => {
 describe('exercise demonstrations: library', () => {
   test('importing the catalog entry attaches its demonstration, unreviewed; other entries get none', async () => {
     const therapist = await createUser('THERAPIST');
-    await request(app).post('/therapist/exercise-catalog/import').set(auth(therapist.id)).send({ keys: ['knee-heel-slides', 'knee-quad-sets'] }).expect(201);
+    await request(app).post('/therapist/exercise-catalog/import').set(auth(therapist.id)).send({ keys: ['knee-heel-slides', 'knee-quad-sets', 'core-abdominal-bracing'] }).expect(201);
     const rows = await prisma.exercise.findMany({ where: { createdById: therapist.id }, orderBy: { catalogKey: 'asc' }, select: { catalogKey: true, demoType: true, demoKey: true, demoReviewStatus: true } });
     assert.deepEqual(rows, [
+      { catalogKey: 'core-abdominal-bracing', demoType: null, demoKey: null, demoReviewStatus: 'UNREVIEWED' },
       { catalogKey: 'knee-heel-slides', demoType: 'PROCEDURAL', demoKey: 'heel-slides', demoReviewStatus: 'UNREVIEWED' },
-      { catalogKey: 'knee-quad-sets', demoType: null, demoKey: null, demoReviewStatus: 'UNREVIEWED' },
+      { catalogKey: 'knee-quad-sets', demoType: 'PROCEDURAL', demoKey: 'knee-quad-sets', demoReviewStatus: 'UNREVIEWED' },
     ]);
   });
 

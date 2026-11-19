@@ -10,6 +10,7 @@
  */
 import { DemoAnimationType, DemoReviewStatus, type Prisma } from '@prisma/client';
 import { config } from '../config.js';
+import { CATALOG_KEYS_WITH_DEMO } from '../data/demo-keys.js';
 
 export const demoSelect = { demoType: true, demoKey: true, demoReviewStatus: true, demoModelUrl: true, demoClipName: true } satisfies Prisma.ExerciseSelect;
 type DemoFields = Prisma.ExerciseGetPayload<{ select: typeof demoSelect }>;
@@ -20,6 +21,8 @@ type DemoFields = Prisma.ExerciseGetPayload<{ select: typeof demoSelect }>;
  * One animation per exercise: never point two different exercises at the same key.
  */
 export const CATALOG_DEMOS: Readonly<Record<string, { demoType: DemoAnimationType; demoKey: string }>> = {
+  ...Object.fromEntries(CATALOG_KEYS_WITH_DEMO.map((key) => [key, { demoType: DemoAnimationType.PROCEDURAL, demoKey: key }])),
+  // The first demonstration predates the "demonstration key = catalog key" convention.
   'knee-heel-slides': { demoType: DemoAnimationType.PROCEDURAL, demoKey: 'heel-slides' },
 };
 

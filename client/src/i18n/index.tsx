@@ -55,6 +55,16 @@ export function translate(key: string, vars?: Vars, locale: Locale = activeLocal
   return interpolate(entry[rule] ?? entry.other, vars);
 }
 
+/**
+ * Messages written by the server are English. When the dictionary has an exact entry for one
+ * (see the "Server messages" block in he.ts) the active locale's text is shown instead.
+ * Not checked by i18n-check because the key is not a literal here.
+ */
+export function translateServerMessage(message: string) {
+  const entry = DICTIONARIES[activeLocale][message];
+  return typeof entry === 'string' ? entry : message;
+}
+
 type I18nContextValue = {
   locale: Locale;
   dir: 'ltr' | 'rtl';

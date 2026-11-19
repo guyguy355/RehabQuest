@@ -41,7 +41,12 @@ const heSource = fs.readFileSync(path.join(root, 'i18n', 'he.ts'), 'utf8');
 const heKeys = new Set([...heSource.matchAll(new RegExp(String.raw`^\s*` + literal + String.raw`\s*:`, 'gm'))].map((match) => unquote(match[1])));
 
 const missing = [...used.entries()].filter(([key]) => !heKeys.has(key));
-const unused = [...heKeys].filter((key) => !used.has(key));
+// Entries after the 'Server messages' marker translate text the API writes; they are matched at
+// runtime (translateServerMessage) rather than by a literal in the code, so they never count as unused.
+const serverBlock = heSource.indexOf('// Server messages');
+const clientSource = serverBlock >= 0 ? heSource.slice(0, serverBlock) : heSource;
+const clientKeys = new Set([...clientSource.matchAll(new RegExp(String.raw`^s*` + literal + String.raw`s*:`, 'gm'))].map((match) => unquote(match[1])));
+const unused = [...clientKeys].filter((key) => !used.has(key));
 
 for (const [key, file] of missing) problems.push(`missing Hebrew: ${JSON.stringify(key)} (${file})`);
 console.log(`i18n: ${used.size} keys used, ${heKeys.size} Hebrew entries, ${missing.length} missing, ${unused.length} unused.`);

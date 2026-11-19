@@ -1,4 +1,4 @@
-import { translate } from '../i18n';
+import { translate, translateServerMessage } from '../i18n';
 import { clearToken, getToken } from './session';
 
 // Development talks to the API on its own port. Production builds default to the same
@@ -66,9 +66,10 @@ export async function api<T>(path: string, options: RequestOptions = {}): Promis
     const message =
       response.status === 403 && !data.message
         ? translate('You do not have access to this page.')
-        : (data.message as string | undefined) ?? translate('Something went wrong. Please try again.');
+        : data.message ? translateServerMessage(String(data.message)) : translate('Something went wrong. Please try again.');
 
-    throw new ApiError(response.status, message, data.code, data.details?.fields ?? {});
+    const fields = Object.fromEntries(Object.entries((data.details?.fields ?? {}) as Record<string, string>).map(([field, text]) => [field, translateServerMessage(text)]));
+    throw new ApiError(response.status, message, data.code, fields);
   }
 
   return data as T;

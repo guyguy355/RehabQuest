@@ -39,6 +39,8 @@ There is no approval screen yet. To approve after a physiotherapist's review:
 UPDATE "Exercise" SET "demoReviewStatus" = 'APPROVED' WHERE "demoKey" = 'heel-slides' AND "createdById" = '<therapist id>';
 ```
 
+Approve one movement at a time, after it has been looked at. Do not approve in bulk.
+
 ## Client (`client/src/features/demo`)
 
 | File | Role |
@@ -48,8 +50,11 @@ UPDATE "Exercise" SET "demoReviewStatus" = 'APPROVED' WHERE "demoKey" = 'heel-sl
 | `ProceduralHumanoid.tsx` | Built-in articulated figure driven by joint rotations. |
 | `GlbCharacter.tsx` | Rigged GLB model playing one clip (lazy chunk). |
 | `useDemoFrame.ts` | The single clock: pause, speed and looping for either character. |
+| `DemoProps.tsx` | Furniture: mat, chair, wall, counter, step, table, roll, cushion, ball. |
 | `registry.ts` | Key → animation. Unknown keys resolve to nothing. |
-| `animations/*.ts` | One file per movement: a pure `pose(time)` function plus camera views. |
+| `animations/build.ts` | Building blocks: starting positions, key-position sequences, mirroring, camera presets. |
+| `animations/*.ts` | The movements, grouped by body area. Each is a pure function of time. |
+| `gallery.tsx` | Development-only review page: `http://localhost:5173/demo-gallery.html` lists and plays every movement. Not in the production build. |
 
 Behaviour: autoplay when on screen; pauses off screen, in a hidden tab, and on WebGL context loss;
 starts paused on a still frame with reduced motion / calm mode; renders on demand while paused;
@@ -60,21 +65,36 @@ Use the player only for the one open exercise, never per row in a list.
 
 ## Current animations
 
-| Key | Exercise (catalog key) | Status |
-|---|---|---|
-| `heel-slides` | Heel slides (`knee-heel-slides`) | UNREVIEWED: written by a developer from the exercise's text instructions; needs physiotherapist review |
+173 of the 237 starter-catalog exercises have a movement. **All are UNREVIEWED**: written by a
+developer from each exercise's text instructions, checked only by eye for obvious errors. Each
+needs a physiotherapist's review before its exercise is approved. The list is
+`server/src/data/demo-keys.ts`; the demonstration key equals the catalog key (the first one,
+`heel-slides` for `knee-heel-slides`, predates that convention).
+
+Catalog exercises without a movement keep their existing content. They are the ones this figure
+cannot show honestly:
+
+- fingers, thumb and toes (the hand and foot have no digits), jaw, eyes, breathing, pelvic floor;
+- walking exercises (a loop cannot travel) and eyes-closed or plain standing-still exercises;
+- a few positions the figure cannot take convincingly yet: `hip-seated-rotation-stretch`,
+  `back-straddle-reach`, `shoulder-towel-behind-back-stretch`, `elbow-extension-stretch`,
+  `knee-heel-prop`, `core-abdominal-bracing`, `vestibular-brandt-daroff`.
+
+Known simplifications to tell the reviewer about: holds are shortened (a 30-second stretch is
+shown for about 5 seconds), the working side is always the same one, and the hand has no grip.
 
 ## Adding the next animation
 
-1. Create `animations/<name>.ts` exporting a `ProceduralAnimation`: `duration`, a pure `pose(time)`
-   whose first and last pose are identical (include the pause between repetitions), `posterTime`,
-   the highlighted limb, and `front`/`side` camera views. Follow the exercise's written
-   instructions; do not invent clinical detail. State in the file header that it is unreviewed.
-2. Register it in `registry.ts` under a new key. Never reuse a key for a different exercise.
-3. Attach it: add the catalog key to `CATALOG_DEMOS` in `server/src/services/demos.ts` (new library
-   copies and the demo seed pick it up), and add a migration that sets `demoType`/`demoKey` on
-   existing copies (`WHERE "catalogKey" = '…'`), as in `20261114090000_exercise_demo`.
-4. Check it in preview mode, extend `client/e2e/demo.spec.ts` if behaviour changed, then have a
+1. Add it to the file for its body area in `animations/`, with `anim(key, start, steps, options)`
+   from `build.ts` (or `path(...)` for circles). Every step is written relative to the starting
+   position and the last step is `{}`, so the loop closes. Use a fixed contact (`ik`) for a hand or
+   foot that stays on the floor, a wall or furniture. Follow the exercise's written instructions;
+   do not invent clinical detail.
+2. Use the catalog key as the key. Never reuse a key for a different exercise.
+3. Attach it: add the key to `server/src/data/demo-keys.ts` (new library copies and the demo seed
+   pick it up; `server/tests/demo-keys.test.ts` fails if the client and server lists differ), and
+   add a migration for existing copies, as in `20261119090000_exercise_demo_catalog`.
+4. Look at it in the gallery (`/demo-gallery.html` on the dev server) from both views, then have a
    physiotherapist review it before approving.
 
 ## Replacing the figure with a rigged GLB
