@@ -1,7 +1,7 @@
 import { Bell, BookOpen, BookOpenText, ClipboardList, GraduationCap, Home, LayoutTemplate, LogOut, MessageCircle, TrendingUp, UserRound, Users } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
-import { useI18n } from '../i18n';
+import { LanguageSwitch, useI18n } from '../i18n';
 import { Logo } from '../ui/Logo';
 import { useAuth } from './AuthProvider';
 import { useUnread } from './unread';
@@ -158,6 +158,7 @@ export function TherapistShell() {
         <div className="mt-auto hidden border-t-2 border-ink-100 p-4 lg:block">
           <p className="truncate font-extrabold">{name}</p>
           <p className="text-sm text-ink-500">{t('Therapist')}</p>
+          <LanguageSwitch className="mt-3" />
           <button type="button" onClick={signOut} className="btn btn-secondary btn-sm mt-3 w-full">
             <LogOut className="h-4 w-4 rtl:rotate-180" aria-hidden="true" /> {t('Sign out')}
           </button>
